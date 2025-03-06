@@ -1,0 +1,52 @@
+@page "/prihlaseni"
+@rendermode InteractiveServer
+
+<PageTitle>Přihlášení</PageTitle>
+
+<div class="w-100 h-100 m-auto" style="max-width: 400px">
+
+    <!-- Pills content -->
+    <div class="tab-content">
+        <div class="tab-pane fade show active" id="pills-login" role="tabpanel" aria-labelledby="tab-login">
+            <EditForm Model="@loginUser" OnValidSubmit="@OnSubmit">
+                <!-- Email input -->
+                <div class="form-outline mb-4">
+                    <label class="form-label" for="Email">Email</label>
+                    <InputText type="email" id="Email" class="form-control" @bind-Value="@loginUser.Email"/>
+                </div>
+
+                <!-- Password input -->
+                <div class="form-outline mb-4">
+                    <label class="form-label" for="Password">Password</label>
+                    <InputText type="password" id="Password" class="form-control" @bind-Value="@loginUser.Password"/>
+                </div>
+
+                <div class="w-100 d-flex">
+                    <!-- Submit button -->
+                    <button type="submit" class="btn btn-primary btn-block px-5 mb-4 m-auto">Login</button>
+                </div>
+
+                <div class="w-100 d-flex">
+                    <span class="m-auto">Nemáte učet? <a href="/register">Zaregistruj te se</a></span>
+                </div>
+            </EditForm>
+        </div>
+    </div>
+</div>
+
+@code
+{
+    public class LoginUser
+    {
+        public string Email { get; set; }
+        public string Password { get; set; }
+    }
+
+    LoginUser loginUser = new LoginUser();
+
+    public void OnSubmit()
+    {
+        return;
+    }
+
+}
