@@ -1,0 +1,137 @@
+@inject IReservationService ReservationService
+
+@page "/nova-rezervace"
+
+<div class="w-100 h-100 m-auto" style="max-width: 400px">
+    <EditForm Model="@NewReservation" OnValidSubmit="@OnSubmit">
+        <DataAnnotationsValidator/>
+        <ValidationSummary/>
+
+        <MudTextField Label="Nadpis" @bind-Value="NewReservation.Title" Required="true"/>
+        <MudTextField Label="Popis" @bind-Value="NewReservation.Description" Required="false"/>
+        <MudNumericField T="int" Label="Kapacita" @bind-Value="NewReservation.Capacity" Required="true"/>
+        <MudDateRangePicker Label="Vyberte datum" PickerVariant="@PickerVariant.Dialog" @bind-DateRange="@DateRange"
+                            Margin="Margin.Dense"/>
+        <MudTimePicker Label="Start rezervace" @bind-Time="StartTime"/>
+        <MudTimePicker Label="Konec rezervace" @bind-Time="EndTime"/>
+        <MudSwitch Color="Color.Primary" Label="Dostupné" @bind-Value="NewReservation.IsAvailable"/>
+        <div>
+            <MudText>Čas možnosti zrušení před začátkem rezervace</MudText>
+            <div class="d-flex flex-nowrap">
+                <MudNumericField class="col-6" T="int" Label="Dny" @bind-Value="CancellationOffsetDays"/>
+                <MudTimePicker class="col-6" Label="24 hours" @bind-Time="CancellationOffsetTime"/>
+            </div>
+        </div>
+
+        <MudSelect T="TimeDisplayMode" Label="Režim zobrazení času" @bind-Value="NewReservation.TimeDisplayMode"
+                   Required="true">
+            <MudSelectItem Value="TimeDisplayMode.Utc">UTC</MudSelectItem>
+            <MudSelectItem Value="TimeDisplayMode.Local">Lokální</MudSelectItem>
+            <MudSelectItem Value="TimeDisplayMode.Custom">Vlastní</MudSelectItem>
+        </MudSelect>
+
+        @if (NewReservation.TimeDisplayMode == TimeDisplayMode.Custom)
+        {
+            <MudSelect T="int?" Label="UTC Offset (min)" @bind-Value="NewReservation.CustomTimeZone" Required="true">
+                @foreach (var timezone in Constants.TimeZones)
+                {
+                    <MudSelectItem Value="@((int)timezone.TotalMinutes)">
+                        @DisplayOffset(timezone)
+                    </MudSelectItem>
+                }
+            </MudSelect>
+        }
+
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" ButtonType="ButtonType.Submit" Class="mt-4">
+            Vytvořit rezervace
+        </MudButton>
+    </EditForm>
+</div>
+
+@code {
+
+    ReservationCreateRequest NewReservation { get; set; } = new ReservationCreateRequest()
+    {
+        IsAvailable = true
+    };
+
+    DateRange DateRange { get; set; } = new DateRange();
+    TimeSpan? StartTime { get; set; } = TimeSpan.Zero;
+    TimeSpan? EndTime { get; set; } = TimeSpan.Zero;
+    TimeSpan? CancellationOffsetTime { get; set; } = TimeSpan.Zero;
+    int CancellationOffsetDays { get; set; } = 0;
+
+    private int CancellationOffsetMinutes
+    {
+        get => (int)NewReservation.CancellationOffset.TotalMinutes;
+        set => NewReservation.CancellationOffset = TimeSpan.FromMinutes(value);
+    }
+
+    protected override void OnInitialized()
+    {
+    }
+
+    // Pomocná metoda pro formátování offsetu jako "UTC+hh:mm" nebo "UTC-hh:mm"
+    private string DisplayOffset(TimeSpan offset)
+    {
+        string sign = offset >= TimeSpan.Zero ? "+" : "-";
+        var absOffset = offset.Duration();
+        return $"UTC{sign}{absOffset:hh\\:mm}";
+    }
+
+    async Task OnSubmit()
+    {
+        // Nastavení CancellationOffset na základě dnů a času
+        NewReservation.CancellationOffset = TimeSpan.FromDays(CancellationOffsetDays) + (CancellationOffsetTime ?? TimeSpan.Zero);
+
+        // Zkontrolujte, zda máme platný DateRange (předpokládáme, že DateRange.Start a DateRange.End jsou nullable)
+        if (DateRange.Start == null || DateRange.End == null)
+        {
+            // Zde můžete přidat chybovou hlášku nebo jiné ošetření
+            return;
+        }
+
+        // Seznam pro všechny rezervace, které chceme vytvořit
+        List<ReservationCreateRequest> reservations = new List<ReservationCreateRequest>();
+
+        for (int year = DateRange.Start.Value.Year; year <= DateRange.End.Value.Year; year++)
+        {
+            for (int month = DateRange.Start.Value.Month; month <= DateRange.End.Value.Month; month++)
+            {
+                // Iterujeme přes každý den v rozsahu (včetně obou koncových dnů)
+                for (int day = DateRange.Start.Value.Day; day <= DateRange.End.Value.Day; day++)
+                {
+                    var date = new DateTime(year, month, day);
+
+                    var reservationForDay = new ReservationCreateRequest
+                    {
+                        // Kopírujeme vlastnosti z původního modelu
+                        Title = NewReservation.Title,
+                        Description = NewReservation.Description,
+                        Capacity = NewReservation.Capacity,
+                        IsAvailable = NewReservation.IsAvailable,
+                        CancellationOffset = NewReservation.CancellationOffset,
+                        TimeDisplayMode = NewReservation.TimeDisplayMode,
+                        CustomTimeZone = NewReservation.CustomTimeZone,
+                        Start = DateTime.SpecifyKind((date + (StartTime ?? TimeSpan.Zero)).ToUniversalTime(), DateTimeKind.Utc),
+                        End = DateTime.SpecifyKind((date + (EndTime ?? TimeSpan.Zero)).ToUniversalTime(), DateTimeKind.Utc),
+                    };
+
+                    reservations.Add(reservationForDay);
+                }
+
+                foreach (var reservation in reservations)
+                {
+                    await ReservationService.CreateAsync(reservation);
+                }
+
+                Console.WriteLine("Dokonceno");
+            }
+        }
+
+
+        // Nyní máte v seznamu 'reservations' rezervaci pro každý den z vybraného rozsahu.
+        // Tento seznam můžete dále zpracovat (např. odeslat na API)
+    }
+
+}

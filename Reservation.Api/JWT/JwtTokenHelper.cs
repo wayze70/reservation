@@ -14,9 +14,12 @@ public class JwtTokenHelper
 
     public JwtTokenHelper(IConfiguration configuration)
     {
-        _key = configuration["Jwt:Key"];
-        _issuer = configuration["Jwt:Issuer"];
-        _audience = configuration["Jwt:Audience"];
+        _key = configuration["Jwt:Key"]
+               ?? throw new InvalidOperationException("Chybí konfigurace 'Jwt:Key'.");
+        _issuer = configuration["Jwt:Issuer"]
+                  ?? throw new InvalidOperationException("Chybí konfigurace 'Jwt:Issuer'.");
+        _audience = configuration["Jwt:Audience"]
+                    ?? throw new InvalidOperationException("Chybí konfigurace 'Jwt:Audience'.");
     }
 
     public string GenerateAccessToken(Owner owner)
@@ -28,7 +31,7 @@ public class JwtTokenHelper
             new Claim(ReservationClaimNames.GivenName, owner.FirstName),
             new Claim(ReservationClaimNames.FamilyName, owner.LastName)
         ];
-        
+
         return GenerateToken(claims, TimeSpan.FromMinutes(20)); // 20 minut
     }
 
@@ -40,7 +43,7 @@ public class JwtTokenHelper
             new Claim(ReservationClaimNames.Email, owner.Email),
             new Claim(ReservationClaimNames.Custom.GeneratedNumber, new Random().Next(0, 999).ToString())
         ];
-        
+
         return GenerateToken(claims, TimeSpan.FromDays(180)); // 6 měsíců
     }
 
@@ -63,7 +66,7 @@ public class JwtTokenHelper
 
         return tokenHandler.WriteToken(token);
     }
-    
+
     public ClaimsPrincipal? ValidateToken(string token)
     {
         try
@@ -84,7 +87,8 @@ public class JwtTokenHelper
             };
 
             // Token validation
-            var claimsPrincipal = tokenHandler.ValidateToken(token, validationParameters, out SecurityToken validatedToken);
+            var claimsPrincipal =
+                tokenHandler.ValidateToken(token, validationParameters, out SecurityToken validatedToken);
 
             // Kontrola algoritmu tokenu
             if (validatedToken is JwtSecurityToken jwtToken &&
@@ -100,19 +104,19 @@ public class JwtTokenHelper
             return null;
         }
     }
-    
+
     public static IEnumerable<Claim> GetClaims(string token)
     {
         var tokenHandler = new JwtSecurityTokenHandler();
         var securityToken = tokenHandler.ReadToken(token) as JwtSecurityToken;
-        return securityToken?.Claims;
+        return securityToken?.Claims ?? [];
     }
-    
+
     public static string? GetClaimValue(IEnumerable<Claim>? claims, string claimType)
     {
         return claims?.FirstOrDefault(c => c.Type == claimType)?.Value;
     }
-    
+
     public static string GetBearerToken(string authorization)
     {
         if (string.IsNullOrWhiteSpace(authorization) || !authorization.StartsWith("Bearer "))

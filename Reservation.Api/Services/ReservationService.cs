@@ -1,9 +1,7 @@
 using System.Net;
 using Microsoft.EntityFrameworkCore;
 using Reservation.Api.CustomException;
-using Reservation.Api.Dtos;
-using Reservation.Api.Models;
-using ReservationApi;
+using Reservation.Shared.Dtos;
 
 namespace Reservation.Api.Services;
 
@@ -16,20 +14,23 @@ public class ReservationService : IReservationService
         _dbContext = dbContext;
     }
 
-    public ReservationResponse Create(ReservationCreateRequest request, int ownerId)
+    public async Task<ReservationResponse> CreateAsync(ReservationCreateRequest request, int ownerId)
     {
-        var record = _dbContext.Reservations.Add(new Models.Reservation()
+        var record = (await _dbContext.Reservations.AddAsync(new Models.Reservation()
         {
             OwnerId = ownerId,
             Capacity = request.Capacity,
-            Title = request.Title ?? string.Empty,
-            StartTime = request.StartTime,
-            EndTime = request.EndTime,
-            Date = request.Day,
+            Title = request.Title,
+            Description = request.Description,
+            StartTime = request.Start,
+            EndTime = request.End,
             IsAvailable = request.IsAvailable,
-        }).Entity;
+            CancellationOffset = request.CancellationOffset,
+            TimeDisplayMode = request.TimeDisplayMode,
+            CustomTimeZone = request.CustomTimeZone
+        })).Entity;
 
-        _dbContext.SaveChanges();
+        await _dbContext.SaveChangesAsync();
 
         var response = new ReservationResponse()
         {
@@ -37,19 +38,28 @@ public class ReservationService : IReservationService
             Capacity = record.Capacity,
             CurrentCapacity = 0,
             Title = record.Title,
-            StartTime = record.StartTime,
-            EndTime = record.EndTime,
-            DayOfWeek = record.Date,
+            Start = record.StartTime,
+            End = record.EndTime,
             IsAvailable = record.IsAvailable,
+            CancellationOffset = record.CancellationOffset,
+            TimeDisplayMode = record.TimeDisplayMode,
+            CustomTimeZone = record.CustomTimeZone
         };
 
         return response;
     }
 
-    public List<ReservationResponse> Get(int ownerId)
+    public async Task<List<ReservationResponse>> GetAsync(int ownerId)
     {
-        var records = _dbContext.Reservations.Where(r => r.OwnerId == ownerId)
-            .Include(reservation => reservation.SignedUsers).ToList();
+        if (!_dbContext.Owners.Any(o => o.Id == ownerId))
+        {
+            throw new CustomHttpException(HttpStatusCode.NotFound, "Vlastník nebyl nalezen");
+        }
+
+        var records = await _dbContext.Reservations
+            .Where(r => r.OwnerId == ownerId)
+            .Include(r => r.SignedUsers)
+            .ToListAsync();
 
         if (records.Count == 0)
         {
@@ -62,51 +72,54 @@ public class ReservationService : IReservationService
             Capacity = r.Capacity,
             CurrentCapacity = r.SignedUsers.Count,
             Title = r.Title,
-            StartTime = r.StartTime,
-            EndTime = r.EndTime,
-            DayOfWeek = r.Date,
+            Start = r.StartTime,
+            End = r.EndTime,
             IsAvailable = r.IsAvailable,
+            CancellationOffset = r.CancellationOffset,
+            TimeDisplayMode = r.TimeDisplayMode,
+            CustomTimeZone = r.CustomTimeZone
         }).ToList();
     }
 
-    public ReservationSignUpResponse SignUp(int reservationId, ReservationSignUpRequest user)
+    public async Task<ReservationSignUpResponse> SignUpAsync(int reservationId, ReservationSignUpRequest user)
     {
         // Najít rezervaci
-        var reservation = _dbContext.Set<Models.Reservation>()
+        var reservation = await _dbContext.Set<Models.Reservation>()
             .Include(r => r.SignedUsers)
-            .FirstOrDefault(r => r.Id == reservationId);
+            .FirstOrDefaultAsync(r => r.Id == reservationId);
 
         if (reservation == null)
         {
-            throw new CustomHttpException(HttpStatusCode.NotFound, "Reservation not found.");
+            throw new CustomHttpException(HttpStatusCode.NotFound, "Rezerace nebyla nalezena");
         }
 
         if (reservation.SignedUsers.Count >= reservation.Capacity)
         {
-            throw new CustomHttpException(HttpStatusCode.BadRequest, "Reservation is full.");
+            throw new CustomHttpException(HttpStatusCode.BadRequest, "Rezerace je již plná");
         }
 
         // Ověřit, zda uživatel není již přihlášen
-        if (reservation.SignedUsers.Any(u => u.Mail == user.Mail))
+        if (reservation.SignedUsers.Any(u => u.Email == user.Email))
         {
-            throw new CustomHttpException(HttpStatusCode.BadRequest, "User is already signed up for this reservation.");
+            throw new CustomHttpException(HttpStatusCode.BadRequest, "Uživatel je již přihlášen na tuto rezervaci");
         }
 
-        // Přidat uživatele k rezervaci
-        var newUser = new User()
+        // Přidat uživatele k rezervaci s unikátním CancellationCode
+        var newUser = new Models.User()
         {
-            FirstName = user.FirstName,
+            FirstName = user.FirstName, 
             LastName = user.LastName,
-            Mail = user.Mail,
-            Mobile = user.Mobile,
+            Email = user.Email, 
+            CancellationCode = Guid.NewGuid().ToString(),
             ReservationId = reservationId
         };
 
         reservation.SignedUsers.Add(newUser);
+        await _dbContext.SaveChangesAsync();
 
-        _dbContext.SaveChanges();
-
-        // Vrátit odpověď
-        return null;
+        return new ReservationSignUpResponse()
+        {
+            IsSuccess = true
+        };
     }
 }

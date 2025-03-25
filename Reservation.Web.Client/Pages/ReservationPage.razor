@@ -1,0 +1,21 @@
+@page "/rezervace"
+@using MudBlazor
+@using Microsoft.AspNetCore.Components.Authorization
+
+<PageTitle>Rezervace</PageTitle>
+
+<AuthorizeView>
+    <Authorized>
+        <MudDatePicker @rendermode="new InteractiveWebAssemblyRenderMode()" PickerVariant="PickerVariant.Static" Date="@(DateTime.Today.AddDays(1))" />
+    </Authorized>
+    <NotAuthorized>
+        <p>Uživatel není přihlášen.</p>
+    </NotAuthorized>
+</AuthorizeView>
+
+
+
+@code
+{
+    DateTime SelectedDate { get; set; } = DateTime.Now;
+}

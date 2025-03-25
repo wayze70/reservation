@@ -8,7 +8,6 @@ using Microsoft.OpenApi.Models;
 using Reservation.Api.CustomException;
 using Reservation.Api.JWT;
 using Reservation.Api.Services;
-using ReservationApi;
 
 namespace Reservation.Api;
 
@@ -67,10 +66,16 @@ public class Program
                 Type = "DateOnly",
                 Example = new OpenApiString(DateTime.Today.ToString("yyyy-MM-dd")),
             });
+            options.MapType<TimeSpan>(() => new OpenApiSchema
+            {
+                Type = "TimeSpan",
+                Example = new OpenApiString("TimeSpan"),
+            });
         });
 
         builder.Services.AddScoped<IAuthService, AuthService>();
         builder.Services.AddScoped<IReservationService, ReservationService>();
+        builder.Services.AddScoped<IAccountService, AccountService>();
         builder.Services.AddSingleton<JwtTokenHelper>();
         
         builder.Services.AddDbContext<DataContext>(options =>
@@ -94,9 +99,18 @@ public class Program
                     ValidIssuer = builder.Configuration["Jwt:Issuer"],
                     ValidAudience = builder.Configuration["Jwt:Audience"],
                     IssuerSigningKey =
-                        new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]))
+                        new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"] ?? throw new
+                            Exception("JWT key is missing"))),
                 };
             });
+        
+        builder.Services.AddCors(options => options.AddPolicy(
+            "wasm",
+            policy => policy.WithOrigins([builder.Configuration["BackendUrl"] ?? throw new InvalidOperationException("Chybí proměnná prostředí BackendUrl"), 
+                    builder.Configuration["FrontendUrl"]  ?? throw new InvalidOperationException("Chybí proměnná prostředí FrontendUrl")])
+                .AllowAnyMethod()
+                .AllowAnyHeader()
+                .AllowCredentials()));
 
         var app = builder.Build();
 
@@ -108,8 +122,11 @@ public class Program
             app.UseSwaggerUI();
         }
         
+        app.UseCors("wasm");
+        
         app.UseHttpsRedirection();
 
+        app.UseAuthentication();
         app.UseAuthorization();
 
         app.MapControllers();

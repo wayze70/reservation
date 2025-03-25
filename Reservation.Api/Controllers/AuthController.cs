@@ -1,15 +1,15 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Reservation.Api.Dtos;
 using Reservation.Api.Services;
-using LoginRequest = Reservation.Api.Dtos.LoginRequest;
+using Reservation.Shared.Dtos;
+using LoginRequest = Reservation.Shared.Dtos.LoginRequest;
 
 namespace Reservation.Api.Controllers;
 
 [AllowAnonymous]
 [ApiController]
 [Route("[controller]")]
-public class AuthController
+public class AuthController : ControllerBase
 {
     private readonly IAuthService _authService;
     
@@ -21,7 +21,8 @@ public class AuthController
     [HttpPost("login")]
     public ActionResult<AuthResponse> Login([FromBody] LoginRequest request)
     {
-        return _authService.Login(request.Email, request.Password);
+        var tokens = _authService.Login(request.Email, request.Password);
+        return Ok(tokens);
     }
     
     [HttpPost("register")]

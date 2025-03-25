@@ -1,4 +1,4 @@
-namespace Reservation.Api.Dtos;
+namespace Reservation.Shared.Dtos;
 
 public class UserRequest
 {

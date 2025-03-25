@@ -1,0 +1,47 @@
+@inject IAuthService AuthService
+
+@page "/prihlaseni"
+
+<PageTitle>Přihlášení</PageTitle>
+
+<div class="w-100 h-100 m-auto" style="max-width: 400px">
+
+    <!-- Pills content -->
+    <div class="tab-content">
+        <div class="tab-pane fade show active" id="pills-login" role="tabpanel" aria-labelledby="tab-login">
+            <EditForm Model="@LoginUser" OnValidSubmit="@OnSubmit">
+                <!-- Email input -->
+                <div class="form-outline mb-4">
+                    <label class="form-label" for="Email">Email</label>
+                    <InputText required type="email" id="Email" class="form-control" @bind-Value="@LoginUser.Email"/>
+                </div>
+
+                <!-- Password input -->
+                <div class="form-outline mb-4">
+                    <label class="form-label" for="Password">Heslo</label>
+                    <InputText required type="password" id="Password" class="form-control" @bind-Value="@LoginUser.Password"/>
+                </div>
+
+                <div class="w-100 d-flex">
+                    <!-- Submit button -->
+                    <button type="submit" class="btn btn-primary btn-block px-5 mb-4 m-auto">Přihlásit se</button>
+                </div>
+
+                <div class="w-100 d-flex">
+                    <span class="m-auto">Nemáte učet? <a href="@Constants.Routes.Register">Zaregistruj te se</a></span>
+                </div>
+            </EditForm>
+        </div>
+    </div>
+</div>
+
+@code
+{
+    LoginRequest LoginUser { get; set; } = new();
+
+    async Task OnSubmit()
+    {
+        bool response = await AuthService.LoginAsync(LoginUser);
+        Console.WriteLine(response);
+    }
+}

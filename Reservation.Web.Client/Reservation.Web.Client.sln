@@ -1,0 +1,28 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Reservation.Web.Client", "Reservation.Web.Client.csproj", "{7B9BCDB5-836A-4126-ADAC-FE0319232B98}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Reservation.Shared", "..\Reservation.Shared\Reservation.Shared.csproj", "{05A02BFA-BA0D-40D2-AE89-A7F75C8F1685}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Reservation.Api", "..\Reservation.Api\Reservation.Api.csproj", "{BA146E3B-6CCE-46C6-AC96-127D23724744}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{7B9BCDB5-836A-4126-ADAC-FE0319232B98}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7B9BCDB5-836A-4126-ADAC-FE0319232B98}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7B9BCDB5-836A-4126-ADAC-FE0319232B98}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7B9BCDB5-836A-4126-ADAC-FE0319232B98}.Release|Any CPU.Build.0 = Release|Any CPU
+		{05A02BFA-BA0D-40D2-AE89-A7F75C8F1685}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{05A02BFA-BA0D-40D2-AE89-A7F75C8F1685}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{05A02BFA-BA0D-40D2-AE89-A7F75C8F1685}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{05A02BFA-BA0D-40D2-AE89-A7F75C8F1685}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BA146E3B-6CCE-46C6-AC96-127D23724744}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BA146E3B-6CCE-46C6-AC96-127D23724744}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BA146E3B-6CCE-46C6-AC96-127D23724744}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BA146E3B-6CCE-46C6-AC96-127D23724744}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal

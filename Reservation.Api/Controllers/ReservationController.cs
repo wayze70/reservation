@@ -2,15 +2,15 @@ using System.Net;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Reservation.Api.CustomException;
-using Reservation.Api.Dtos;
 using Reservation.Api.JWT;
 using Reservation.Api.Services;
+using Reservation.Shared.Dtos;
 
 namespace Reservation.Api.Controllers;
 
 [ApiController]
 [Route("[controller]")]
-public class ReservationController
+public class ReservationController : ControllerBase
 {
     private readonly IReservationService _reservationService;
     
@@ -19,35 +19,24 @@ public class ReservationController
         _reservationService = reservationService;
     }
     
-    [HttpPost("create")]
-    public ActionResult<ReservationResponse> Create([FromBody] ReservationCreateRequest request, 
+    [HttpPost()]
+    public async Task<ActionResult<ReservationResponse>> Create([FromBody] ReservationCreateRequest request, 
     [FromHeader(Name = 
         "Authorization")] string authorization)
     {
-        string bearerToken = JwtTokenHelper.GetBearerToken(authorization);
-        
-        if (string.IsNullOrEmpty(bearerToken))
-        {
-            throw new CustomHttpException(HttpStatusCode.BadRequest, "Bearer token is required");
-        }
-        
-        var claims = JwtTokenHelper.GetClaims(bearerToken);
-        
-        int userId = int.Parse(JwtTokenHelper.GetClaimValue(claims, ReservationClaimNames.Sub));
-        
-        return _reservationService.Create(request, userId);
+        return await _reservationService.CreateAsync(request, Utils.GetUserIdFromAuthorizationHeader(authorization));
     }
  
     [HttpGet("{ownerId:int}")]
-    public ActionResult<List<ReservationResponse>> Get(int ownerId)
+    public async Task<ActionResult<List<ReservationResponse>>> Get(int ownerId)
     {
-        return _reservationService.Get(ownerId);
+        return await _reservationService.GetAsync(ownerId);
     }
 
     [AllowAnonymous]
     [HttpPut("signup/{reservationId:int}")]
-    public ActionResult<ReservationSignUpResponse> SignUp(int reservationId, ReservationSignUpRequest request)
+    public async Task<ActionResult<ReservationSignUpResponse>> SignUp(int reservationId, ReservationSignUpRequest request)
     {
-        return _reservationService.SignUp(reservationId, request);
+        return await _reservationService.SignUpAsync(reservationId, request);
     }
 }

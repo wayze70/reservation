@@ -1,4 +1,4 @@
-using Reservation.Api.Dtos;
+using Reservation.Shared.Dtos;
 
 namespace Reservation.Api.Services;
 

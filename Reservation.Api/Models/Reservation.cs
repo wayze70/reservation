@@ -1,19 +1,51 @@
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+using Reservation.Shared.Dtos;
 
 namespace Reservation.Api.Models;
 
 public class Reservation
 {
+    [Key]
     public int Id { get; private set; }
-    public int OwnerId { get; set; } // Cizí klíč
+
+    [Required]
+    public int OwnerId { get; set; }
+
+    [Required]
     public int Capacity { get; set; }
+
+    [Required]
     [MaxLength(100)]
     public string Title { get; set; } = string.Empty;
-    public TimeOnly StartTime { get; set; }
-    public TimeOnly EndTime { get; set; }
-    public DateOnly Date { get; set; }
-    public bool IsAvailable { get; set; }
     
+    [MaxLength(2000)]
+    public string Description { get; set; } = string.Empty;
+
+    [Required]
+    public DateTime StartTime { get; set; } = new DateTime().ToUniversalTime();
+
+    [Required]
+    public DateTime EndTime { get; set; } = new DateTime().ToUniversalTime();
+
+    [Required]
+    public bool IsAvailable { get; set; }
+
+    // Nové vlastnosti pro přihlašovací interval a možnost zrušení rezervace
+    [Required]
+    public TimeSpan CancellationOffset { get; set; } = new TimeSpan(0, 0, 0);
+
+    // Nové vlastnosti určující, jak se mají zobrazovat časy
+    [Required]
+    public TimeDisplayMode? TimeDisplayMode { get; set; } = null;
+
+    // od -12UTC po +14UTC
+    [MaxLength(100)]
+    public int? CustomTimeZone { get; set; }
+
+    [ForeignKey("OwnerId")]
+    public Owner Owner { get; set; } = default!;
+    
+    [InverseProperty("Reservation")]
     public List<User> SignedUsers { get; set; } = new List<User>();
-    public Owner Owner { get; set; }
 }

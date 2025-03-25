@@ -1,10 +1,9 @@
 using System.Net;
 using Microsoft.EntityFrameworkCore;
 using Reservation.Api.CustomException;
-using Reservation.Api.Dtos;
 using Reservation.Api.JWT;
 using Reservation.Api.Models;
-using ReservationApi;
+using Reservation.Shared.Dtos;
 
 namespace Reservation.Api.Services;
 
@@ -26,7 +25,7 @@ public class AuthService : IAuthService
 
         if (user is null)
         {
-            throw new CustomHttpException(HttpStatusCode.BadRequest, "Invalid email or password");
+            throw new CustomHttpException(HttpStatusCode.BadRequest, "Nevalidní email nebo heslo");
         }
         
         string accessToken = _jwtTokenHelper.GenerateAccessToken(user);
@@ -42,10 +41,15 @@ public class AuthService : IAuthService
     {
         if (_dbContext.Owners.Any(user => user.Email == email))
         {
-            throw new CustomHttpException(HttpStatusCode.BadRequest, "Email already exists");
+            throw new CustomHttpException(HttpStatusCode.BadRequest, "Uživatel s tímto emailem již existuje");
+        }
+        
+        if (password.Length < 6)
+        {
+            throw new CustomHttpException(HttpStatusCode.BadRequest, "Heslo musí mít alespoň 6 znaků");
         }
 
-        var createdUser = _dbContext.Owners.Add(new Owner
+        var createdUser = _dbContext.Owners.Add(new Owner()
         {
             FirstName = firstName,
             LastName = lastName,
@@ -61,11 +65,11 @@ public class AuthService : IAuthService
     {
         // Token validation
         var tokenClaims = _jwtTokenHelper.ValidateToken(refreshToken) 
-                          ?? throw new CustomHttpException(HttpStatusCode.Unauthorized, "Invalid token");
+                          ?? throw new CustomHttpException(HttpStatusCode.Unauthorized, "Nevalidní token");
 
         // Find user by refresh token
         var user = await _dbContext.Owners.FirstOrDefaultAsync(u => u.RefreshToken == refreshToken)
-                   ?? throw new CustomHttpException(HttpStatusCode.BadRequest, "User not found");
+                   ?? throw new CustomHttpException(HttpStatusCode.BadRequest, "Refresh token nenalezen");
 
         return _jwtTokenHelper.GenerateAccessToken(user);
     }

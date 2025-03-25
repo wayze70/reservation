@@ -1,0 +1,16 @@
+@using MudBlazor
+
+<div style="width: fit-content;">
+    <MudDatePicker PickerVariant="PickerVariant.Static" @bind-Date="@SelectedDate" />
+</div>
+
+@code {
+    [Parameter] public DateTime? SelectedDate { get; set; }
+    [Parameter] public EventCallback<DateTime?> SelectedDateChanged { get; set; }
+
+    private async Task UpdateValue(DateTime? newValue)
+    {
+        SelectedDate = newValue;
+        await SelectedDateChanged.InvokeAsync(newValue);
+    }
+}

@@ -5,11 +5,10 @@ using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using Reservation.Api;
-using ReservationApi;
 
 #nullable disable
 
-namespace ReservationApi.Migrations
+namespace Reservation.Api.Migrations
 {
     [DbContext(typeof(DataContext))]
     partial class DataContextModelSnapshot : ModelSnapshot
@@ -23,7 +22,7 @@ namespace ReservationApi.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
-            modelBuilder.Entity("ReservationApi.Models.Owner", b =>
+            modelBuilder.Entity("Reservation.Api.Models.Owner", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -33,67 +32,38 @@ namespace ReservationApi.Migrations
 
                     b.Property<string>("Email")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasMaxLength(320)
+                        .HasColumnType("character varying(320)");
 
                     b.Property<string>("FirstName")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
 
                     b.Property<string>("LastName")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
 
                     b.Property<string>("PasswordHash")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<string>("Path")
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
 
                     b.Property<string>("RefreshToken")
-                        .HasColumnType("text");
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)");
 
                     b.HasKey("Id");
 
                     b.ToTable("Owners");
                 });
 
-            modelBuilder.Entity("ReservationApi.Models.Reservation", b =>
-                {
-                    b.Property<int>("Id")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("OwnerId")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("Capacity")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("CurrentCapacity")
-                        .HasColumnType("integer");
-
-                    b.Property<DateOnly>("Date")
-                        .HasColumnType("date");
-
-                    b.Property<TimeOnly>("EndTime")
-                        .HasColumnType("time without time zone");
-
-                    b.Property<bool>("IsAvailable")
-                        .HasColumnType("boolean");
-
-                    b.Property<TimeOnly>("StartTime")
-                        .HasColumnType("time without time zone");
-
-                    b.Property<string>("Title")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("character varying(100)");
-
-                    b.HasKey("Id", "OwnerId");
-
-                    b.HasIndex("OwnerId");
-
-                    b.ToTable("Reservations");
-                });
-
-            modelBuilder.Entity("ReservationApi.Models.User", b =>
+            modelBuilder.Entity("Reservation.Api.Models.Reservation", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -101,52 +71,94 @@ namespace ReservationApi.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<string>("FirstName")
-                        .IsRequired()
-                        .HasColumnType("text");
+                    b.Property<TimeSpan>("CancellationOffset")
+                        .HasColumnType("interval");
 
-                    b.Property<string>("LastName")
-                        .IsRequired()
-                        .HasColumnType("text");
+                    b.Property<int>("Capacity")
+                        .HasColumnType("integer");
 
-                    b.Property<string>("Mail")
-                        .IsRequired()
-                        .HasColumnType("text");
+                    b.Property<int?>("CustomTimeZone")
+                        .HasMaxLength(100)
+                        .HasColumnType("integer");
 
-                    b.Property<string>("Mobile")
+                    b.Property<string>("Description")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)");
+
+                    b.Property<DateTime>("EndTime")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<bool>("IsAvailable")
+                        .HasColumnType("boolean");
+
+                    b.Property<int>("OwnerId")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime>("StartTime")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("TimeDisplayMode")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
 
                     b.HasKey("Id");
 
-                    b.ToTable("Users");
+                    b.HasIndex("OwnerId");
+
+                    b.ToTable("Reservations");
                 });
 
-            modelBuilder.Entity("ReservationApi.Models.UserReservation", b =>
+            modelBuilder.Entity("Reservation.Api.Models.User", b =>
                 {
-                    b.Property<int>("UserId")
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("CancellationCode")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasMaxLength(320)
+                        .HasColumnType("character varying(320)");
+
+                    b.Property<string>("FirstName")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<string>("LastName")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<string>("Note")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
 
                     b.Property<int>("ReservationId")
                         .HasColumnType("integer");
 
-                    b.Property<int?>("ReservationOwnerId")
-                        .HasColumnType("integer");
+                    b.HasKey("Id");
 
-                    b.Property<DateTime>("SignAt")
-                        .HasColumnType("timestamp with time zone");
+                    b.HasIndex("ReservationId");
 
-                    b.HasKey("UserId", "ReservationId");
-
-                    b.HasIndex("ReservationId", "ReservationOwnerId");
-
-                    b.ToTable("UserReservations");
+                    b.ToTable("Users");
                 });
 
-            modelBuilder.Entity("ReservationApi.Models.Reservation", b =>
+            modelBuilder.Entity("Reservation.Api.Models.Reservation", b =>
                 {
-                    b.HasOne("ReservationApi.Models.Owner", "Owner")
-                        .WithMany("Reservation")
+                    b.HasOne("Reservation.Api.Models.Owner", "Owner")
+                        .WithMany("Reservations")
                         .HasForeignKey("OwnerId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -154,36 +166,25 @@ namespace ReservationApi.Migrations
                     b.Navigation("Owner");
                 });
 
-            modelBuilder.Entity("ReservationApi.Models.UserReservation", b =>
+            modelBuilder.Entity("Reservation.Api.Models.User", b =>
                 {
-                    b.HasOne("ReservationApi.Models.User", "User")
-                        .WithMany("UserReservations")
-                        .HasForeignKey("UserId")
+                    b.HasOne("Reservation.Api.Models.Reservation", "Reservation")
+                        .WithMany("SignedUsers")
+                        .HasForeignKey("ReservationId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("ReservationApi.Models.Reservation", "Reservation")
-                        .WithMany("SignedUsers")
-                        .HasForeignKey("ReservationId", "ReservationOwnerId");
-
                     b.Navigation("Reservation");
-
-                    b.Navigation("User");
                 });
 
-            modelBuilder.Entity("ReservationApi.Models.Owner", b =>
+            modelBuilder.Entity("Reservation.Api.Models.Owner", b =>
                 {
-                    b.Navigation("Reservation");
+                    b.Navigation("Reservations");
                 });
 
-            modelBuilder.Entity("ReservationApi.Models.Reservation", b =>
+            modelBuilder.Entity("Reservation.Api.Models.Reservation", b =>
                 {
                     b.Navigation("SignedUsers");
-                });
-
-            modelBuilder.Entity("ReservationApi.Models.User", b =>
-                {
-                    b.Navigation("UserReservations");
                 });
 #pragma warning restore 612, 618
         }

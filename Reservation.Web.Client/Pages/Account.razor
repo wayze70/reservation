@@ -1,0 +1,21 @@
+@inject NavigationManager NavigationManager
+
+@page "/ucet"
+
+<PageTitle>Účet</PageTitle>
+<div>
+    <MudDatePicker PickerVariant="PickerVariant.Static" @bind-Date="@SelectedDate"/>
+    <MudButton @onclick='() => NavigationManager.NavigateTo("/nova-rezervace")'>Vytvořit novou rezervaci</MudButton>
+    <MudTextField Label="URL cesta" @bind-Value="Path" Required="true"/>
+</div>
+@code
+{
+    DateTime? SelectedDate { get; set; } = DateTime.Today.AddDays(1);
+
+    string? Path { get; set; }
+    
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+    }
+}
