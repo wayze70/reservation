@@ -11,7 +11,7 @@ COPY ["Reservation.Api/Reservation.Api.csproj", "Reservation.Api/"]
 COPY ["Reservation.Shared/Reservation.Shared.csproj", "Reservation.Shared/"]
 RUN dotnet restore "Reservation.Api/Reservation.Api.csproj"
 COPY . .
-WORKDIR "reservation/Reservation.Api"
+WORKDIR Reservation.Api
 RUN dotnet build "Reservation.Api.csproj" -c $BUILD_CONFIGURATION -o /app/build
 
 FROM build AS publish
