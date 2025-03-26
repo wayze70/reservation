@@ -26,7 +26,7 @@ namespace Reservation.Web.Client
             // Registrace HttpClientu s našimi handlery pro běžné požadavky
             builder.Services.AddHttpClient<IHttpClientService, HttpClientService>(client =>
             {
-                client.BaseAddress = new Uri("https://localhost:7045");
+                client.BaseAddress = new Uri(builder.Configuration["FrontendUrl"] ?? throw new InvalidOperationException("Chybí proměnná prostředí FrontendUrl"));
                 client.DefaultRequestHeaders.Add("Accept", "application/json");
                 client.Timeout = TimeSpan.FromSeconds(10);
             })
@@ -36,7 +36,7 @@ namespace Reservation.Web.Client
             // Registrace pojmenovaného HttpClientu bez handlerů, který se použije v refresh logice
             builder.Services.AddHttpClient("NoHandlerClient", client =>
             {
-                client.BaseAddress = new Uri("https://localhost:7045");
+                client.BaseAddress = new Uri(builder.Configuration["BackendUrl"] ?? throw new InvalidOperationException("Chybí proměnná prostředí BackendUrl"));
                 client.DefaultRequestHeaders.Add("Accept", "application/json");
                 client.Timeout = TimeSpan.FromSeconds(10);
             });

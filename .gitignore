@@ -3,3 +3,7 @@ obj/
 /packages/
 riderModule.iml
 /_ReSharper.Caches/
+build/
+appsettings.json
+appsettings.Development.json
+*.sln.DotSettings.user
