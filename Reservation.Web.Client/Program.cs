@@ -9,6 +9,8 @@ namespace Reservation.Web.Client
 {
     public class Program
     {
+        private const string BaseAddress = "https://reservation-5wx7.onrender.com";
+        
         public static async Task Main(string[] args)
         {
             var builder = WebAssemblyHostBuilder.CreateDefault(args);
@@ -26,7 +28,7 @@ namespace Reservation.Web.Client
             // Registrace HttpClientu s našimi handlery pro běžné požadavky
             builder.Services.AddHttpClient<IHttpClientService, HttpClientService>(client =>
             {
-                client.BaseAddress = new Uri(builder.Configuration["FrontendUrl"] ?? throw new InvalidOperationException("Chybí proměnná prostředí FrontendUrl"));
+                client.BaseAddress = new Uri(BaseAddress);
                 client.DefaultRequestHeaders.Add("Accept", "application/json");
                 client.Timeout = TimeSpan.FromSeconds(10);
             })
@@ -36,7 +38,7 @@ namespace Reservation.Web.Client
             // Registrace pojmenovaného HttpClientu bez handlerů, který se použije v refresh logice
             builder.Services.AddHttpClient("NoHandlerClient", client =>
             {
-                client.BaseAddress = new Uri(builder.Configuration["BackendUrl"] ?? throw new InvalidOperationException("Chybí proměnná prostředí BackendUrl"));
+                client.BaseAddress = new Uri(BaseAddress);
                 client.DefaultRequestHeaders.Add("Accept", "application/json");
                 client.Timeout = TimeSpan.FromSeconds(10);
             });
