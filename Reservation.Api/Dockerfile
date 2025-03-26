@@ -6,12 +6,12 @@ EXPOSE 8081
 
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 ARG BUILD_CONFIGURATION=Release
-WORKDIR /src
+WORKDIR /reservation
 COPY ["../Reservation.Api/Reservation.Api.csproj", "../Reservation.Api/"]
 COPY ["../Reservation.Shared/Reservation.Shared.csproj", "../Reservation.Shared/"]
 RUN dotnet restore "../Reservation.Api/Reservation.Api.csproj"
 COPY . .
-WORKDIR "/src/../Reservation.Api"
+WORKDIR "/reservation/../Reservation.Api"
 RUN dotnet build "Reservation.Api.csproj" -c $BUILD_CONFIGURATION -o /app/build
 
 FROM build AS publish
