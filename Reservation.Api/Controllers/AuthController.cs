@@ -21,19 +21,18 @@ public class AuthController : ControllerBase
     [HttpPost("login")]
     public ActionResult<AuthResponse> Login([FromBody] LoginRequest request)
     {
-        var tokens = _authService.Login(request.Email, request.Password);
-        return Ok(tokens);
+        return Ok(_authService.Login(request.Email, request.Password));
     }
     
     [HttpPost("register")]
     public ActionResult<AuthResponse> Register([FromBody] RegistrationRequest request)
     {
-        return _authService.Register(request.FirstName, request.LastName, request.Email, request.Password);
+        return Ok(_authService.Register(request.FirstName, request.LastName, request.Email, request.Password));
     }
     
     [HttpPost("refresh")]
     public async Task<ActionResult<string>> Refresh([FromBody] RefreshTokenRequest request)
     {
-        return await _authService.RefreshAsync(request.RefreshToken);
+        return Ok(await _authService.RefreshAsync(request.RefreshToken));
     }
 }

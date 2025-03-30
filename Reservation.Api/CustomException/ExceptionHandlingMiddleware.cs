@@ -32,19 +32,11 @@ public class ExceptionHandlingMiddleware
     {
         context.Response.StatusCode = (int)ex.StatusCode;
         context.Response.ContentType = "application/json";
-
-        var response = new
-        {
-            status = (int)ex.StatusCode,
-            error = ex.Message
-        };
-
-        return context.Response.WriteAsync(JsonSerializer.Serialize(response));
+        return context.Response.WriteAsync(JsonSerializer.Serialize(ex.Message));
     }
     
     private static Task HandleGenericExceptionAsync(HttpContext context, System.Exception ex)
     {
-        context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
         context.Response.ContentType = "application/json";
 
         var innerExceptions = new List<string>();
@@ -60,9 +52,8 @@ public class ExceptionHandlingMiddleware
         // Vytvoření odpovědi s detailními informacemi
         var response = new
         {
-            status = (int)HttpStatusCode.InternalServerError,
-            error = ex.Message,
-            stackTrace = ex.StackTrace,
+            Message = ex.Message,
+            StackTrace = ex.StackTrace,
             innerExceptions = innerExceptions
         };
 

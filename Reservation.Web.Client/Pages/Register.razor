@@ -1,6 +1,9 @@
 @inject IAuthService AuthService
+@inject NavigationManager NavigationManager
+@inject ISnackbar Snackbar
 
 @page "/registrace"
+@using System.Net
 
 <PageTitle>Registrace</PageTitle>
 
@@ -51,6 +54,23 @@
 
     async Task OnSubmit()
     {
-        bool response = await AuthService.RegisterAsync(LoginUser);
+        var response = await AuthService.RegisterAsync(LoginUser);
+
+        switch (response)
+        {
+            case HttpStatusCode.OK:
+                Snackbar.Add("Registrace proběhla úspěšně", Severity.Success);
+                NavigationManager.NavigateTo(Constants.Routes.Account);
+                break;
+            case HttpStatusCode.Conflict:
+                Snackbar.Add("Uživatel s tímto emailem již existuje", Severity.Error);
+                break;
+            case HttpStatusCode.BadRequest:
+                Snackbar.Add("Heslo musí být alespoň 6 znaků dlouhé", Severity.Error);
+                break;
+            default:
+                Snackbar.Add("Registrace se nezdařila", Severity.Error);
+                break;
+        }
     }
 }

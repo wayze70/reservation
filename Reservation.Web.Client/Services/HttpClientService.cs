@@ -1,4 +1,5 @@
 using System.Net.Http.Json;
+using Reservation.Web.Client.CustomExtensions;
 
 namespace Reservation.Web.Client.Services;
 
@@ -6,33 +7,54 @@ public class HttpClientService : IHttpClientService
 {
     private readonly HttpClient _client;
 
-
     public HttpClientService(HttpClient client)
     {
         _client = client;
-
-    }
-    
-    public async Task<T> GetAsync<T>(string url)
-    {
-        var response = await _client.GetAsync(url);
-        return await response.Content.ReadFromJsonAsync<T>();
     }
 
-    public async Task<TResponse> PostAsync<TRequest, TResponse>(string url, TRequest data)
-    {
-        var response = await _client.PostAsJsonAsync(url, data);
-        return await response.Content.ReadFromJsonAsync<TResponse>();
-    }
+    public async Task<ApiResponse<T>> GetAsync<T>(string url) => await GetResponse<T>(await _client.GetAsync(url));
 
-    public async Task<TResponse> PutAsync<TRequest, TResponse>(string url, TRequest data)
-    {
-        var response = await _client.PutAsJsonAsync(url, data);
-        return await response.Content.ReadFromJsonAsync<TResponse>();
-    }
+    public async Task<ApiResponse<TResponse>> PostAsync<TRequest, TResponse>(string url, TRequest data) =>
+        await GetResponse<TResponse>(await _client.PostAsJsonAsync(url, data));
 
-    public async Task DeleteAsync(string url)
+    public async Task<ApiResponse<TResponse>> PutAsync<TRequest, TResponse>(string url, TRequest data) =>
+        await GetResponse<TResponse>(await _client.PutAsJsonAsync(url, data));
+
+    public async Task DeleteAsync(string url) => await _client.DeleteAsync(url);
+
+    private static async Task<ApiResponse<T>> GetResponse<T>(HttpResponseMessage response)
     {
-        await _client.DeleteAsync(url);
+        var apiResponse = new ApiResponse<T>
+        {
+            IsSuccess = response.IsSuccessStatusCode,
+            StatusCode = response.StatusCode
+        };
+
+        if (response.IsSuccessStatusCode)
+        {
+            apiResponse.Data = await response.Content.ReadFromJsonAsync<T>();
+        }
+        else
+        {
+            if ((int)response.StatusCode >= 400 && (int)response.StatusCode < 500)
+            {
+                try
+                {
+                    apiResponse.Data = await response.Content.ReadFromJsonAsync<T>();
+                }
+                catch
+                {
+                    // ignored - not all error responses will have a body
+                }
+                
+                apiResponse.ErrorMessage = await response.Content.ReadAsStringAsync();
+            }
+            else
+            {
+                apiResponse.ErrorMessage = "Omlouváme se, ale došlo k chybě na serveru. Zkuste to prosím později.";
+            }
+        }
+
+        return apiResponse;
     }
 }

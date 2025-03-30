@@ -1,11 +1,12 @@
+using System.Net;
 using Reservation.Shared.Dtos;
 
 namespace Reservation.Web.Client.Services;
 
 public interface IAuthService
 {
-    public Task<bool> RegisterAsync(RegistrationRequest registerRequest);
-    public Task<bool> LoginAsync(LoginRequest loginRequest);
-    public Task<string> RefreshAsync(string refreshToken);
+    public Task<HttpStatusCode> RegisterAsync(RegistrationRequest registerRequest);
+    public Task<HttpStatusCode> LoginAsync(LoginRequest loginRequest);
+    public Task<HttpStatusCode> RefreshAsync(string refreshToken);
     public Task LogoutAsync();
 }

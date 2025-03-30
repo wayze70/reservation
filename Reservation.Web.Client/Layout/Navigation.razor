@@ -1,15 +1,24 @@
 @using Microsoft.AspNetCore.Components.Authorization
+@inject IAuthService AuthService
 
 <nav>
     <AuthorizeView>
         <Authorized>
-            <a href="@CustomExtensions.Constants.Routes.Account" class="text-white me-3">Profil</a>
+            <a href="@Constants.Routes.Account" class="text-white me-3">Profil</a>
+            <a @onclick="@Logout" href="@Constants.Routes.Home" class="text-white me-3">Odlásit se</a>
         </Authorized>
         <NotAuthorized>
-            <a href="@CustomExtensions.Constants.Routes.Login" class="text-white">Přihlášení</a>
+            <a href="@Constants.Routes.Login" class="text-white">Přihlášení</a>
         </NotAuthorized>
     </AuthorizeView>
-    <a href="@CustomExtensions.Constants.Routes.Home" class="text-white me-3">Domů</a>
-    <a href="@CustomExtensions.Constants.Routes.Reservation" class="text-white me-3">Kalendář</a>
-    
+    <a href="@Constants.Routes.Home" class="text-white me-3">Domů</a>
+    <a href="@Constants.Routes.Reservation" class="text-white me-3">Kalendář</a>
 </nav>
+
+@code {
+
+    void Logout()
+    {
+        AuthService.LogoutAsync();
+    }
+}

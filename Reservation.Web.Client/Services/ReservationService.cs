@@ -1,4 +1,5 @@
 using Reservation.Shared.Dtos;
+using Reservation.Web.Client.CustomExtensions;
 
 namespace Reservation.Web.Client.Services;
 
@@ -13,7 +14,7 @@ public class ReservationService : IReservationService
         _httpClientService = httpClientService;
     }
     
-    public async Task<ReservationResponse> CreateAsync(ReservationCreateRequest request)
+    public async Task<ApiResponse<ReservationResponse>> CreateAsync(ReservationCreateRequest request)
     {
         return await _httpClientService.PostAsync<ReservationCreateRequest, ReservationResponse>("/reservation", request);
     }

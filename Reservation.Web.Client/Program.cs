@@ -2,6 +2,7 @@ using Blazored.LocalStorage;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
+using MudBlazor;
 using MudBlazor.Services;
 using Reservation.Web.Client.Services;
 
@@ -17,7 +18,18 @@ namespace Reservation.Web.Client
             builder.RootComponents.Add<App>("#app");
             builder.RootComponents.Add<HeadOutlet>("head::after");
 
-            builder.Services.AddMudServices();
+            builder.Services.AddMudServices(config =>
+            {
+                config.SnackbarConfiguration.PositionClass = Defaults.Classes.Position.TopCenter;
+                config.SnackbarConfiguration.PreventDuplicates = true;
+                config.SnackbarConfiguration.NewestOnTop = true;
+                config.SnackbarConfiguration.ShowCloseIcon = true;
+                config.SnackbarConfiguration.VisibleStateDuration = 5000;
+                config.SnackbarConfiguration.HideTransitionDuration = 250;
+                config.SnackbarConfiguration.ShowTransitionDuration = 250;
+                config.SnackbarConfiguration.SnackbarVariant = Variant.Filled;
+            });
+            
             builder.Services.AddBlazoredLocalStorage();
             builder.Services.AddAuthorizationCore();
 

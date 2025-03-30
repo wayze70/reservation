@@ -1,3 +1,4 @@
+using System.Net;
 using System.Net.Http.Json;
 using Blazored.LocalStorage;
 using Microsoft.AspNetCore.Components.Authorization;
@@ -15,7 +16,8 @@ namespace Reservation.Web.Client.Services
 
         public AuthService(ILocalStorageService localStorage,
             AuthenticationStateProvider authenticationStateProvider,
-            IHttpClientService httpClientService, IHttpClientFactory httpClientFactory)
+            IHttpClientService httpClientService,
+            IHttpClientFactory httpClientFactory)
         {
             _localStorage = localStorage;
             _authenticationStateProvider = authenticationStateProvider;
@@ -23,52 +25,68 @@ namespace Reservation.Web.Client.Services
             _httpClientFactory = httpClientFactory;
         }
         
-        public async Task<bool> RegisterAsync(RegistrationRequest registerRequest)
+        public async Task<HttpStatusCode> RegisterAsync(RegistrationRequest registerRequest)
         {
-            var authResponse = await _httpClientService.PostAsync<RegistrationRequest, AuthResponse>("auth/register", registerRequest);
+            var apiResponse = await _httpClientService.PostAsync<RegistrationRequest, AuthResponse>("auth/register", registerRequest);
 
-            if (authResponse is null || string.IsNullOrEmpty(authResponse.AccessToken) || string.IsNullOrEmpty(authResponse.RefreshToken))
-                return false;
+            if (!apiResponse.IsSuccess || apiResponse.Data is null 
+                || string.IsNullOrEmpty(apiResponse.Data.AccessToken) 
+                || string.IsNullOrEmpty(apiResponse.Data.RefreshToken))
+            {
+                return apiResponse.StatusCode;
+            }
             
-            await _localStorage.SetItemAsync(Constants.RefreshToken, authResponse.RefreshToken);
+            await _localStorage.SetItemAsync(Constants.RefreshToken, apiResponse.Data.RefreshToken);
 
             if (_authenticationStateProvider is CustomAuthenticationStateProvider customAuthProvider)
             {
-                await customAuthProvider.MarkUserAsAuthenticated(authResponse.AccessToken);
+                await customAuthProvider.MarkUserAsAuthenticated(apiResponse.Data.AccessToken);
             }
 
-            return true;
+            return apiResponse.StatusCode;
         }
 
-        public async Task<bool> LoginAsync(LoginRequest loginRequest)
+        public async Task<HttpStatusCode> LoginAsync(LoginRequest loginRequest)
         {
-            var authResponse = await _httpClientService.PostAsync<LoginRequest, AuthResponse>("auth/login", loginRequest);
+            var apiResponse = await _httpClientService.PostAsync<LoginRequest, AuthResponse>("auth/login", loginRequest);
 
-            if (authResponse is null || string.IsNullOrEmpty(authResponse.AccessToken) || string.IsNullOrEmpty(authResponse.RefreshToken))
-                return false;
+            if (!apiResponse.IsSuccess || apiResponse.Data == null 
+                || string.IsNullOrEmpty(apiResponse.Data.AccessToken) 
+                || string.IsNullOrEmpty(apiResponse.Data.RefreshToken))
+            {
+                return apiResponse.StatusCode;
+            }
             
-            await _localStorage.SetItemAsync(Constants.RefreshToken, authResponse.RefreshToken);
+            await _localStorage.SetItemAsync(Constants.RefreshToken, apiResponse.Data.RefreshToken);
 
             if (_authenticationStateProvider is CustomAuthenticationStateProvider customAuthProvider)
             {
-                await customAuthProvider.MarkUserAsAuthenticated(authResponse.AccessToken);
+                await customAuthProvider.MarkUserAsAuthenticated(apiResponse.Data.AccessToken);
             }
 
-            return true;
+            return apiResponse.StatusCode;
         }
         
-        public async Task<string> RefreshAsync(string refreshToken)
+        public async Task<HttpStatusCode> RefreshAsync(string refreshToken)
         {
+            // Použijeme pojmenovaného HttpClientu bez připojených handlerů
             var client = _httpClientFactory.CreateClient("NoHandlerClient");
             var request = new RefreshTokenRequest { RefreshToken = refreshToken };
             var response = await client.PostAsJsonAsync("auth/refresh", request);
-            if (!response.IsSuccessStatusCode) return null;
+            
+            if (!response.IsSuccessStatusCode)
+            {
+                return response.StatusCode;
+            }
 
             string? newAccessToken = await response.Content.ReadFromJsonAsync<string>();
-            if (string.IsNullOrEmpty(newAccessToken)) return null;
+            if (string.IsNullOrEmpty(newAccessToken))
+            {
+                return response.StatusCode;
+            }
             
             await _localStorage.SetItemAsync(Constants.AccessToken, newAccessToken);
-            return newAccessToken;
+            return response.StatusCode;
         }
         
         public async Task LogoutAsync()

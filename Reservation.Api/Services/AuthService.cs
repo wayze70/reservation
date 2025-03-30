@@ -41,7 +41,7 @@ public class AuthService : IAuthService
     {
         if (_dbContext.Owners.Any(user => user.Email == email))
         {
-            throw new CustomHttpException(HttpStatusCode.BadRequest, "Uživatel s tímto emailem již existuje");
+            throw new CustomHttpException(HttpStatusCode.Conflict, "Uživatel s tímto emailem již existuje");
         }
         
         if (password.Length < 6)

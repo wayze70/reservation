@@ -1,6 +1,11 @@
 @inject IAuthService AuthService
+@inject NavigationManager NavigationManager
+@inject ISnackbar Snackbar
+@using System.Net
 
 @page "/prihlaseni"
+
+
 
 <PageTitle>Přihlášení</PageTitle>
 
@@ -41,7 +46,16 @@
 
     async Task OnSubmit()
     {
-        bool response = await AuthService.LoginAsync(LoginUser);
-        Console.WriteLine(response);
+        var response = await AuthService.LoginAsync(LoginUser);
+        
+        if (response == HttpStatusCode.OK)
+        {
+            Snackbar.Add("Přihlášení proběhlo úspěšně", Severity.Success);
+            NavigationManager.NavigateTo(Constants.Routes.Account);
+        }
+        else
+        {
+            Snackbar.Add("Nesprávné přihlašovací údaje", Severity.Error);
+        }
     }
 }
