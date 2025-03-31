@@ -2,6 +2,7 @@
 @inject IAccountService AccountService
 @using Microsoft.AspNetCore.Authorization
 @using Reservation.Shared.Common
+@inject ISnackbar Snackbar
 
 @page "/ucet"
 @attribute [Authorize]
@@ -72,6 +73,8 @@ else if (IsPathTaken)
         if (response is { IsSuccess: true, Data: not null })
         {
             CurrentPath = response.Data;
+            
+            Snackbar.Add("URL cesta byla úspěšně aktualizována.", Severity.Success);
         }
     }
 
