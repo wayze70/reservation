@@ -1,0 +1,22 @@
+@page "/rezervace"
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Authorization
+@inject NavigationManager NavigationManager
+
+<PageTitle>Rezervace</PageTitle>
+@attribute [Authorize]
+
+<AuthorizeView>
+    <Authorized>
+        <MudDatePicker PickerVariant="PickerVariant.Static" @bind-Date="@SelectedDate"/>
+        <MudButton @onclick='() => NavigationManager.NavigateTo("/nova-rezervace")'>Vytvořit novou rezervaci</MudButton>
+    </Authorized>
+    <NotAuthorized>
+        <p>Uživatel není přihlášen.</p>
+    </NotAuthorized>
+</AuthorizeView>
+
+@code
+{
+    DateTime? SelectedDate { get; set; } = DateTime.Now;
+}

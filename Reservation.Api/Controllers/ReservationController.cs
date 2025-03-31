@@ -27,10 +27,10 @@ public class ReservationController : ControllerBase
         return Ok(await _reservationService.CreateAsync(request, Utils.GetUserIdFromAuthorizationHeader(authorization)));
     }
  
-    [HttpGet("{ownerId:int}")]
-    public async Task<ActionResult<List<ReservationResponse>>> Get(int ownerId)
+    [HttpGet("{path}")]
+    public async Task<ActionResult<List<ReservationResponse>>> Get(string path)
     {
-        return Ok(await _reservationService.GetAsync(ownerId));
+        return Ok(await _reservationService.GetAsync(path));
     }
 
     [AllowAnonymous]

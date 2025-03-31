@@ -63,7 +63,7 @@ public class ReservationService : IReservationService
 
         if (records.Count == 0)
         {
-            return new List<ReservationResponse>();
+            return [];
         }
 
         return records.Select(r => new ReservationResponse()
@@ -81,45 +81,53 @@ public class ReservationService : IReservationService
         }).ToList();
     }
 
-    public async Task<ReservationSignUpResponse> SignUpAsync(int reservationId, ReservationSignUpRequest user)
+    public async Task<List<ReservationResponse>> GetAsync(string path)
     {
-        // Najít rezervaci
-        var reservation = await _dbContext.Set<Models.Reservation>()
-            .Include(r => r.SignedUsers)
-            .FirstOrDefaultAsync(r => r.Id == reservationId);
+        var owner = await _dbContext.Owners.FirstOrDefaultAsync(owner => owner.Path == path) ??
+                      throw new CustomHttpException(HttpStatusCode.NotFound, "Cesta nebyla nalezen");
 
-        if (reservation == null)
-        {
-            throw new CustomHttpException(HttpStatusCode.NotFound, "Rezerace nebyla nalezena");
-        }
-
-        if (reservation.SignedUsers.Count >= reservation.Capacity)
-        {
-            throw new CustomHttpException(HttpStatusCode.BadRequest, "Rezerace je již plná");
-        }
-
-        // Ověřit, zda uživatel není již přihlášen
-        if (reservation.SignedUsers.Any(u => u.Email == user.Email))
-        {
-            throw new CustomHttpException(HttpStatusCode.BadRequest, "Uživatel je již přihlášen na tuto rezervaci");
-        }
-
-        // Přidat uživatele k rezervaci s unikátním CancellationCode
-        var newUser = new Models.User()
-        {
-            FirstName = user.FirstName, 
-            LastName = user.LastName,
-            Email = user.Email, 
-            CancellationCode = Guid.NewGuid().ToString(),
-            ReservationId = reservationId
-        };
-
-        reservation.SignedUsers.Add(newUser);
-        await _dbContext.SaveChangesAsync();
-
-        return new ReservationSignUpResponse()
-        {
-            IsSuccess = true
-        };
+        return await GetAsync(owner.Id);
     }
-}
+
+    public async Task<ReservationSignUpResponse> SignUpAsync(int reservationId, ReservationSignUpRequest user)
+        {
+            // Najít rezervaci
+            var reservation = await _dbContext.Set<Models.Reservation>()
+                .Include(r => r.SignedUsers)
+                .FirstOrDefaultAsync(r => r.Id == reservationId);
+
+            if (reservation == null)
+            {
+                throw new CustomHttpException(HttpStatusCode.NotFound, "Rezerace nebyla nalezena");
+            }
+
+            if (reservation.SignedUsers.Count >= reservation.Capacity)
+            {
+                throw new CustomHttpException(HttpStatusCode.BadRequest, "Rezerace je již plná");
+            }
+
+            // Ověřit, zda uživatel není již přihlášen
+            if (reservation.SignedUsers.Any(u => u.Email == user.Email))
+            {
+                throw new CustomHttpException(HttpStatusCode.BadRequest, "Uživatel je již přihlášen na tuto rezervaci");
+            }
+
+            // Přidat uživatele k rezervaci s unikátním CancellationCode
+            var newUser = new Models.User()
+            {
+                FirstName = user.FirstName,
+                LastName = user.LastName,
+                Email = user.Email,
+                CancellationCode = Guid.NewGuid().ToString(),
+                ReservationId = reservationId
+            };
+
+            reservation.SignedUsers.Add(newUser);
+            await _dbContext.SaveChangesAsync();
+
+            return new ReservationSignUpResponse()
+            {
+                IsSuccess = true
+            };
+        }
+    }

@@ -1,4 +1,3 @@
-using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Reservation.Api.JWT;
 using Reservation.Api.Services;
@@ -11,17 +10,31 @@ namespace Reservation.Api.Controllers;
 public class AccountController : ControllerBase
 {
     private readonly IAccountService _accountService;
-    
+
     public AccountController(IAccountService accountService)
     {
         _accountService = accountService;
     }
-    
-    [HttpPost("path")]
-    public async Task<ActionResult> Path(PathRequest request, [FromHeader(Name = "Authorization")] string 
+
+    [HttpGet("path")]
+    public async Task<ActionResult<string>> Path([FromHeader(Name = "Authorization")] string
         authorization)
     {
-        await _accountService.SetPathAsync(request, Utils.GetUserIdFromAuthorizationHeader(authorization));
-        return Ok();
+        return Ok((await _accountService.GetPathAsync(Utils.GetUserIdFromAuthorizationHeader(authorization))) ??
+                  string.Empty);
+    }
+
+    [HttpPost("path")]
+    public async Task<ActionResult<string>> Path([FromBody] PathRequest request, [FromHeader(Name = "Authorization")]
+        string
+            authorization)
+    {
+        return Ok(await _accountService.SetPathAsync(request, Utils.GetUserIdFromAuthorizationHeader(authorization)));
+    }
+
+    [HttpPost("path/taken")]
+    public async Task<ActionResult<bool>> Path([FromBody] PathRequest request)
+    {
+        return Ok(await _accountService.IsPathTakenAsync(request.Path));
     }
 }

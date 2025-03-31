@@ -2,6 +2,8 @@ namespace Reservation.Web.Client.CustomExtensions;
 
 public static class Constants
 {
+    public const string ApiBaseAddress = "https://reservation-5wx7.onrender.com";
+    
     public class Routes
     {
         public const string Home = "/";

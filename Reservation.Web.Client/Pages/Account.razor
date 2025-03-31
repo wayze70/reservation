@@ -1,21 +1,97 @@
 @inject NavigationManager NavigationManager
+@inject IAccountService AccountService
+@using Microsoft.AspNetCore.Authorization
+@using Reservation.Shared.Common
 
 @page "/ucet"
+@attribute [Authorize]
 
 <PageTitle>Účet</PageTitle>
-<div>
-    <MudDatePicker PickerVariant="PickerVariant.Static" @bind-Date="@SelectedDate"/>
-    <MudButton @onclick='() => NavigationManager.NavigateTo("/nova-rezervace")'>Vytvořit novou rezervaci</MudButton>
-    <MudTextField Label="URL cesta" @bind-Value="Path" Required="true"/>
+<MudText>Aktuální URL cesta: <a href="@(NavigationManager.BaseUri)rezervace/@CurrentPath">@(NavigationManager.BaseUri)rezervace/@CurrentPath</a></MudText>
+<div class="d-flex" style="max-width: 300px">
+    <MudTextField T="string" Value="Path" ValueChanged="OnPathChange" Label="Nastavte si URL"
+                  DebounceInterval="500" />
+    @if (IsPathTaken && CurrentPath != Path || !IsPathValid)
+    {
+        <MudIcon class="mt-auto" Title="Checked" Icon="@Icons.Material.Filled.Close" Color="Color.Error" Size="Size
+                     .Small"/>
+    }
+    else
+    {
+        <MudIcon class="mt-auto" Title="Checked" Icon="@Icons.Material.Filled.CheckCircleOutline" Color="Color.Success"
+                 Size="Size
+                     .Small"/>
+    }
+
 </div>
+@if (IsPathTaken && CurrentPath == Path)
+{
+    <MudText Color="Color.Info">Tato URL je vaše URL</MudText>
+}
+else if (IsPathTaken)
+{
+    <MudText Color="Color.Error">Tato URL cesta je již zabraná</MudText>
+} else if (!IsPathValid)
+{
+    <MudText Color="Color.Error">URL cesta obsahuje nepovolené znaky</MudText>
+}
+
+<MudButton OnClick="UpdatePath" Variant="Variant.Filled" Color="Color.Primary" ButtonType="ButtonType.Button"
+           Class="mt-4">
+    Aktualizovat URL cestu
+</MudButton>
+
 @code
 {
-    DateTime? SelectedDate { get; set; } = DateTime.Today.AddDays(1);
+    string Path { get; set; } = string.Empty;
+    string CurrentPath { get; set; } = string.Empty;
+    bool IsPathTaken { get; set; }
+    bool IsPathValid { get; set; } = true;
 
-    string? Path { get; set; }
-    
     protected override async Task OnInitializedAsync()
     {
         await base.OnInitializedAsync();
+        CurrentPath = (await AccountService.GetPath()).Data ?? string.Empty;
+        Path = CurrentPath;
+    }
+
+    private async Task UpdatePath()
+    {
+        if (Utils.IsPathValidate(Path))
+        {
+            IsPathValid = true;
+        }
+        else
+        {
+            IsPathValid = false;
+            return;
+        }
+        
+        var response = await AccountService.UpdatePath(new PathRequest() { Path = Path });
+
+        if (response is { IsSuccess: true, Data: not null })
+        {
+            CurrentPath = response.Data;
+        }
+    }
+
+    private async Task OnPathChange(string newPath)
+    {
+        Path = newPath;
+
+        if (string.IsNullOrWhiteSpace(Path))
+        {
+            return;
+        }
+
+        if (Utils.IsPathValidate(Path))
+        {
+            IsPathValid = true;
+            IsPathTaken = (await AccountService.IsPathTaken(new PathRequest() { Path = Path })).Data;
+        }
+        else
+        {
+            IsPathValid = false;
+        }
     }
 }

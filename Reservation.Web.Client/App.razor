@@ -1,14 +1,29 @@
 ﻿@using Microsoft.AspNetCore.Components.Authorization
+@using Reservation.Web.Client.Pages
+@inject NavigationManager NavigationManager
+
 <CascadingAuthenticationState>
     <Router AppAssembly="@typeof(App).Assembly">
         <Found Context="routeData">
-            <RouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)"/>
+            <AuthorizeRouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)">
+                <NotAuthorized>
+                    <RedirectToLogin />
+                </NotAuthorized>
+            </AuthorizeRouteView>
             <FocusOnNavigate RouteData="@routeData" Selector="h1"/>
         </Found>
         <NotFound>
-            <PageTitle>Not found</PageTitle>
+            <PageTitle>Stránka nenalezena</PageTitle>
             <LayoutView Layout="@typeof(MainLayout)">
-                <p role="alert">Sorry, there's nothing at this address.</p>
+                <MudContainer MaxWidth="MaxWidth.Small" Class="d-flex flex-column align-items-center justify-content-center" Style="min-height: 70vh;">
+                    <MudIcon Icon="@Icons.Material.Filled.ErrorOutline" Color="Color.Error" Size="Size.Large" />
+                    <MudText Typo="Typo.h3" Class="mt-2">
+                        404 - Stránka nenalezena
+                    </MudText>
+                    <MudText Typo="Typo.subtitle1" Class="mt-1" Align="Align.Center">
+                        Omlouváme se, ale stránka, kterou hledáte, nebyla nalezena.
+                    </MudText>
+                </MudContainer>
             </LayoutView>
         </NotFound>
     </Router>

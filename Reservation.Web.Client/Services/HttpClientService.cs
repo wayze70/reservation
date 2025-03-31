@@ -51,7 +51,7 @@ public class HttpClientService : IHttpClientService
             }
             else
             {
-                apiResponse.ErrorMessage = "Omlouváme se, ale došlo k chybě na serveru. Zkuste to prosím později.";
+                apiResponse.ErrorMessage = "Omlouváme se, ale chyba je na naší stráně. Zkuste to prosím později.";
             }
         }
 

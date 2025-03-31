@@ -10,7 +10,6 @@ public class ReservationService : IReservationService
 
     public ReservationService(IHttpClientService httpClientService)
     {
-
         _httpClientService = httpClientService;
     }
     
@@ -19,8 +18,8 @@ public class ReservationService : IReservationService
         return await _httpClientService.PostAsync<ReservationCreateRequest, ReservationResponse>("/reservation", request);
     }
 
-    public async Task<List<ReservationResponse>> GetReservationsAsync()
+    public async Task<ApiResponse<List<ReservationResponse>>> GetReservationsAsync(string path)
     {
-        throw new NotImplementedException();
+        return await _httpClientService.GetAsync<List<ReservationResponse>>($"/reservation/{path}");
     }
 }

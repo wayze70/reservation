@@ -4,14 +4,13 @@ using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using MudBlazor;
 using MudBlazor.Services;
+using Reservation.Web.Client.CustomExtensions;
 using Reservation.Web.Client.Services;
 
 namespace Reservation.Web.Client
 {
     public class Program
     {
-        private const string BaseAddress = "https://reservation-5wx7.onrender.com";
-        
         public static async Task Main(string[] args)
         {
             var builder = WebAssemblyHostBuilder.CreateDefault(args);
@@ -40,7 +39,7 @@ namespace Reservation.Web.Client
             // Registrace HttpClientu s našimi handlery pro běžné požadavky
             builder.Services.AddHttpClient<IHttpClientService, HttpClientService>(client =>
             {
-                client.BaseAddress = new Uri(BaseAddress);
+                client.BaseAddress = new Uri(Constants.ApiBaseAddress);
                 client.DefaultRequestHeaders.Add("Accept", "application/json");
                 client.Timeout = TimeSpan.FromSeconds(10);
             })
@@ -50,7 +49,7 @@ namespace Reservation.Web.Client
             // Registrace pojmenovaného HttpClientu bez handlerů, který se použije v refresh logice
             builder.Services.AddHttpClient("NoHandlerClient", client =>
             {
-                client.BaseAddress = new Uri(BaseAddress);
+                client.BaseAddress = new Uri(Constants.ApiBaseAddress);
                 client.DefaultRequestHeaders.Add("Accept", "application/json");
                 client.Timeout = TimeSpan.FromSeconds(10);
             });
@@ -58,6 +57,7 @@ namespace Reservation.Web.Client
             // Registrace ostatních služeb
             builder.Services.AddScoped<IAuthService, AuthService>();
             builder.Services.AddScoped<IReservationService, ReservationService>();
+            builder.Services.AddScoped<IAccountService, AccountService>();
             builder.Services.AddScoped<AuthenticationStateProvider, CustomAuthenticationStateProvider>();
 
             await builder.Build().RunAsync();

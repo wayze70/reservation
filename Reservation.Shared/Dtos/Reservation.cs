@@ -32,8 +32,6 @@ public class ReservationResponse
     public bool IsAvailable { get; set; }
     
     // Nové vlastnosti
-    public DateTime RegistrationStart { get; set; }
-    public DateTime RegistrationEnd { get; set; }
     public TimeSpan CancellationOffset { get; set; }
     public TimeDisplayMode? TimeDisplayMode { get; set; }
     public int? CustomTimeZone { get; set; }
