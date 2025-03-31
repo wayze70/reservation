@@ -22,4 +22,40 @@ public class ReservationService : IReservationService
     {
         return await _httpClientService.GetAsync<List<ReservationResponse>>($"/reservation/{path}");
     }
+
+    public async Task<ApiResponse<List<ReservationResponse>>> GetReservationsAsync()
+    {
+        return await _httpClientService.GetAsync<List<ReservationResponse>>($"/reservation");
+    }
+
+    public async Task<ApiResponse<ReservationResponse>> GetReservationAsync(string path, int reservationId)
+    {
+        return await _httpClientService.GetAsync<ReservationResponse>($"/reservation/{path}/{reservationId}");
+    }
+
+    public async Task<ApiResponse<ReservationSignUpResponse>> SignInToReservation(int reservationId, ReservationSignUpRequest request)
+    {
+        return await _httpClientService.PostAsync<ReservationSignUpRequest, ReservationSignUpResponse>
+            ($"/reservation/signup/{reservationId}", request);
+    }
+
+    public async Task<ApiResponse<ReservationResponseWithUser>> GetReservationWithUserAsync(int reservationId)
+    {
+        return await _httpClientService.GetAsync<ReservationResponseWithUser>($"/reservation/{reservationId}");
+    }
+    
+    public async Task<ApiResponse<ReservationResponse>> UpdateReservationAsync(ReservationCreateRequest request, int reservationId)
+    {
+        return await _httpClientService.PutAsync<ReservationCreateRequest, ReservationResponse>($"/reservation/{reservationId}", request);
+    }
+
+    public async Task<ApiResponse<bool>> DeleteReservationAsync(int reservationId)
+    {
+        return await _httpClientService.DeleteAsync<bool>($"/reservation/{reservationId}");
+    }
+
+    public async Task<ApiResponse<bool>> RemoveUserFromReservationAsync(RemoveUserFromReservationRequest request)
+    {
+        return await _httpClientService.PostAsync<RemoveUserFromReservationRequest, bool>($"/reservation/remove-user", request);
+    }
 }

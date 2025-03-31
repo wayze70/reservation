@@ -1,3 +1,48 @@
 ﻿@page "/"
+@using Microsoft.AspNetCore.Components.Authorization
+@inject NavigationManager NavigationManager
+@inject AuthenticationStateProvider AuthenticationStateProvider
 
-<PageTitle>Home</PageTitle>
+<PageTitle>Rezervační systém</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.Medium" Class="my-10">
+    <MudPaper Elevation="4" Class="pa-6">
+        <MudText Typo="Typo.h3" Align="Align.Center" GutterBottom="true">
+            Vítejte v našem rezervačním systému!
+        </MudText>
+        <MudText Typo="Typo.subtitle1" Align="Align.Center" Class="mb-4">
+            Spravujte své rezervace jednoduše a efektivně.
+        </MudText>
+        <MudText Typo="Typo.body1">
+            Vytvořte si účet a začněte spravovat rezervace pro vaše podnikání či osobní potřeby.
+            Náš systém nabízí intuitivní rozhraní, přehledné plánování a snadnou správu rezervací,
+            abyste nikdy nezmeškali žádnou důležitou událost.
+        </MudText>
+        @if (IsAuthenticated)
+        {
+            <MudStack Direction="Row" Justify="Justify.Center" Spacing="2" Class="mt-6">
+                <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="@(() => NavigationManager
+                .NavigateTo(Constants.Routes.Login))">
+                    Přihlásit se
+                </MudButton>
+                <MudButton Variant="Variant.Outlined" Color="Color.Secondary" OnClick="@(() => NavigationManager
+                    .NavigateTo(Constants.Routes.Register))">
+                    Registrovat se
+                </MudButton>
+            </MudStack>
+        }
+    </MudPaper>
+</MudContainer>
+
+@code
+{
+    bool IsAuthenticated { get; set; } = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+        IsAuthenticated = await AuthenticationStateProvider.GetAuthenticationStateAsync() is { User: { Identity: {
+            IsAuthenticated: false
+        } } };
+    }
+}

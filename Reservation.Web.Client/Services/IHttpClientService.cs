@@ -7,5 +7,5 @@ public interface IHttpClientService
     Task<ApiResponse<T>> GetAsync<T>(string url);
     Task<ApiResponse<TResponse>> PostAsync<TRequest, TResponse>(string url, TRequest data);
     Task<ApiResponse<TResponse>> PutAsync<TRequest, TResponse>(string url, TRequest data);
-    Task DeleteAsync(string url);
+    Task<ApiResponse<T>> DeleteAsync<T>(string url);
 }

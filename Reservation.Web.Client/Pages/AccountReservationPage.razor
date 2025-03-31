@@ -1,22 +1,77 @@
 @page "/rezervace"
 @using Microsoft.AspNetCore.Authorization
 @using Microsoft.AspNetCore.Components.Authorization
+@inject IReservationService ReservationService
 @inject NavigationManager NavigationManager
+@inject ISnackbar Snackbar
 
-<PageTitle>Rezervace</PageTitle>
 @attribute [Authorize]
+<PageTitle>Rezervace</PageTitle>
 
-<AuthorizeView>
-    <Authorized>
-        <MudDatePicker PickerVariant="PickerVariant.Static" @bind-Date="@SelectedDate"/>
-        <MudButton @onclick='() => NavigationManager.NavigateTo("/nova-rezervace")'>Vytvořit novou rezervaci</MudButton>
-    </Authorized>
-    <NotAuthorized>
-        <p>Uživatel není přihlášen.</p>
-    </NotAuthorized>
-</AuthorizeView>
+<MudContainer MaxWidth="MaxWidth.Large" Class="my-6">
+    <MudStack Direction="Row" AlignItems="AlignItems.Center" Spacing="2">
+        <MudDatePicker PickerVariant="PickerVariant.Static" @bind-Date="SelectedDate" Label="Vyberte datum" />
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="@(() => NavigationManager.NavigateTo("/nova-rezervace"))">
+            Vytvořit novou rezervaci
+        </MudButton>
+    </MudStack>
 
-@code
-{
-    DateTime? SelectedDate { get; set; } = DateTime.Now;
+    @if (Reservations is null)
+    {
+        <MudText>Načítám rezervace...</MudText>
+    }
+    else if (Reservations.Count == 0)
+    {
+        <MudText>Nebyly nalezeny žádné rezervace.</MudText>
+    }
+    else
+    {
+        <MudGrid>
+            @foreach (var reservation in Reservations)
+            {
+                // Filtrujeme rezervace podle vybraného data – porovnáváme pouze datum (bez časové složky)
+                if (SelectedDate.HasValue && SelectedDate.Value.Date != reservation.Start.Date)
+                {
+                    continue;
+                }
+                <MudItem xs="12" sm="6" md="4">
+                    <MudCard Class="m-2">
+                        <MudCardContent>
+                            <MudText Typo="Typo.h6">@reservation.Title</MudText>
+                            <MudText>Od: @reservation.Start.ToShortTimeString()</MudText>
+                            <MudText>Do: @reservation.End.ToShortTimeString()</MudText>
+                            <MudText>Kapacita: @reservation.CurrentCapacity / @reservation.Capacity</MudText>
+                            <MudText Color="@(reservation.IsAvailable ? Color.Success : Color.Error)">
+                                @(reservation.IsAvailable ? "Dostupná" : "Nedostupná")
+                            </MudText>
+                        </MudCardContent>
+                        <MudCardActions>
+                            <MudButton Variant="Variant.Outlined" Color="Color.Primary" 
+                                       OnClick='() => NavigationManager.NavigateTo($"/rezervace/{reservation.Id}")'>
+                                Více informací
+                            </MudButton>
+                        </MudCardActions>
+                    </MudCard>
+                </MudItem>
+            }
+        </MudGrid>
+    }
+</MudContainer>
+
+@code {
+    DateTime? SelectedDate { get; set; } = DateTime.Today;
+    List<ReservationResponse>? Reservations { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        var response = await ReservationService.GetReservationsAsync();
+        if (response.IsSuccess)
+        {
+            Reservations = response.Data ?? new List<ReservationResponse>();
+        }
+        else
+        {
+            Snackbar.Add("Chyba při načítání rezervací.", Severity.Error);
+        }
+    }
 }

@@ -20,7 +20,7 @@ public class HttpClientService : IHttpClientService
     public async Task<ApiResponse<TResponse>> PutAsync<TRequest, TResponse>(string url, TRequest data) =>
         await GetResponse<TResponse>(await _client.PutAsJsonAsync(url, data));
 
-    public async Task DeleteAsync(string url) => await _client.DeleteAsync(url);
+    public async Task<ApiResponse<T>> DeleteAsync<T>(string url) => await GetResponse<T>(await _client.DeleteAsync(url));
 
     private static async Task<ApiResponse<T>> GetResponse<T>(HttpResponseMessage response)
     {

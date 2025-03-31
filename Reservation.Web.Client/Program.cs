@@ -41,7 +41,7 @@ namespace Reservation.Web.Client
             {
                 client.BaseAddress = new Uri(Constants.ApiBaseAddress);
                 client.DefaultRequestHeaders.Add("Accept", "application/json");
-                client.Timeout = TimeSpan.FromSeconds(10);
+                client.Timeout = TimeSpan.FromSeconds(15);
             })
             .AddHttpMessageHandler<AuthTokenHandler>()
             .AddHttpMessageHandler<TokenRefreshHandler>();
@@ -51,7 +51,7 @@ namespace Reservation.Web.Client
             {
                 client.BaseAddress = new Uri(Constants.ApiBaseAddress);
                 client.DefaultRequestHeaders.Add("Accept", "application/json");
-                client.Timeout = TimeSpan.FromSeconds(10);
+                client.Timeout = TimeSpan.FromSeconds(15);
             });
 
             // Registrace ostatních služeb

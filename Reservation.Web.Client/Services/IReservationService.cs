@@ -7,4 +7,12 @@ public interface IReservationService
 {
     public Task<ApiResponse<ReservationResponse>> CreateAsync(ReservationCreateRequest request);
     public Task<ApiResponse<List<ReservationResponse>>> GetReservationsAsync(string path);
+    public Task<ApiResponse<List<ReservationResponse>>> GetReservationsAsync();
+    public Task<ApiResponse<ReservationResponse>> GetReservationAsync(string path, int reservationId);
+    public Task<ApiResponse<ReservationSignUpResponse>> SignInToReservation(int reservationId, 
+        ReservationSignUpRequest request);
+    public Task<ApiResponse<ReservationResponseWithUser>> GetReservationWithUserAsync(int reservationId);
+    public Task<ApiResponse<ReservationResponse>> UpdateReservationAsync(ReservationCreateRequest request, int reservationId);
+    public Task<ApiResponse<bool>> DeleteReservationAsync(int reservationId);
+    public Task<ApiResponse<bool>> RemoveUserFromReservationAsync(RemoveUserFromReservationRequest request);
 }

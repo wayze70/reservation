@@ -1,5 +1,5 @@
 @inject IReservationService ReservationService
-
+@inject ISnackbar Snackbar
 
 @page "/nova-rezervace"
 
@@ -36,7 +36,7 @@
             <MudSelect T="int?" Label="UTC Offset (min)" @bind-Value="NewReservation.CustomTimeZone" Required="true">
                 @foreach (var timezone in Constants.TimeZones)
                 {
-                    <MudSelectItem Value="@((int)timezone.TotalMinutes)">
+                    <MudSelectItem Value="@((int?)timezone.TotalMinutes)">
                         @DisplayOffset(timezone)
                     </MudSelectItem>
                 }
@@ -103,6 +103,25 @@
                 for (int day = DateRange.Start.Value.Day; day <= DateRange.End.Value.Day; day++)
                 {
                     var date = new DateTime(year, month, day);
+                    
+                    if (TimeDisplayMode.Utc == NewReservation.TimeDisplayMode)
+                    {
+                        // Pokud je zvolený režim zobrazení času UTC, převedeme čas na UTC
+                        NewReservation.Start = DateTime.SpecifyKind((date + (StartTime ?? TimeSpan.Zero)), DateTimeKind.Utc);
+                        NewReservation.End = DateTime.SpecifyKind((date + (EndTime ?? TimeSpan.Zero)), DateTimeKind.Utc);
+                    }
+                    else if (TimeDisplayMode.Local == NewReservation.TimeDisplayMode)
+                    {
+                        // Pokud je zvolený režim zobrazení času Lokální, převedeme čas na lokální čas
+                        NewReservation.Start = DateTime.SpecifyKind((date + (StartTime ?? TimeSpan.Zero)).ToUniversalTime(), DateTimeKind.Utc);
+                        NewReservation.End = DateTime.SpecifyKind((date + (EndTime ?? TimeSpan.Zero)).ToUniversalTime(), DateTimeKind.Utc);
+                    }
+                    else if (TimeDisplayMode.Custom == NewReservation.TimeDisplayMode)
+                    {
+                        // Pokud je zvolený režim zobrazení času Vlastní, převedeme čas na základě zvoleného offsetu
+                        NewReservation.Start = DateTime.SpecifyKind(date + (StartTime ?? TimeSpan.Zero), DateTimeKind.Utc);
+                        NewReservation.End = DateTime.SpecifyKind(date + (StartTime ?? TimeSpan.Zero), DateTimeKind.Utc);
+                    }
 
                     var reservationForDay = new ReservationCreateRequest
                     {
@@ -114,8 +133,8 @@
                         CancellationOffset = NewReservation.CancellationOffset,
                         TimeDisplayMode = NewReservation.TimeDisplayMode,
                         CustomTimeZone = NewReservation.CustomTimeZone,
-                        Start = DateTime.SpecifyKind((date + (StartTime ?? TimeSpan.Zero)).ToUniversalTime(), DateTimeKind.Utc),
-                        End = DateTime.SpecifyKind((date + (EndTime ?? TimeSpan.Zero)).ToUniversalTime(), DateTimeKind.Utc),
+                        Start = NewReservation.Start,
+                        End = NewReservation.End,
                     };
 
                     reservations.Add(reservationForDay);
@@ -126,7 +145,8 @@
                     await ReservationService.CreateAsync(reservation);
                 }
 
-                Console.WriteLine("Dokonceno");
+                
+                Snackbar.Add("Rezervace byly úspěšně vytvořeny.", Severity.Success);
             }
         }
 

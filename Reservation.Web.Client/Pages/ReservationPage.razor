@@ -1,7 +1,4 @@
 @page "/rezervace/{Path}"
-@using System.Net
-@using Microsoft.AspNetCore.Authorization
-@using Microsoft.AspNetCore.Components
 @inject IReservationService ReservationService
 @inject NavigationManager NavigationManager
 @inject ISnackbar Snackbar
@@ -9,7 +6,7 @@
 <PageTitle>Rezervace</PageTitle>
 
 <!-- Datumový filtr -->
-<MudDatePicker PickerVariant="PickerVariant.Static" @bind-Date="SelectedDate" Label="Vyberte datum" />
+<MudDatePicker PickerVariant="PickerVariant.Static" @bind-Date="SelectedDate" Label="Vyberte datum"/>
 
 
 @if (Reservations is null)
@@ -25,6 +22,8 @@ else
     <MudGrid>
         @foreach (var reservation in Reservations)
         {
+            if (!reservation.IsAvailable || reservation.CurrentCapacity >= reservation.Capacity) continue;
+
             if (SelectedDate.HasValue && SelectedDate.Value.Date == reservation.Start.Date)
             {
                 <MudItem xs="12" sm="6" md="4">
@@ -34,13 +33,10 @@ else
                             <MudText>Od: @reservation.Start.ToShortTimeString()</MudText>
                             <MudText>Do: @reservation.End.ToShortTimeString()</MudText>
                             <MudText>Kapacita: @reservation.CurrentCapacity / @reservation.Capacity</MudText>
-                            <MudText Color="@(reservation.IsAvailable ? Color.Success : Color.Error)">
-                                @(reservation.IsAvailable ? "Dostupná" : "Nedostupná")
-                            </MudText>
                         </MudCardContent>
                         <MudCardActions>
-                            <MudButton Variant="Variant.Outlined" Color="Color.Primary" 
-                                       OnClick='() => NavigationManager.NavigateTo($"/rezervace/detail/{reservation.Id}")'>
+                            <MudButton Variant="Variant.Outlined" Color="Color.Primary"
+                                       OnClick='() => NavigationManager.NavigateTo($"/rezervace/{Path}/{reservation.Id}")'>
                                 Více informací
                             </MudButton>
                         </MudCardActions>
@@ -52,6 +48,7 @@ else
 }
 
 @code {
+
     [Parameter]
     public string Path { get; set; } = string.Empty;
 
@@ -67,7 +64,8 @@ else
         }
         else
         {
-            Snackbar.Add("Nesprávná URL adresa, zkuste prosím jinou.", Severity.Error);
+            Snackbar.Add("Nesprávná URL adresa rezervací.", Severity.Error);
         }
     }
+
 }

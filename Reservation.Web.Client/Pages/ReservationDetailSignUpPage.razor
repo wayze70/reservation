@@ -1,0 +1,60 @@
+@page "/rezervace/{Path}/{ReservationId:int}/prihlaseni"
+@using System.Net
+@inject IReservationService ReservationService
+@inject NavigationManager NavigationManager
+@inject ISnackbar Snackbar
+
+<PageTitle>Přihlášení k rezervaci</PageTitle>
+
+<MudPaper Class="mx-auto my-10 pa-6" MaxWidth="MaxWidth.Small">
+    <MudText Typo="Typo.h5" Align="Align.Center" GutterBottom="true">
+        Přihlášení k rezervaci
+    </MudText>
+    <EditForm Model="@SignUpRequest" OnValidSubmit="OnSubmit">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+
+        <MudTextField T="string" Label="Jméno" @bind-Value="SignUpRequest.FirstName" Required="true" />
+        <MudTextField T="string" Label="Příjmení" @bind-Value="SignUpRequest.LastName" Required="true" />
+        <MudTextField T="string" Label="Email" @bind-Value="SignUpRequest.Email" Required="true" />
+
+        <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary" Class="mt-6" FullWidth="true">
+            Rezervovat
+        </MudButton>
+    </EditForm>
+</MudPaper>
+
+@code {
+    // Parametr z URL, který určuje, ke které rezervaci se uživatel přihlašuje
+    [Parameter]
+    public int ReservationId { get; set; }
+    [Parameter]
+    public string Path { get; set; }
+
+    // Model pro přihlášení k rezervaci
+    ReservationSignUpRequest SignUpRequest { get; set; } = new ReservationSignUpRequest();
+
+    private async Task OnSubmit()
+    {
+        // Předpokládáme, že metoda SignUpForReservationAsync vrací ApiResponse<string> s potvrzením nebo chybovou zprávou
+        var response = await ReservationService.SignInToReservation(ReservationId, SignUpRequest);
+
+        if (response.IsSuccess)
+        {
+            Snackbar.Add("Úspěšně jste se přihlásili k rezervaci", Severity.Success);
+            // Přesměrování na detail rezervace nebo jinou stránku
+            NavigationManager.NavigateTo($"/rezervace/{Path}/{ReservationId}");
+        }
+        else if (response.StatusCode == HttpStatusCode.BadRequest)
+        {
+            Snackbar.Add("Omlouváme se, ale rezervace je již plná", Severity.Warning);
+        }
+        else if (response.StatusCode == HttpStatusCode.Conflict)
+        {
+            Snackbar.Add("Uživatel je již přihlášen na této rezervaci", Severity.Warning);
+        } else
+        {
+            Snackbar.Add($"Chyba při přihlašování", Severity.Error);
+        }
+    }
+}

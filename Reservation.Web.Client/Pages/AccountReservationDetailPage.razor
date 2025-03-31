@@ -1,0 +1,192 @@
+@page "/rezervace/{reservationId:int}"
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components
+@inject IReservationService ReservationService
+@inject NavigationManager NavigationManager
+@inject ISnackbar Snackbar
+
+<PageTitle>Detail rezervace pro administrátora</PageTitle>
+@attribute [Authorize]
+
+<MudContainer MaxWidth="MaxWidth.Large" Class="my-6">
+    @if (ReservationDetail is null)
+    {
+        <MudText>Načítám detail rezervace...</MudText>
+    }
+    else
+    {
+        <!-- Rezervace jako editační formulář -->
+        <MudCard Class="mb-4">
+            <MudCardHeader>
+                <MudText Typo="Typo.h4">Detail rezervace</MudText>
+            </MudCardHeader>
+            <MudCardContent>
+                <EditForm Model="@ReservationDetail" OnValidSubmit="@SaveChanges">
+                    <DataAnnotationsValidator />
+                    <MudGrid>
+                        <MudItem xs="12" sm="6">
+                            <MudTextField T="string" Label="Nadpis" @bind-Value="ReservationDetail.Title" />
+                        </MudItem>
+                        <MudItem xs="12" sm="6">
+                            <MudTextField T="string" Label="Nadpis" @bind-Value="ReservationDetail.Description" />
+                        </MudItem>
+                        
+                        <MudItem xs="12" sm="6">
+                            <MudNumericField T="int" Label="Kapacita" @bind-Value="ReservationDetail.Capacity" />
+                        </MudItem>
+                        <MudItem xs="12" sm="6">
+                            <MudDatePicker Label="Začátek den" @bind-Date="StartDate" />
+                        </MudItem>
+                        <MudItem xs="12" sm="6">
+                            <MudTimePicker Label="Začátek čas" @bind-Time="StartTime" />
+                        </MudItem>
+                        <MudItem xs="12" sm="6">
+                            <MudDatePicker Label="Konec den" @bind-Date="EndDate" />
+                        </MudItem>
+                        <MudItem xs="12" sm="6">
+                            <MudTimePicker Label="Konec čas" @bind-Time="EndTime" />
+                        </MudItem>
+                        <MudItem xs="12">
+                            <MudSwitch T="bool" Color="Color.Primary" Label="Dostupná" @bind-Value="ReservationDetail.IsAvailable" />
+                        </MudItem>
+                    </MudGrid>
+                    <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary" Class="mt-4">
+                        Uložit změny
+                    </MudButton>
+                </EditForm>
+            </MudCardContent>
+            <MudCardActions>
+                <MudButton Variant="Variant.Outlined" Color="Color.Error" OnClick="CancelReservation">
+                    Zrušit rezervaci
+                </MudButton>
+            </MudCardActions>
+        </MudCard>
+
+        <!-- Seznam aktuálně přihlášených uživatelů -->
+        <MudCard>
+            <MudCardHeader>
+                <MudText Typo="Typo.h5">Přihlášení uživatelé</MudText>
+            </MudCardHeader>
+            <MudCardContent>
+                @if (ReservationDetail.Users is null || ReservationDetail.Users.Count == 0)
+                {
+                    <MudText>Nebyli nalezeni žádní uživatelé.</MudText>
+                }
+                else
+                {
+                    <MudTable Items="ReservationDetail.Users">
+                        <HeaderContent>
+                            <MudTh>Jméno</MudTh>
+                            <MudTh>Příjmení</MudTh>
+                            <MudTh>Email</MudTh>
+                            <MudTh>Poznámka</MudTh>
+                            <MudTh></MudTh>
+                        </HeaderContent>
+                        <RowTemplate>
+                            <MudTd DataLabel="Jméno">@context.FirstName</MudTd>
+                            <MudTd DataLabel="Příjmení">@context.LastName</MudTd>
+                            <MudTd DataLabel="Email">@context.Email</MudTd>
+                            <MudTd DataLabel="Poznámka">@context.Note</MudTd>
+                            <MudTd DataLabel="">
+                                <MudButton Variant="Variant.Outlined" Color="Color.Error" Size="Size.Small"
+                                           OnClick="@(() => RemoveUser(@context))">
+                                    Odhlásit uživatele
+                                </MudButton>
+                            </MudTd>
+                        </RowTemplate>
+                    </MudTable>
+                }
+            </MudCardContent>
+        </MudCard>
+    }
+</MudContainer>
+
+@code {
+    [Parameter]
+    public int reservationId { get; set; }
+
+    DateTime? StartDate { get; set; }
+    DateTime? EndDate { get; set; }
+    TimeSpan? StartTime { get; set; } = TimeSpan.Zero;
+    TimeSpan? EndTime { get; set; } = TimeSpan.Zero;
+
+    ReservationResponseWithUser? ReservationDetail { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        // Načteme detail rezervace pro administrátora podle reservationId
+        var response = await ReservationService.GetReservationWithUserAsync(reservationId);
+        if (response is { IsSuccess: true, Data: not null })
+        {
+            ReservationDetail = response.Data;
+
+            StartDate = ReservationDetail.Start;
+            EndDate = ReservationDetail.End;
+            StartTime = ReservationDetail.Start.TimeOfDay;
+            EndTime = ReservationDetail.End.TimeOfDay;
+        }
+        else
+        {
+            Snackbar.Add("Nepodařilo se načíst detail rezervace.", Severity.Error);
+        }
+    }
+
+    private async Task SaveChanges()
+    {
+
+        var updatedReservation = new ReservationCreateRequest()
+        {
+            Title = ReservationDetail.Title,
+            Description = ReservationDetail.Description,
+            Capacity = ReservationDetail.Capacity,
+            Start = StartDate.Value.Date.Add(StartTime.Value),
+            End = EndDate.Value.Date.Add(EndTime.Value),
+            IsAvailable = ReservationDetail.IsAvailable
+        };
+        
+        var response = await ReservationService.UpdateReservationAsync(updatedReservation, reservationId);
+        if (response.IsSuccess)
+        {
+            Snackbar.Add("Změny byly úspěšně uloženy.", Severity.Success);
+        }
+        else
+        {
+            Snackbar.Add("Nepodařilo se uložit změny.", Severity.Error);
+        }
+    }
+    
+    private async Task CancelReservation()
+    {
+        // Zrušení rezervace
+        var response = await ReservationService.DeleteReservationAsync(reservationId);
+        if (response.IsSuccess)
+        {
+            Snackbar.Add("Rezervace byla zrušena.", Severity.Success);
+            NavigationManager.NavigateTo("/rezervace");
+        }
+        else
+        {
+            Snackbar.Add("Nepodařilo se zrušit rezervaci.", Severity.Error);
+        }
+    }
+
+    private async Task RemoveUser(UserResponse user)
+    {
+        
+        // Odhlášení (odstranění) uživatele z rezervace
+        var response = await ReservationService.RemoveUserFromReservationAsync(new RemoveUserFromReservationRequest()
+        {
+            UserEmail = user.Email,
+            ReservationId = reservationId
+        });
+        if (response.IsSuccess)
+        {
+            Snackbar.Add($"Uživatel {user.Email} byl úspěšně odhlášen.", Severity.Success);
+            ReservationDetail.Users.Remove(user);
+        }
+        else
+        {
+            Snackbar.Add("Nepodařilo se odhlásit uživatele.", Severity.Error);
+        }
+    }
+}
