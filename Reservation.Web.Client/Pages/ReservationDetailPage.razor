@@ -5,13 +5,14 @@
 
 <PageTitle>Detail rezervace</PageTitle>
 
-<MudContainer MaxWidth="MaxWidth.Small" Class="mx-auto my-6">
     @if (ReservationDetail is null)
     {
         <MudText>Načítám rezervaci...</MudText>
     }
     else
     {
+        bool IsSameTimeZone = (ReservationDetail.CustomTimeZoneId != GlobalState.CurrentTimeZone.Id);
+        
         <MudCard>
             <MudCardActions>
                 <MudButton Variant="Variant.Outlined" Color="Color.Primary" OnClick="Back">
@@ -24,33 +25,27 @@
             <MudCardContent>
                 <MudText>Popis: @ReservationDetail.Description</MudText>
                 <MudText>
-                    Od: @ReservationDetail.Start.ToString("g")
-                    @(ReservationDetail.TimeDisplayMode switch
-                    {
-                        TimeDisplayMode.Utc => $" (Ve vašem lokálním čase: {ReservationDetail.Start.ToLocalTime():t})",
-                        TimeDisplayMode.Local => " (Jedná se o lokální čas)",
-                        TimeDisplayMode.Custom => " (V časovém pásmu " + DisplayOffset(new TimeSpan(0, ReservationDetail
-                            .CustomTimeZone ?? 0,0)) + ")",
-                        null => "",
-                        _ => throw new ArgumentOutOfRangeException()
-                    })
+                    Od: @ReservationDetail.Start.ConvertToTimeZone(ReservationDetail.CustomTimeZoneId).ToString("g")
                 </MudText>
-                <MudText>Do: @ReservationDetail.End.ToString("g")</MudText>
+                @if (IsSameTimeZone)
+                {
+                    <MudText>
+                        Ve vaší časové pásmu od: @ReservationDetail.Start.ConvertToTimeZone(GlobalState.CurrentTimeZone).ToString("g")
+                    </MudText>
+                }
+                <MudText>Do: @ReservationDetail.End.ConvertToTimeZone(ReservationDetail.CustomTimeZoneId).ToString("g")</MudText>
+                @if (IsSameTimeZone)
+                {
+                    <MudText>
+                        Ve vaší časové pásmu od: @ReservationDetail.End.ConvertToTimeZone(GlobalState.CurrentTimeZone).ToString("g")
+                    </MudText>
+                }
                 <MudText>Kapacita: @ReservationDetail.CurrentCapacity / @ReservationDetail.Capacity</MudText>
                 <MudText Color="@(ReservationDetail.IsAvailable ? Color.Success : Color.Error)">
                     @(ReservationDetail.IsAvailable ? "Dostupná" : "Nedostupná")
                 </MudText>
                 <MudDivider Class="my-2"/>
                 <MudText>Možnost zrušení před zahájením: @ReservationDetail.CancellationOffset.ToString()</MudText>
-                @if (ReservationDetail.TimeDisplayMode.HasValue)
-                {
-                    <MudText>Režim zobrazení času: @ReservationDetail.TimeDisplayMode</MudText>
-                    @if (ReservationDetail.TimeDisplayMode == TimeDisplayMode.Custom && ReservationDetail.CustomTimeZone.HasValue)
-                    {
-                        <MudText>Vlastní časová zóna: @DisplayOffset(new TimeSpan(0, ReservationDetail
-                            .CustomTimeZone ?? 0,0))</MudText>
-                    }
-                }
             </MudCardContent>
             <MudCardActions>
                 <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="SignUp">
@@ -60,11 +55,12 @@
 
         </MudCard>
     }
-</MudContainer>
 
 @code {
+
     [Parameter]
     public string Path { get; set; } = string.Empty;
+
     [Parameter]
     public int Id { get; set; }
 
@@ -85,18 +81,12 @@
 
     private void Back()
     {
-        NavigationManager.NavigateTo($"/rezervace/{Path}");
+        NavigationManager.NavigateTo(Constants.Routes.Reservation(Path));
     }
 
     private void SignUp()
     {
-        NavigationManager.NavigateTo($"/rezervace/{Path}/{Id}/prihlaseni");
+        NavigationManager.NavigateTo(Constants.Routes.ReservationSignUp(Path, Id));
     }
-    
-    private string DisplayOffset(TimeSpan offset)
-    {
-        string sign = offset >= TimeSpan.Zero ? "+" : "-";
-        var absOffset = offset.Duration();
-        return $"UTC{sign}{absOffset:hh\\:mm}";
-    }
+
 }

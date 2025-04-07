@@ -20,9 +20,9 @@ public class ReservationController : ControllerBase
     }
     
     [HttpPost]
-    public async Task<ActionResult<ReservationResponse>> Create([FromBody] ReservationCreateRequest request, 
-    [FromHeader(Name = 
-        "Authorization")] string authorization)
+    public async Task<ActionResult<List<ReservationResponse>>> Create([FromBody] List<ReservationCreateRequest> request, 
+        [FromHeader(Name = 
+            "Authorization")] string authorization)
     {
         return Ok(await _reservationService.CreateAsync(request, Utils.GetUserIdFromAuthorizationHeader(authorization)));
     }

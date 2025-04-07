@@ -34,14 +34,11 @@ public class Reservation
     // Nové vlastnosti pro přihlašovací interval a možnost zrušení rezervace
     [Required]
     public TimeSpan CancellationOffset { get; set; } = new TimeSpan(0, 0, 0);
-
-    // Nové vlastnosti určující, jak se mají zobrazovat časy
-    [Required]
-    public TimeDisplayMode? TimeDisplayMode { get; set; } = null;
-
+    
     // od -12UTC po +14UTC
+    [Required]
     [MaxLength(100)]
-    public int? CustomTimeZone { get; set; }
+    public string CustomTimeZoneId { get; set; } = string.Empty;
 
     [ForeignKey("OwnerId")]
     public Owner Owner { get; set; } = default!;

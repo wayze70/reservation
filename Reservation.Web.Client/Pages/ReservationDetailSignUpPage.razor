@@ -28,8 +28,9 @@
     // Parametr z URL, který určuje, ke které rezervaci se uživatel přihlašuje
     [Parameter]
     public int ReservationId { get; set; }
-    [Parameter]
-    public string Path { get; set; }
+
+    [Parameter, EditorRequired]
+    public string Path { get; set; } = string.Empty;
 
     // Model pro přihlášení k rezervaci
     ReservationSignUpRequest SignUpRequest { get; set; } = new ReservationSignUpRequest();
@@ -43,7 +44,7 @@
         {
             Snackbar.Add("Úspěšně jste se přihlásili k rezervaci", Severity.Success);
             // Přesměrování na detail rezervace nebo jinou stránku
-            NavigationManager.NavigateTo($"/rezervace/{Path}/{ReservationId}");
+            NavigationManager.NavigateTo(Constants.Routes.ReservationDetail(Path, ReservationId));
         }
         else if (response.StatusCode == HttpStatusCode.BadRequest)
         {

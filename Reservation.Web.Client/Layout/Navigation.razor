@@ -2,24 +2,38 @@
 @inject IAuthService AuthService
 @inject NavigationManager NavigationManager
 
-<nav>
+<MudNavMenu Class="mud-nav-menu">
     <AuthorizeView>
         <Authorized>
-            <a href="@Constants.Routes.Account" class="text-white me-3">Účet</a>
-            <a href="@Constants.Routes.Reservation" class="text-white me-3">Kalendář</a>
-            <a @onclick="@Logout" class="text-white me-3">Odlásit se</a>
+            <MudNavLink Href="@Constants.Routes.AccountRoute.Account"
+                        Class="me-3"
+                        Icon="@Icons.Material.Filled.AccountCircle"
+                        Match="NavLinkMatch.All">
+                Nastavení účtu
+            </MudNavLink>
+
+            <MudNavLink Href="@Constants.Routes.AccountRoute.AccountReservation" Class="me-3" Icon="@Icons.Material.Filled.CalendarToday">
+                Kalendář
+            </MudNavLink>
+            <MudNavLink OnClick="@Logout" Class="me-3" Icon="@Icons.Material.Filled.ExitToApp">
+                Odlásit se
+            </MudNavLink>
         </Authorized>
         <NotAuthorized>
-            <a href="@Constants.Routes.Login" class="text-white">Přihlášení</a>
-            <a href="@Constants.Routes.Register" class="text-white">Registrace</a>
+            <MudNavLink Href="@Constants.Routes.Login" Icon="@Icons.Material.Filled.Login">
+                Přihlášení
+            </MudNavLink>
+            <MudNavLink Href="@Constants.Routes.Register" Icon="@Icons.Material.Filled.PersonAdd">
+                Registrace
+            </MudNavLink>
         </NotAuthorized>
     </AuthorizeView>
-</nav>
+</MudNavMenu>
 
 @code {
-    void Logout()
+    async Task Logout()
     {
-        AuthService.LogoutAsync();
+        await AuthService.LogoutAsync();
         NavigationManager.NavigateTo(Constants.Routes.Login);
     }
 }

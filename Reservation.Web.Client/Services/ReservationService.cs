@@ -12,10 +12,10 @@ public class ReservationService : IReservationService
     {
         _httpClientService = httpClientService;
     }
-    
-    public async Task<ApiResponse<ReservationResponse>> CreateAsync(ReservationCreateRequest request)
+
+    public async Task<ApiResponse<List<ReservationResponse>>> CreateAsync(List<ReservationCreateRequest> listRequest)
     {
-        return await _httpClientService.PostAsync<ReservationCreateRequest, ReservationResponse>("/reservation", request);
+        return await _httpClientService.PostAsync<List<ReservationCreateRequest>, List<ReservationResponse>>("/reservation", listRequest);
     }
 
     public async Task<ApiResponse<List<ReservationResponse>>> GetReservationsAsync(string path)

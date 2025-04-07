@@ -1,8 +1,8 @@
-﻿@page "/"
-@using Microsoft.AspNetCore.Components.Authorization
+﻿@using Microsoft.AspNetCore.Components.Authorization
 @inject NavigationManager NavigationManager
 @inject AuthenticationStateProvider AuthenticationStateProvider
 
+@page "/"
 <PageTitle>Rezervační systém</PageTitle>
 
 <MudContainer MaxWidth="MaxWidth.Medium" Class="my-10">
@@ -20,7 +20,7 @@
         </MudText>
         @if (IsAuthenticated)
         {
-            <MudStack Direction="Row" Justify="Justify.Center" Spacing="2" Class="mt-6">
+            <MudStack Row="true" Justify="Justify.Center" Spacing="2" Class="mt-6">
                 <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="@(() => NavigationManager
                 .NavigateTo(Constants.Routes.Login))">
                     Přihlásit se

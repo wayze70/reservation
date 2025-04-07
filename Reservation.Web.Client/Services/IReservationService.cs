@@ -5,7 +5,7 @@ namespace Reservation.Web.Client.Services;
 
 public interface IReservationService
 {
-    public Task<ApiResponse<ReservationResponse>> CreateAsync(ReservationCreateRequest request);
+    public Task<ApiResponse<List<ReservationResponse>>> CreateAsync(List<ReservationCreateRequest> listRequest);
     public Task<ApiResponse<List<ReservationResponse>>> GetReservationsAsync(string path);
     public Task<ApiResponse<List<ReservationResponse>>> GetReservationsAsync();
     public Task<ApiResponse<ReservationResponse>> GetReservationAsync(string path, int reservationId);

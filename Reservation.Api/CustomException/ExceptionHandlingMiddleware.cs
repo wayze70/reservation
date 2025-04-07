@@ -35,8 +35,9 @@ public class ExceptionHandlingMiddleware
         return context.Response.WriteAsync(JsonSerializer.Serialize(ex.Message));
     }
     
-    private static Task HandleGenericExceptionAsync(HttpContext context, System.Exception ex)
+    private static Task HandleGenericExceptionAsync(HttpContext context, Exception ex)
     {
+        context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
         context.Response.ContentType = "application/json";
 
         var innerExceptions = new List<string>();
@@ -59,5 +60,4 @@ public class ExceptionHandlingMiddleware
 
         return context.Response.WriteAsync(JsonSerializer.Serialize(response));
     }
-
 }

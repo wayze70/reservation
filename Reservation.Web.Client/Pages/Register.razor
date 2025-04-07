@@ -1,66 +1,48 @@
 @inject IAuthService AuthService
 @inject NavigationManager NavigationManager
 @inject ISnackbar Snackbar
+@using System.Net
 
 @page "/registrace"
-@using System.Net
 
 <PageTitle>Registrace</PageTitle>
 
-<div class="w-100 h-100 m-auto" style="max-width: 400px">
+<MudPaper Class="mx-auto my-10 pa-6" MaxWidth="500px">
+    <MudText Typo="Typo.h5" Align="Align.Center" GutterBottom="true">
+        Registrace
+    </MudText>
+    <EditForm Model="@RegistrationUser" OnValidSubmit="@OnSubmit">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
 
-    <!-- Pills content -->
-    <div class="tab-content">
-        <div class="tab-pane fade show active" id="pills-login" role="tabpanel" aria-labelledby="tab-login">
-            <EditForm Model="@LoginUser" OnValidSubmit="@OnSubmit">
-                <!-- Email input -->
+        <MudTextField T="string" Label="Jméno" @bind-Value="RegistrationUser.FirstName" Required="true" />
+        <MudTextField T="string" Label="Příjmení" @bind-Value="RegistrationUser.LastName" Required="true" />
+        <MudTextField T="string" Label="Email" @bind-Value="RegistrationUser.Email" Required="true" />
+        <MudTextField T="string" Label="Heslo" InputType="InputType.Password" @bind-Value="RegistrationUser.Password" Required="true" />
 
-                <div class="form-outline mb-4">
-                    <label class="form-label" for="FirstName">Jméno</label>
-                    <InputText required type="text" id="FirstName" class="form-control" @bind-Value="@LoginUser.FirstName"/>
-                </div>
-                <div class="form-outline mb-4">
-                    <label class="form-label" for="LastName">Přijmení</label>
-                    <InputText required type="text" id="LastName" class="form-control" @bind-Value="@LoginUser.LastName"/>
-                </div>
-                
-                <div class="form-outline mb-4">
-                    <label class="form-label" for="Email">Email</label>
-                    <InputText required type="email" id="Email" class="form-control" @bind-Value="@LoginUser.Email"/>
-                </div>
+        <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary" FullWidth="true" Class="mt-4">
+            Zaregistrovat se
+        </MudButton>
 
-                <!-- Password input -->
-                <div class="form-outline mb-4">
-                    <label class="form-label" for="Password">Heslo</label>
-                    <InputText required type="password" id="Password" class="form-control" @bind-Value="@LoginUser.Password"/>
-                </div>
+        <MudText Align="Align.Center" Class="mt-4">
+            Už máte účet? <MudLink Href="@Constants.Routes.Login">Přihlašte se</MudLink>
+        </MudText>
+    </EditForm>
+</MudPaper>
 
-                <div class="w-100 d-flex">
-                    <!-- Submit button -->
-                    <button type="submit" class="btn btn-primary btn-block px-5 mb-4 m-auto">Přihlásit se</button>
-                </div>
-
-                <div class="w-100 d-flex">
-                    <span class="m-auto">Už máte učet? <a href="@Constants.Routes.Login">Přihlašte se</a></span>
-                </div>
-            </EditForm>
-        </div>
-    </div>
-</div>
-
-@code
-{
-    RegistrationRequest LoginUser { get; set; } = new();
+@code {
+    // Zde použijte správný model pro registraci, např. RegistrationRequest
+    RegistrationRequest RegistrationUser { get; set; } = new();
 
     async Task OnSubmit()
     {
-        var response = await AuthService.RegisterAsync(LoginUser);
+        var response = await AuthService.RegisterAsync(RegistrationUser);
 
         switch (response)
         {
             case HttpStatusCode.OK:
                 Snackbar.Add("Registrace proběhla úspěšně", Severity.Success);
-                NavigationManager.NavigateTo(Constants.Routes.Account);
+                NavigationManager.NavigateTo(Constants.Routes.AccountRoute.Account);
                 break;
             case HttpStatusCode.Conflict:
                 Snackbar.Add("Uživatel s tímto emailem již existuje", Severity.Error);

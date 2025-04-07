@@ -2,4 +2,28 @@
   flex-direction: unset !important;
 }
 
+.reservation-highlight {
+  color: #000 !important;
+  text-decoration: underline !important;
+  overflow: visible;
+}
+
+#new-reservation .mud-picker-calendar .selected-date {
+  background-color: var(--mud-palette-primary) !important;
+  color: var(--mud-palette-primary-text) !important;
+}
+
+#new-reservation .mud-picker-calendar .mud-theme-primary {
+  background-color: var(--mud-palette-primary) !important;
+  color: var(--mud-palette-primary-text) !important;
+}
+
+#new-reservation .mud-toolbar {
+  display: none !important;
+}
+
+.reservation-empty {
+  color: grey !important;
+}
+
 /*# sourceMappingURL=styles.css.map */

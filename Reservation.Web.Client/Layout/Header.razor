@@ -1,6 +1,33 @@
+@inject NavigationManager NavigationManager
+
 <header class="bg-dark text-white p-3">
     <div class="container d-flex justify-content-between">
         <h1><a href="@Constants.Routes.Home">Rezervační systém</a></h1>
-        <Navigation />
+        @if (!IsReservationRoute)
+        {
+            <Navigation />
+        }
     </div>
 </header>
+
+@code
+{
+    bool IsReservationRoute => NavigationManager
+        .ToBaseRelativePath(NavigationManager.Uri)
+        .StartsWith("rezervace", StringComparison.OrdinalIgnoreCase);
+    
+    protected override void OnInitialized()
+    {
+        NavigationManager.LocationChanged += OnLocationChanged;
+    }
+
+    private void OnLocationChanged(object? sender, LocationChangedEventArgs e)
+    {
+        InvokeAsync(StateHasChanged);
+    }
+
+    public void Dispose()
+    {
+        NavigationManager.LocationChanged -= OnLocationChanged;
+    }
+}

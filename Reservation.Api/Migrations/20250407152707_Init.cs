@@ -44,8 +44,7 @@ namespace Reservation.Api.Migrations
                     EndTime = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     IsAvailable = table.Column<bool>(type: "boolean", nullable: false),
                     CancellationOffset = table.Column<TimeSpan>(type: "interval", nullable: false),
-                    TimeDisplayMode = table.Column<int>(type: "integer", nullable: false),
-                    CustomTimeZone = table.Column<int>(type: "integer", maxLength: 100, nullable: true)
+                    CustomTimeZoneId = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false)
                 },
                 constraints: table =>
                 {

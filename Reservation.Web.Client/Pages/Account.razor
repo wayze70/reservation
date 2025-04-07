@@ -8,39 +8,56 @@
 @attribute [Authorize]
 
 <PageTitle>Účet</PageTitle>
-<MudText>Aktuální URL cesta: <a href="@(NavigationManager.BaseUri)rezervace/@CurrentPath">@(NavigationManager.BaseUri)rezervace/@CurrentPath</a></MudText>
-<div class="d-flex" style="max-width: 300px">
-    <MudTextField T="string" Value="Path" ValueChanged="OnPathChange" Label="Nastavte si URL"
-                  DebounceInterval="500" />
-    @if (IsPathTaken && CurrentPath != Path || !IsPathValid)
+<MudPaper Class="pa-6 mx-auto my-6" MaxWidth="MaxWidth.Small" Elevation="4">
+    <MudText Typo="Typo.h5" Align="Align.Center" GutterBottom="true">
+        Nastavení URL cesty
+    </MudText>
+
+    @if (string.IsNullOrWhiteSpace(CurrentPath))
     {
-        <MudIcon class="mt-auto" Title="Checked" Icon="@Icons.Material.Filled.Close" Color="Color.Error" Size="Size
-                     .Small"/>
+        <MudText>
+            Nastavte si URL cestu pro vaši rezervaci.
+        </MudText>
     }
     else
     {
-        <MudIcon class="mt-auto" Title="Checked" Icon="@Icons.Material.Filled.CheckCircleOutline" Color="Color.Success"
-                 Size="Size
-                     .Small"/>
+        <MudText>
+            Aktuální URL cesta:
+            <MudLink Href="@Constants.Routes.Reservation(CurrentPath)">
+                @(NavigationManager.BaseUri)@Constants.Routes.Reservation(CurrentPath).Remove(0, 1)
+            </MudLink>
+        </MudText>
     }
 
-</div>
-@if (IsPathTaken && CurrentPath == Path)
-{
-    <MudText Color="Color.Info">Tato URL je vaše URL</MudText>
-}
-else if (IsPathTaken)
-{
-    <MudText Color="Color.Error">Tato URL cesta je již zabraná</MudText>
-} else if (!IsPathValid)
-{
-    <MudText Color="Color.Error">URL cesta obsahuje nepovolené znaky</MudText>
-}
-
-<MudButton OnClick="UpdatePath" Variant="Variant.Filled" Color="Color.Primary" ButtonType="ButtonType.Button"
-           Class="mt-4">
-    Aktualizovat URL cestu
-</MudButton>
+    <MudStack Spacing="2" Class="mt-4">
+        <MudTextField T="string" Value="Path" ValueChanged="OnPathChange" Label="Nastavte si URL" DebounceInterval="500" />
+        <MudStack Direction="Row" AlignItems="AlignItems.Center" Spacing="1">
+            @if ((IsPathTaken && CurrentPath != Path) || !IsPathValid)
+            {
+                <MudIcon Icon="@Icons.Material.Filled.Close" Color="Color.Error" Size="Size.Small" />
+            }
+            else
+            {
+                <MudIcon Icon="@Icons.Material.Filled.CheckCircleOutline" Color="Color.Success" Size="Size.Small" />
+            }
+            @if (IsPathTaken && CurrentPath == Path)
+            {
+                <MudText Color="Color.Info">Tato URL je vaše URL</MudText>
+            }
+            else if (IsPathTaken)
+            {
+                <MudText Color="Color.Error">Tato URL cesta je již zabraná</MudText>
+            }
+            else if (!IsPathValid)
+            {
+                <MudText Color="Color.Error">URL cesta obsahuje nepovolené znaky</MudText>
+            }
+        </MudStack>
+        <MudButton OnClick="UpdatePath" Variant="Variant.Filled" Color="Color.Primary" ButtonType="ButtonType.Button" FullWidth="true">
+            Aktualizovat URL cestu
+        </MudButton>
+    </MudStack>
+</MudPaper>
 
 @code
 {

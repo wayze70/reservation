@@ -12,7 +12,7 @@ using Reservation.Api;
 namespace Reservation.Api.Migrations
 {
     [DbContext(typeof(DataContext))]
-    [Migration("20250326150458_Init")]
+    [Migration("20250407152707_Init")]
     partial class Init
     {
         /// <inheritdoc />
@@ -80,9 +80,10 @@ namespace Reservation.Api.Migrations
                     b.Property<int>("Capacity")
                         .HasColumnType("integer");
 
-                    b.Property<int?>("CustomTimeZone")
+                    b.Property<string>("CustomTimeZoneId")
+                        .IsRequired()
                         .HasMaxLength(100)
-                        .HasColumnType("integer");
+                        .HasColumnType("character varying(100)");
 
                     b.Property<string>("Description")
                         .IsRequired()
@@ -100,9 +101,6 @@ namespace Reservation.Api.Migrations
 
                     b.Property<DateTime>("StartTime")
                         .HasColumnType("timestamp with time zone");
-
-                    b.Property<int>("TimeDisplayMode")
-                        .HasColumnType("integer");
 
                     b.Property<string>("Title")
                         .IsRequired()

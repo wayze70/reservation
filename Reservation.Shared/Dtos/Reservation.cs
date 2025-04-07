@@ -1,12 +1,5 @@
 namespace Reservation.Shared.Dtos;
 
-public enum TimeDisplayMode
-{
-    Utc = 0,
-    Local = 1,
-    Custom = 2
-}
-
 public class ReservationCreateRequest
 {
     public int Capacity { get; set; }
@@ -17,8 +10,7 @@ public class ReservationCreateRequest
     public bool IsAvailable { get; set; }
     
     public TimeSpan CancellationOffset { get; set; }
-    public TimeDisplayMode TimeDisplayMode { get; set; }
-    public int? CustomTimeZone { get; set; }
+    public string CustomTimeZoneId { get; set; } = string.Empty;
 }
 
 public class ReservationResponse
@@ -35,8 +27,7 @@ public class ReservationResponse
     
     // Nové vlastnosti
     public TimeSpan CancellationOffset { get; set; }
-    public TimeDisplayMode? TimeDisplayMode { get; set; }
-    public int? CustomTimeZone { get; set; }
+    public string CustomTimeZoneId { get; set; } = string.Empty;
 }
 
 public class ReservationResponseWithUser
@@ -53,8 +44,7 @@ public class ReservationResponseWithUser
     
     // Nové vlastnosti
     public TimeSpan CancellationOffset { get; set; }
-    public TimeDisplayMode? TimeDisplayMode { get; set; }
-    public int? CustomTimeZone { get; set; }
+    public string CustomTimeZoneId { get; set; } = string.Empty;
     public List<UserResponse> Users { get; set; } = new List<UserResponse>();
 }
 

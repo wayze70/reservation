@@ -7,49 +7,35 @@
 
 <PageTitle>Přihlášení</PageTitle>
 
-<div class="w-100 h-100 m-auto" style="max-width: 400px">
+<MudPaper Class="mx-auto my-10 pa-6" MaxWidth="500px">
+    <MudText Typo="Typo.h5" Align="Align.Center" GutterBottom="true">Přihlášení</MudText>
+    <EditForm Model="@LoginUser" OnValidSubmit="@OnSubmit">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
 
-    <!-- Pills content -->
-    <div class="tab-content">
-        <div class="tab-pane fade show active" id="pills-login" role="tabpanel" aria-labelledby="tab-login">
-            <EditForm Model="@LoginUser" OnValidSubmit="@OnSubmit">
-                <!-- Email input -->
-                <div class="form-outline mb-4">
-                    <label class="form-label" for="Email">Email</label>
-                    <InputText required type="email" id="Email" class="form-control" @bind-Value="@LoginUser.Email"/>
-                </div>
+        <MudTextField T="string" Label="Email" @bind-Value="LoginUser.Email" Required="true" />
+        <MudTextField T="string" Label="Heslo" InputType="InputType.Password" @bind-Value="LoginUser.Password" Required="true" />
 
-                <!-- Password input -->
-                <div class="form-outline mb-4">
-                    <label class="form-label" for="Password">Heslo</label>
-                    <InputText required type="password" id="Password" class="form-control" @bind-Value="@LoginUser.Password"/>
-                </div>
+        <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary" FullWidth="true" Class="mt-4">
+            Přihlásit se
+        </MudButton>
 
-                <div class="w-100 d-flex">
-                    <!-- Submit button -->
-                    <button type="submit" class="btn btn-primary btn-block px-5 mb-4 m-auto">Přihlásit se</button>
-                </div>
+        <MudText Align="Align.Center" Class="mt-4">
+            Nemáte účet? <MudLink Href="@Constants.Routes.Register">Zaregistrujte se</MudLink>
+        </MudText>
+    </EditForm>
+</MudPaper>
 
-                <div class="w-100 d-flex">
-                    <span class="m-auto">Nemáte učet? <a href="@Constants.Routes.Register">Zaregistruj te se</a></span>
-                </div>
-            </EditForm>
-        </div>
-    </div>
-</div>
-
-@code
-{
+@code {
     LoginRequest LoginUser { get; set; } = new();
 
     async Task OnSubmit()
     {
         var response = await AuthService.LoginAsync(LoginUser);
-        
         if (response == HttpStatusCode.OK)
         {
             Snackbar.Add("Přihlášení proběhlo úspěšně", Severity.Success);
-            NavigationManager.NavigateTo(Constants.Routes.Account);
+            NavigationManager.NavigateTo(Constants.Routes.AccountRoute.AccountReservation);
         }
         else
         {
