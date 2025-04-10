@@ -4,6 +4,8 @@ namespace Reservation.Web.Client.CustomExtensions;
 
 public static class Constants
 {
+    public const string ApiBaseAddress = "https://www.api.rezervario.cz/";
+    
     public class Routes
     {
         public const string Home = "/";
