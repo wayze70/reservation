@@ -80,7 +80,7 @@ public class Program
         
         builder.Services.AddDbContext<DataContext>(options =>
             options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"),
-                o => o.SetPostgresVersion(17, 2)));
+                o => o.SetPostgresVersion(14, 0)));
 
         // Přidání autentizace pomocí JWT
         builder.Services.AddAuthentication(options =>

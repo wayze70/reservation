@@ -17,7 +17,7 @@ public class AccountController : ControllerBase
     }
 
     [HttpGet("path")]
-    public async Task<ActionResult<string>> Path([FromHeader(Name = "Authorization")] string
+    public async Task<ActionResult<string>> GetPath([FromHeader(Name = "Authorization")] string
         authorization)
     {
         return Ok((await _accountService.GetPathAsync(Utils.GetUserIdFromAuthorizationHeader(authorization))) ??
@@ -25,15 +25,14 @@ public class AccountController : ControllerBase
     }
 
     [HttpPost("path")]
-    public async Task<ActionResult<string>> Path([FromBody] PathRequest request, [FromHeader(Name = "Authorization")]
-        string
-            authorization)
+    public async Task<ActionResult<string>> SetPath([FromBody] PathRequest request, [FromHeader(Name = "Authorization")]
+        string authorization)
     {
         return Ok(await _accountService.SetPathAsync(request, Utils.GetUserIdFromAuthorizationHeader(authorization)));
     }
 
     [HttpPost("path/taken")]
-    public async Task<ActionResult<bool>> Path([FromBody] PathRequest request)
+    public async Task<ActionResult<bool>> IsPathTaken([FromBody] PathRequest request)
     {
         return Ok(await _accountService.IsPathTakenAsync(request.Path));
     }

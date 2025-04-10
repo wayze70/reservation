@@ -36,10 +36,13 @@ namespace Reservation.Web.Client
             builder.Services.AddTransient<AuthTokenHandler>();
             builder.Services.AddTransient<TokenRefreshHandler>();
 
+            string? apiUrl = builder.Configuration["ApiBaseUrl"] ??
+                             throw new InvalidOperationException("Chybí proměnná prostředí ApiBaseUrl");
+
             // Registrace HttpClientu s našimi handlery pro běžné požadavky
             builder.Services.AddHttpClient<IHttpClientService, HttpClientService>(client =>
             {
-                client.BaseAddress = new Uri(Constants.ApiBaseAddress);
+                client.BaseAddress = new Uri(apiUrl);
                 client.DefaultRequestHeaders.Add("Accept", "application/json");
                 client.Timeout = TimeSpan.FromSeconds(15);
             })
@@ -49,7 +52,7 @@ namespace Reservation.Web.Client
             // Registrace pojmenovaného HttpClientu bez handlerů, který se použije v refresh logice
             builder.Services.AddHttpClient("NoHandlerClient", client =>
             {
-                client.BaseAddress = new Uri(Constants.ApiBaseAddress);
+                client.BaseAddress = new Uri(apiUrl);
                 client.DefaultRequestHeaders.Add("Accept", "application/json");
                 client.Timeout = TimeSpan.FromSeconds(15);
             });

@@ -1,10 +1,16 @@
+using System.Text.RegularExpressions;
+
 namespace Reservation.Shared.Common;
 
-public static class Utils
+public static partial class Utils
 {
+    private static readonly Regex PathRegex = MyRegex();
+
     public static bool IsPathValidate(string value)
     {
-        var regex = new System.Text.RegularExpressions.Regex("^[A-Za-z0-9\\-_~]+$");
-        return regex.IsMatch(value);
+        return !string.IsNullOrWhiteSpace(value) && PathRegex.IsMatch(value);
     }
+
+    [GeneratedRegex("^[A-Za-z0-9\\-_~]+$", RegexOptions.Compiled)]
+    private static partial Regex MyRegex();
 }

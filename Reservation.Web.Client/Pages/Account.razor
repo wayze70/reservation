@@ -31,7 +31,7 @@
 
     <MudStack Spacing="2" Class="mt-4">
         <MudTextField T="string" Value="Path" ValueChanged="OnPathChange" Label="Nastavte si URL" DebounceInterval="500" />
-        <MudStack Direction="Row" AlignItems="AlignItems.Center" Spacing="1">
+        <MudStack Row="false" AlignItems="AlignItems.Center" Spacing="1">
             @if ((IsPathTaken && CurrentPath != Path) || !IsPathValid)
             {
                 <MudIcon Icon="@Icons.Material.Filled.Close" Color="Color.Error" Size="Size.Small" />

@@ -91,7 +91,7 @@
     </MudGrid>
 
 @code {
-    private MudDatePicker _picker;
+    private MudDatePicker _picker = null!;
     List<ReservationResponse>? Reservations { get; set; }
 
 
@@ -132,6 +132,4 @@
     {
         return _picker.GoToDate(DateTime.Today);
     }
-
-
 }

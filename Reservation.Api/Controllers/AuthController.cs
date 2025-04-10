@@ -19,20 +19,29 @@ public class AuthController : ControllerBase
     }
     
     [HttpPost("login")]
-    public ActionResult<AuthResponse> Login([FromBody] LoginRequest request)
+    public async Task<ActionResult<AuthResponse>> Login([FromBody] LoginRequest request)
     {
-        return Ok(_authService.Login(request.Email, request.Password));
+        if (!ModelState.IsValid)
+            return BadRequest(ModelState);
+
+        var authResponse = await _authService.LoginAsync(request.Email, request.Password);
+        return Ok(authResponse);
     }
     
     [HttpPost("register")]
-    public ActionResult<AuthResponse> Register([FromBody] RegistrationRequest request)
+    public async Task<ActionResult<AuthResponse>> Register([FromBody] RegistrationRequest request)
     {
-        return Ok(_authService.Register(request.FirstName, request.LastName, request.Email, request.Password));
+        if (!ModelState.IsValid)
+            return BadRequest(ModelState);
+
+        var authResponse = await _authService.RegisterAsync(request.FirstName, request.LastName, request.Email, request.Password);
+        return Ok(authResponse);
     }
     
     [HttpPost("refresh")]
     public async Task<ActionResult<string>> Refresh([FromBody] RefreshTokenRequest request)
     {
-        return Ok(await _authService.RefreshAsync(request.RefreshToken));
+        var newAccessToken = await _authService.RefreshAsync(request.RefreshToken);
+        return Ok(newAccessToken);
     }
 }

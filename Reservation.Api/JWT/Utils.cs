@@ -7,15 +7,27 @@ public static class Utils
 {
     public static int GetUserIdFromAuthorizationHeader(string authorization)
     {
+        if (string.IsNullOrWhiteSpace(authorization))
+            throw new CustomHttpException(HttpStatusCode.BadRequest, "Authorization header je prázdný");
+
         string bearerToken = JwtTokenHelper.GetBearerToken(authorization);
-        
-        if (string.IsNullOrEmpty(bearerToken))
+        if (string.IsNullOrWhiteSpace(bearerToken))
         {
             throw new CustomHttpException(HttpStatusCode.BadRequest, "Bearer token nenalezen");
         }
-        
+    
         var claims = JwtTokenHelper.GetClaims(bearerToken);
-        
-        return int.Parse(JwtTokenHelper.GetClaimValue(claims, ReservationClaimNames.Sub) ?? throw new CustomHttpException(HttpStatusCode.BadRequest, "Uživatelské ID nenalezeno"));
+        string? userIdClaim = JwtTokenHelper.GetClaimValue(claims, ReservationClaimNames.Sub);
+        if (string.IsNullOrEmpty(userIdClaim))
+        {
+            throw new CustomHttpException(HttpStatusCode.BadRequest, "Uživatelské ID nenalezeno");
+        }
+    
+        if (!int.TryParse(userIdClaim, out int userId))
+        {
+            throw new CustomHttpException(HttpStatusCode.BadRequest, "Uživatelské ID není platné číslo");
+        }
+    
+        return userId;
     }
 }

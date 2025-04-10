@@ -20,17 +20,17 @@ public class ReservationService : IReservationService
 
     public async Task<ApiResponse<List<ReservationResponse>>> GetReservationsAsync(string path)
     {
-        return await _httpClientService.GetAsync<List<ReservationResponse>>($"/reservation/{path}");
+        return await _httpClientService.GetAsync<List<ReservationResponse>>($"/reservation/public/{path}");
     }
 
     public async Task<ApiResponse<List<ReservationResponse>>> GetReservationsAsync()
     {
-        return await _httpClientService.GetAsync<List<ReservationResponse>>($"/reservation");
+        return await _httpClientService.GetAsync<List<ReservationResponse>>($"/reservation/owner");
     }
 
     public async Task<ApiResponse<ReservationResponse>> GetReservationAsync(string path, int reservationId)
     {
-        return await _httpClientService.GetAsync<ReservationResponse>($"/reservation/{path}/{reservationId}");
+        return await _httpClientService.GetAsync<ReservationResponse>($"/reservation/public/{path}/{reservationId}");
     }
 
     public async Task<ApiResponse<ReservationSignUpResponse>> SignInToReservation(int reservationId, ReservationSignUpRequest request)

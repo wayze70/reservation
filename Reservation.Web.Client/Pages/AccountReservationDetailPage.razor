@@ -1,4 +1,5 @@
 @page "/ucet/rezervace/{reservationId:int}"
+@using System.Globalization
 @using Microsoft.AspNetCore.Authorization
 @inject IReservationService ReservationService
 @inject NavigationManager NavigationManager
@@ -28,29 +29,29 @@
                         <MudTextField T="string" Label="Popis" @bind-Value="ReservationDetail.Description" />
                     </MudItem>
                     <MudItem xs="12" sm="6">
-                        <MudNumericField T="int" Label="Kapacita" Min="0" @bind-Value="ReservationDetail.Capacity" />
+                        <MudNumericField T="int" Label="Maximální kapacita" Min="0" @bind-Value="ReservationDetail.Capacity" />
                     </MudItem>
                     <MudItem xs="12" sm="6">
                         <MudDatePicker Label="Datum začátku" @bind-Date="Date" Required="true" />
                     </MudItem>
                     <MudItem xs="12" sm="6">
-                        <MudTimePicker Label="Začátek čas" @bind-Time="StartTime" Required="true" />
+                        <MudTimePicker Label="Začátek rezervace" @bind-Time="StartTime" Required="true" />
                     </MudItem>
                     <MudItem xs="12" sm="6">
-                        <MudTimePicker Label="Konec čas" @bind-Time="EndTime" Required="true" />
+                        <MudTimePicker Label="Konec rezervace" @bind-Time="EndTime" Required="true" />
                     </MudItem>
                     <MudItem xs="12" sm="6">
-                        <MudText Typo="Typo.subtitle2">Čas nemožnosti zrušení rezervace</MudText>
+                        <MudText Typo="Typo.subtitle2">Čas pro zrušení rezervace</MudText>
                         <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
                             <MudNumericField T="int" Min="0" Label="Dny" @bind-Value="CancellationOffsetDays" />
-                            <MudTimePicker Label="Hodiny" @bind-Time="CancellationOffsetTime" />
-                            <MudTooltip Text="Nastavte si, kolik dní a hodin před začátkem rezervace již přihlášený uživatel nebude moci rezervaci zrušit.">
+                            <MudTimePicker AmPm="@(!CultureInfo.CurrentCulture.Is24Hrs())" Label="Hodiny" @bind-Time="CancellationOffsetTime" />
+                            <MudTooltip Text="Určete kolik dní a hodin před začátkem rezervace má uživatel možnost ji zrušit.">
                                 <MudIcon Icon="@Icons.Material.Filled.Info" Color="Color.Primary" />
                             </MudTooltip>
                         </MudStack>
                     </MudItem>
-                    <MudItem xs="12" sm="6">
-                        <MudSelect T="string" Label="UTC Offset (min)" @bind-Value="ReservationDetail.CustomTimeZoneId" Required="true">
+                    <MudItem xs="12" sm="6" Class="mt-auto">
+                        <MudSelect T="string" Label="Časové pásmo" @bind-Value="ReservationDetail.CustomTimeZoneId" Required="true">
                             @foreach (var timezone in Constants.TimeZones)
                             {
                                 <MudSelectItem Value="@timezone.Id">
@@ -60,7 +61,8 @@
                         </MudSelect>
                     </MudItem>
                     <MudItem xs="12" sm="6">
-                        <MudSwitch T="bool" Color="Color.Primary" Label="Dostupná" @bind-Value="ReservationDetail.IsAvailable" />
+                        <MudSwitch T="bool" Color="Color.Primary" Label="@(ReservationDetail.IsAvailable ? "Aktivní" : "Nekativní")"
+                         @bind-Value="ReservationDetail.IsAvailable" />
                     </MudItem>
                 </MudGrid>
                 <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary" Class="mt-4" FullWidth="true">

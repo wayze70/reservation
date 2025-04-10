@@ -7,7 +7,7 @@ public class Owner
 {
     [Key]
     public int Id { get; private set; }
-    
+
     [Required]
     [StringLength(50)]
     public string FirstName { get; set; }

@@ -1,20 +1,27 @@
 using Reservation.Shared.Dtos;
 
-namespace Reservation.Api.Services;
-
-public interface IReservationService
+namespace Reservation.Api.Services
 {
-    public Task<ReservationResponse> CreateAsync(ReservationCreateRequest request, int ownerId);
-    public Task<List<ReservationResponse>> CreateAsync(List<ReservationCreateRequest> listRequest, int ownerId);
-    public Task<List<ReservationResponse>> GetAsync(int ownerId);
-    public Task<List<ReservationResponse>> GetAsync(string path);
-    public Task<ReservationResponse> GetAsync(string path, int reservationId);
-    public Task<ReservationResponse> SignUpAsync(int reservationId, ReservationSignUpRequest user);
-    public Task<ReservationResponse> CancelReservationAsync(int reservationId, string cancelationCode);
-    public Task<ReservationResponseWithUser> GetWithUserAsync(int ownerId, int reservationId);
-    public Task<ReservationResponse> UpdateAsync(ReservationCreateRequest request, int reservationId);
-    public Task<bool> DeleteAsync(int ownerId, int reservationId);
-    public Task<bool> RemoveUserFromReservationAsync(int reservation, string userEmail);
-    
-    public Task<bool> OwnerOwnsReservation(int ownerId, int reservationId);
+    public interface IReservationService
+    {
+        // Vytváření
+        Task<ReservationResponse> CreateReservationAsync(ReservationCreateRequest request, int ownerId);
+        Task<List<ReservationResponse>> CreateReservationsAsync(List<ReservationCreateRequest> requests, int ownerId);
+
+        // Načítání rezervací
+        Task<List<ReservationResponse>> GetReservationsByOwnerAsync(int ownerId);
+        Task<List<ReservationResponse>> GetReservationsByPathAsync(string path);
+        Task<ReservationResponse> GetReservationByPathAndIdAsync(string path, int reservationId);
+        Task<ReservationResponseWithUser> GetReservationWithUsersAsync(int ownerId, int reservationId);
+
+        // Úpravy a správa rezervací
+        Task<ReservationResponse> UpdateReservationAsync(ReservationCreateRequest request, int reservationId);
+        Task<bool> DeleteReservationAsync(int ownerId, int reservationId);
+
+        // Přihlášení/zrušení rezervace
+        Task<ReservationResponse> SignUpForReservationAsync(int reservationId, ReservationSignUpRequest request);
+        Task<ReservationResponse> CancelReservationAsync(int reservationId, string cancellationCode);
+        Task<bool> RemoveUserFromReservationAsync(int reservationId, string userEmail);
+        Task<bool> OwnerOwnsReservationAsync(int ownerId, int reservationId);
+    }
 }

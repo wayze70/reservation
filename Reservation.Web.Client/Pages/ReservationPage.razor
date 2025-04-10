@@ -15,6 +15,7 @@
                                    PickerVariant="PickerVariant.Static"
                                    @bind-Date="GlobalState.SelectedDate"
                                    AdditionalDateClassesFunc="GetAdditionalDateClasses"
+                                   IsDateDisabledFunc="DisableDateWithoutRecords"
                                    Label="Vyberte datum"
                                    MinDate="DateTime.Now.AddDays(-1)"
                                    Style="overflow-y: hidden;" />
@@ -87,7 +88,7 @@
     [Parameter]
     public string Path { get; set; } = string.Empty;
 
-    private MudDatePicker _picker;
+    private MudDatePicker _picker = null!;
     List<ReservationResponse>? Reservations { get; set; }
 
     protected override async Task OnInitializedAsync()
@@ -126,6 +127,13 @@
     private Task TodayAsync()
     {
         return _picker.GoToDate(DateTime.Today);
+    }
+    
+    // Funkce pro deaktivaci datumů, u kterých není žádná rezervace
+    private bool DisableDateWithoutRecords(DateTime date)
+    {
+        // Pokud Reservations je null nebo pro zadané datum neexistuje žádná rezervace, zakážeme toto datum.
+        return Reservations == null || Reservations.All(r => r.Start.Date != date.Date);
     }
 
 }
