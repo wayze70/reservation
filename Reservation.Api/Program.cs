@@ -111,6 +111,9 @@ public class Program
                 .AllowAnyMethod()
                 .AllowAnyHeader()
                 .AllowCredentials()));
+        
+        Console.WriteLine($"FrontendUrl: {builder.Configuration["FrontendUrl"]}");
+        Console.WriteLine($"BackendUrl: {builder.Configuration["BackendUrl"]}");
 
         var app = builder.Build();
 
