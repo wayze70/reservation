@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Reservation.Api.JWT;
 using Reservation.Api.Services;
@@ -35,5 +36,33 @@ public class AccountController : ControllerBase
     public async Task<ActionResult<bool>> IsPathTaken([FromBody] PathRequest request)
     {
         return Ok(await _accountService.IsPathTakenAsync(request.Path));
+    }
+
+    [HttpGet("account-info")]
+    public async Task<ActionResult<AccountInfoResponse>> GetAccountInfo(
+        [FromHeader(Name = "Authorization")] string authorization)
+    {
+        return Ok(await _accountService.GetAccountInfoAsync(Utils.GetUserIdFromAuthorizationHeader(authorization)));
+    }
+
+    [HttpPut("account-info")]
+    public async Task<ActionResult<AccountInfoResponse>> UpdatePath([FromBody] UpdateAccountInfoRequest request,
+        [FromHeader(Name = "Authorization")] string authorization)
+    {
+        return Ok(await _accountService.UpdateAccountInfoAsync(request, Utils.GetUserIdFromAuthorizationHeader(authorization)));
+    }
+    
+    [HttpPut("update-password")]
+    public async Task<ActionResult<bool>> UpdatePassword([FromBody] UpdatePasswordRequest request,
+        [FromHeader(Name = "Authorization")] string authorization)
+    {
+        return Ok(await _accountService.UpdatePasswordAsync(request, Utils.GetUserIdFromAuthorizationHeader(authorization)));
+    }
+        
+    [AllowAnonymous]
+    [HttpGet("{path}")]
+    public async Task<ActionResult<AccountDescriptionResponse>> GetAccountDescription([FromRoute] string path)
+    {
+        return Ok(await _accountService.GetAccountDescriptionAsync(path));
     }
 }

@@ -15,4 +15,5 @@ public interface IReservationService
     public Task<ApiResponse<ReservationResponse>> UpdateReservationAsync(ReservationCreateRequest request, int reservationId);
     public Task<ApiResponse<bool>> DeleteReservationAsync(int reservationId);
     public Task<ApiResponse<bool>> RemoveUserFromReservationAsync(RemoveUserFromReservationRequest request);
+    public Task<ApiResponse<ReservationResponse>> CancelReservationAsync(int reservationId, string cancellationCode);
 }

@@ -5,17 +5,18 @@
         <h1 class="my-auto"><a class="text-white" href="@Constants.Routes.Home">Rezervační systém</a></h1>
         @if (!IsReservationRoute)
         {
-            <Navigation />
+            <Navigation/>
         }
     </div>
 </header>
 
 @code
 {
-    bool IsReservationRoute => NavigationManager
-        .ToBaseRelativePath(NavigationManager.Uri)
-        .StartsWith("rezervace", StringComparison.OrdinalIgnoreCase);
+    string Uri => NavigationManager.ToBaseRelativePath(NavigationManager.Uri);
     
+    bool IsReservationRoute => (Uri.StartsWith("rezervace", StringComparison.OrdinalIgnoreCase) ||
+                                Uri.StartsWith("zruseni-rezervace", StringComparison.OrdinalIgnoreCase));
+
     protected override void OnInitialized()
     {
         NavigationManager.LocationChanged += OnLocationChanged;

@@ -1,60 +1,70 @@
 @page "/rezervace/{Path}/{Id:int}"
+@using System.Globalization
 @inject IReservationService ReservationService
 @inject NavigationManager NavigationManager
 @inject ISnackbar Snackbar
 
 <PageTitle>Detail rezervace</PageTitle>
 
-    @if (ReservationDetail is null)
-    {
-        <MudText>Načítám rezervaci...</MudText>
-    }
-    else
-    {
-        bool IsSameTimeZone = (ReservationDetail.CustomTimeZoneId != GlobalState.CurrentTimeZone.Id);
-        
-        <MudCard>
-            <MudCardActions>
-                <MudButton Variant="Variant.Outlined" Color="Color.Primary" OnClick="Back">
-                    Zpět na rezervace
-                </MudButton>
-            </MudCardActions>
-            <MudCardHeader>
-                <MudText Typo="Typo.h5">@ReservationDetail.Title</MudText>
-            </MudCardHeader>
-            <MudCardContent>
-                <MudText>Popis: @ReservationDetail.Description</MudText>
-                <MudText>
-                    Od: @ReservationDetail.Start.ConvertToTimeZone(ReservationDetail.CustomTimeZoneId).ToString("g")
-                </MudText>
-                @if (IsSameTimeZone)
-                {
-                    <MudText>
-                        Ve vaší časové pásmu od: @ReservationDetail.Start.ConvertToTimeZone(GlobalState.CurrentTimeZone).ToString("g")
-                    </MudText>
-                }
-                <MudText>Do: @ReservationDetail.End.ConvertToTimeZone(ReservationDetail.CustomTimeZoneId).ToString("g")</MudText>
-                @if (IsSameTimeZone)
-                {
-                    <MudText>
-                        Ve vaší časové pásmu od: @ReservationDetail.End.ConvertToTimeZone(GlobalState.CurrentTimeZone).ToString("g")
-                    </MudText>
-                }
-                <MudText>Kapacita: @ReservationDetail.CurrentCapacity / @ReservationDetail.Capacity</MudText>
-                <MudText Color="@(ReservationDetail.IsAvailable ? Color.Success : Color.Error)">
-                    @(ReservationDetail.IsAvailable ? "Dostupná" : "Nedostupná")
-                </MudText>
-                <MudDivider Class="my-2"/>
-                <MudText>Možnost zrušení před zahájením: @ReservationDetail.CancellationOffset.ToString()</MudText>
-            </MudCardContent>
-            <MudCardActions>
-                <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="SignUp">
-                    Přihlásit se na rezervaci
-                </MudButton>
-            </MudCardActions>
+@if (ReservationDetail is null)
+{
+    <MudText>Načítám rezervaci...</MudText>
+}
+else
+{
+    bool isSameTimeZone = (ReservationDetail.CustomTimeZoneId != GlobalState.CurrentTimeZone.Id);
 
-        </MudCard>
-    }
+    <MudCard>
+        <MudCardActions>
+            <MudButton Variant="Variant.Outlined" Color="Color.Primary" OnClick="Back">
+                Zpět na rezervace
+            </MudButton>
+        </MudCardActions>
+        <MudCardHeader>
+            <MudText Typo="Typo.h5">@ReservationDetail.Title</MudText>
+        </MudCardHeader>
+        <MudCardContent>
+            <MudText>Popis: @ReservationDetail.Description</MudText>
+            <MudText>
+                Od: @ReservationDetail.Start.ConvertToTimeZone(ReservationDetail.CustomTimeZoneId).ToString("g")
+            </MudText>
+            @if (isSameTimeZone)
+            {
+                <MudText>
+                    Ve vaší časové pásmu
+                    od: @ReservationDetail.Start.ConvertToTimeZone(GlobalState.CurrentTimeZone).ToString("g")
+                </MudText>
+            }
+            <MudText>
+                Do: @ReservationDetail.End.ConvertToTimeZone(ReservationDetail.CustomTimeZoneId).ToString("g")</MudText>
+            @if (isSameTimeZone)
+            {
+                <MudText>
+                    Ve vaší časové pásmu
+                    od: @ReservationDetail.End.ConvertToTimeZone(GlobalState.CurrentTimeZone).ToString("g")
+                </MudText>
+            }
+            <MudText>Počet volných míst: @(ReservationDetail.Capacity - ReservationDetail.CurrentCapacity)</MudText>
+            <MudText Color="@(ReservationDetail.IsAvailable ? Color.Success : Color.Error)">
+                @(ReservationDetail.IsAvailable ? "Dostupná" : "Nedostupná")
+            </MudText>
+            @if (!ReservationDetail.CancellationOffset.Equals(TimeSpan.Zero))
+            {
+                <MudDivider Class="my-2"/>
+                <MudText>Možné
+                    zrušit: @ReservationDetail.CancellationOffset.ToString(@"h\:mm", CultureInfo.CurrentCulture) před
+                    začátkem
+                </MudText>
+            }
+        </MudCardContent>
+        <MudCardActions>
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="SignUp">
+                Přihlásit se na rezervaci
+            </MudButton>
+        </MudCardActions>
+
+    </MudCard>
+}
 
 @code {
 

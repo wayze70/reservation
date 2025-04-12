@@ -19,7 +19,7 @@ public static class Constants
         {
             public const string Account = "/ucet";
             public const string AccountReservation = "/ucet/rezervace";
-            public const string ReservarionNew = "/ucet/nova-rezervace";
+            public const string ReservationNew = "/ucet/nova-rezervace";
             public static string AccountReservationDetail(int detail) => $"/ucet/rezervace/{detail}";
         }
     }

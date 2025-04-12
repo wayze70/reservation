@@ -15,6 +15,12 @@ public class Owner
     [Required]
     [StringLength(50)]
     public string LastName { get; set; }
+
+    [StringLength(50)]
+    public string Organization { get; set; } = string.Empty;
+
+    [StringLength(1000)]
+    public string Description { get; set; } = string.Empty;
     
     [Required]
     [EmailAddress]

@@ -26,4 +26,25 @@ public class AccountService : IAccountService
     {
         return await _httpClientService.PostAsync<PathRequest, bool>("account/path/taken", request);
     }
+
+    public async Task<ApiResponse<AccountInfoResponse>> GetAccountInfo()
+    {
+        return await _httpClientService.GetAsync<AccountInfoResponse>("account/account-info");
+    }
+
+    public async Task<ApiResponse<AccountInfoResponse>> UpdateAccountInfo(UpdateAccountInfoRequest request)
+    {
+        return await _httpClientService.PutAsync<UpdateAccountInfoRequest, AccountInfoResponse>
+            ("account/account-info", request);
+    }
+
+    public async Task<ApiResponse<bool>> UpdatePassword(UpdatePasswordRequest request)
+    {
+        return await _httpClientService.PutAsync<UpdatePasswordRequest, bool>("account/update-password", request);
+    }
+
+    public async Task<ApiResponse<AccountDescriptionResponse>> GetAccountDescription(string path)
+    {
+        return await _httpClientService.GetAsync<AccountDescriptionResponse>(path);
+    }
 }

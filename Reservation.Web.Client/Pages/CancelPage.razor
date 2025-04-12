@@ -1,0 +1,57 @@
+@page "/zruseni-rezervace/{Id:int}/{CancellationCode}"
+@using System.Net
+@inject IReservationService ReservationService
+@inject ISnackbar Snackbar
+
+<PageTitle>Zrušení rezervace</PageTitle>
+
+<MudPaper Class="pa-6 mx-auto my-6" MaxWidth="MaxWidth.Small" Elevation="4">
+    <MudText Typo="Typo.h5" Align="Align.Center" GutterBottom="true">
+        Zrušení rezervace
+    </MudText>
+    <MudText Align="Align.Center" Class="mb-6">
+        Opravdu si přejete zrušit vaši rezervaci?
+    </MudText>
+
+    <MudButton OnClick="ConfirmCancellation" Variant="Variant.Filled" Color="Color.Error" FullWidth="true">
+        Zrušit rezervaci
+    </MudButton>
+</MudPaper>
+
+@code {
+    [Parameter]
+    public int Id { get; set; }
+    [Parameter]
+    public string CancellationCode { get; set; } = string.Empty;
+    
+    private async Task ConfirmCancellation()
+    {
+        if (string.IsNullOrEmpty(CancellationCode))
+        {
+            Snackbar.Add("Zrušení rezervace selhalo. Zkontrolujte kód zrušení", Severity.Error);
+        }
+        
+        // Zkusíme zrušit rezervaci pomocí služby ReservationService.
+        var result = await ReservationService.CancelReservationAsync(Id, CancellationCode);
+
+        if (result.IsSuccess)
+        {
+            Snackbar.Add("Rezervace byla úspěšně zrušena", Severity.Success);
+        }
+        else
+        {
+            if (result.StatusCode == HttpStatusCode.Locked)
+            {
+                Snackbar.Add("Rezervace nelze již v tento moment zrušit", Severity.Warning);
+            }
+            else if (result.StatusCode == HttpStatusCode.BadRequest)
+            {
+                Snackbar.Add("Rezervace již byla úspěně zrušena", Severity.Info);
+            }
+            else
+            {
+                Snackbar.Add("Při zrušení rezervace došlo k chybě", Severity.Error);
+            }
+        }
+    }
+}

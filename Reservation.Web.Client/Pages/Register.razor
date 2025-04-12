@@ -17,6 +17,7 @@
 
         <MudTextField T="string" Label="Jméno" @bind-Value="RegistrationUser.FirstName" Required="true" />
         <MudTextField T="string" Label="Příjmení" @bind-Value="RegistrationUser.LastName" Required="true" />
+        <MudTextField T="string" Label="Organizace" @bind-Value="RegistrationUser.Organization" />
         <MudTextField T="string" Label="Email" @bind-Value="RegistrationUser.Email" Required="true" />
         <MudTextField T="string" Label="Heslo" InputType="InputType.Password" @bind-Value="RegistrationUser.Password" Required="true" />
 
@@ -36,6 +37,8 @@
 
     async Task OnSubmit()
     {
+        
+        
         var response = await AuthService.RegisterAsync(RegistrationUser);
 
         switch (response)

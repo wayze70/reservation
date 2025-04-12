@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Net;
 using Microsoft.EntityFrameworkCore;
 using Reservation.Api.CustomException;
@@ -8,10 +9,12 @@ namespace Reservation.Api.Services
     public class ReservationService : IReservationService
     {
         private readonly DataContext _dbContext;
+        private readonly IEmailService _emailService;
 
-        public ReservationService(DataContext dbContext)
+        public ReservationService(DataContext dbContext, IEmailService emailService)
         {
             _dbContext = dbContext;
+            _emailService = emailService;
         }
 
         public async Task<ReservationResponse> CreateReservationAsync(ReservationCreateRequest request, int ownerId)
@@ -121,7 +124,7 @@ namespace Reservation.Api.Services
         }
 
         public async Task<ReservationResponse> SignUpForReservationAsync(int reservationId,
-            ReservationSignUpRequest request)
+            ReservationSignUpRequest request, CultureInfo cultureInfo)
         {
             // Zahájení transakce
             await using var transaction = await _dbContext.Database.BeginTransactionAsync();
@@ -158,6 +161,18 @@ namespace Reservation.Api.Services
                 await _dbContext.SaveChangesAsync();
                 await transaction.CommitAsync();
 
+                await _emailService.SendReservationConfirmationEmailWithUnsubscribeLinkAsync(
+                    newUser.Email,
+                    newUser.FirstName,
+                    newUser.LastName,
+                    reservation.Title,
+                    reservation.StartTime,
+                    reservation.EndTime - reservation.StartTime,
+                    reservation.Id,
+                    newUser.CancellationCode,
+                    cultureInfo
+                );
+
                 return MapToDto(reservation);
             }
             catch (Exception)
@@ -168,7 +183,8 @@ namespace Reservation.Api.Services
             }
         }
 
-        public async Task<ReservationResponse> CancelReservationAsync(int reservationId, string cancellationCode)
+        public async Task<ReservationResponse> CancelReservationAsync(int reservationId, string cancellationCode, CultureInfo 
+                cultureInfo)
         {
             var reservation = await _dbContext.Reservations
                 .Include(r => r.SignedUsers)
@@ -190,6 +206,9 @@ namespace Reservation.Api.Services
 
             reservation.SignedUsers.Remove(user);
             await _dbContext.SaveChangesAsync();
+            
+            await _emailService.SendReservationCancellationByUserEmailAsync(user.Email, user.FirstName, user.LastName,
+                reservation.Title, reservation.StartTime, cultureInfo);
 
             return MapToDto(reservation);
         }

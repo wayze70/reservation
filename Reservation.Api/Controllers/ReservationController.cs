@@ -113,9 +113,11 @@ public class ReservationController : ControllerBase
     [AllowAnonymous]
     [HttpPost("signup/{reservationId:int}")]
     public async Task<ActionResult<ReservationResponse>> SignUpForReservation(
-        int reservationId, [FromBody] ReservationSignUpRequest request)
+        int reservationId, [FromBody] ReservationSignUpRequest request,
+        [FromHeader(Name = "Accept-language")] string acceptLanguage)
     {
-        var result = await _reservationService.SignUpForReservationAsync(reservationId, request);
+        var userCurrentCulture = Shared.Common.Utils.GetUserPreferredCurrentCulture(Shared.Common.Utils.GetUserLanguages(acceptLanguage));
+        var result = await _reservationService.SignUpForReservationAsync(reservationId, request, userCurrentCulture);
         return Ok(result);
     }
 
@@ -123,9 +125,11 @@ public class ReservationController : ControllerBase
     [AllowAnonymous]
     [HttpPost("cancel/{reservationId:int}")]
     public async Task<ActionResult<ReservationResponse>> CancelReservation(
-        int reservationId, [FromQuery] string cancellationCode)
+        [FromRoute] int reservationId, [FromBody] string cancellationCode,
+        [FromHeader(Name = "Accept-language")] string acceptLanguage)
     {
-        var result = await _reservationService.CancelReservationAsync(reservationId, cancellationCode);
+        var userCurrentCulture = Shared.Common.Utils.GetUserPreferredCurrentCulture(Shared.Common.Utils.GetUserLanguages(acceptLanguage));
+        var result = await _reservationService.CancelReservationAsync(reservationId, cancellationCode, userCurrentCulture);
         return Ok(result);
     }
 }

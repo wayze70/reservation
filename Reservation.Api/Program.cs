@@ -77,6 +77,7 @@ public class Program
         builder.Services.AddScoped<IReservationService, ReservationService>();
         builder.Services.AddScoped<IAccountService, AccountService>();
         builder.Services.AddSingleton<JwtTokenHelper>();
+        builder.Services.AddSingleton<IEmailService, EmailService>();
         
         builder.Services.AddDbContext<DataContext>(options =>
             options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"),
@@ -111,9 +112,6 @@ public class Program
                 .AllowAnyMethod()
                 .AllowAnyHeader()
                 .AllowCredentials()));
-        
-        Console.WriteLine($"FrontendUrl: {builder.Configuration["FrontendUrl"]}");
-        Console.WriteLine($"BackendUrl: {builder.Configuration["BackendUrl"]}");
 
         var app = builder.Build();
 

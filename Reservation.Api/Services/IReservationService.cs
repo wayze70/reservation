@@ -1,3 +1,4 @@
+using System.Globalization;
 using Reservation.Shared.Dtos;
 
 namespace Reservation.Api.Services
@@ -19,8 +20,9 @@ namespace Reservation.Api.Services
         Task<bool> DeleteReservationAsync(int ownerId, int reservationId);
 
         // Přihlášení/zrušení rezervace
-        Task<ReservationResponse> SignUpForReservationAsync(int reservationId, ReservationSignUpRequest request);
-        Task<ReservationResponse> CancelReservationAsync(int reservationId, string cancellationCode);
+        Task<ReservationResponse> SignUpForReservationAsync(int reservationId, ReservationSignUpRequest request, 
+            CultureInfo cultureInfo);
+        Task<ReservationResponse> CancelReservationAsync(int reservationId, string cancellationCode, CultureInfo cultureInfo);
         Task<bool> RemoveUserFromReservationAsync(int reservationId, string userEmail);
         Task<bool> OwnerOwnsReservationAsync(int ownerId, int reservationId);
     }

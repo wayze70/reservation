@@ -58,4 +58,10 @@ public class ReservationService : IReservationService
     {
         return await _httpClientService.PostAsync<RemoveUserFromReservationRequest, bool>($"/reservation/remove-user", request);
     }
+
+    public async Task<ApiResponse<ReservationResponse>> CancelReservationAsync(int reservationId, string cancellationCode)
+    {
+        return await _httpClientService.PostAsync<string, ReservationResponse>($"/reservation/cancel/{reservationId}", 
+            cancellationCode);
+    }
 }
