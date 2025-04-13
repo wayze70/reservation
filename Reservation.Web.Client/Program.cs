@@ -59,7 +59,6 @@ namespace Reservation.Web.Client
             builder.Services.AddScoped<IReservationService, ReservationService>();
             builder.Services.AddScoped<IAccountService, AccountService>();
             builder.Services.AddScoped<AuthenticationStateProvider, CustomAuthenticationStateProvider>();
-            builder.Services.AddScoped<ILogoutService, LogoutService>();
 
             await builder.Build().RunAsync();
         }

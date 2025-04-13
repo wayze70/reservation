@@ -11,4 +11,5 @@ public interface IAuthService
     Task<string> RefreshAsync(string refreshToken);
     Task<bool> LogoutAsync(string refreshToken);
     Task CleanupInvalidRefreshTokensAsync();
+    Task<bool> LogoutAllDevicesAsync(string refreshToken);
 }

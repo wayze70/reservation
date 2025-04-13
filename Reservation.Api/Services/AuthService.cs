@@ -121,23 +121,19 @@ public class AuthService : IAuthService
     {
         if (string.IsNullOrWhiteSpace(refreshToken))
             throw new CustomHttpException(HttpStatusCode.BadRequest, "Refresh token je prázdný");
+        
+        if (_jwtTokenHelper.ValidateTokenOrigin(refreshToken) is null)
+            throw new CustomHttpException(HttpStatusCode.BadRequest, "Nevalidní token");
 
         var device = await _dbContext.Devices
             .FirstOrDefaultAsync(d => d.RefreshToken == refreshToken && d.OwnerId == GetOwnerId(refreshToken));
-    
+        
         if (device is null)
             throw new CustomHttpException(HttpStatusCode.BadRequest, "Zařízení nenalezeno");
     
         _dbContext.Devices.Remove(device);
         await _dbContext.SaveChangesAsync();
         return true;
-    }
-
-    private static int GetOwnerId(string refreshToken)
-    {
-        return int.Parse(JwtTokenHelper
-            .GetClaimValue(JwtTokenHelper.GetClaims(refreshToken), ReservationClaimNames.Sub) ?? throw new
-            CustomHttpException(HttpStatusCode.BadRequest, "User id v refresh token není platný"));
     }
     
     public async Task CleanupInvalidRefreshTokensAsync()
@@ -147,5 +143,38 @@ public class AuthService : IAuthService
     
         _dbContext.Devices.RemoveRange(invalidDevices);
         await _dbContext.SaveChangesAsync();
+    }
+
+    public async Task<bool> LogoutAllDevicesAsync(string refreshToken)
+    {
+        if (string.IsNullOrWhiteSpace(refreshToken))
+            throw new CustomHttpException(HttpStatusCode.BadRequest, "Refresh token je prázdný");
+
+        if (_jwtTokenHelper.ValidateTokenOrigin(refreshToken) is null)
+            throw new CustomHttpException(HttpStatusCode.BadRequest, "Nevalidní token");
+
+        int ownerId = GetOwnerId(refreshToken);
+    
+        var device = await _dbContext.Devices
+            .FirstOrDefaultAsync(d => d.RefreshToken == refreshToken);
+    
+        if (device is null)
+            throw new CustomHttpException(HttpStatusCode.BadRequest, "Zařízení nenalezeno");
+
+        // Pak odstraníme všechna zařízení vlastníka
+        var devices = await _dbContext.Devices
+            .Where(d => d.OwnerId == ownerId)
+            .ToListAsync();
+
+        _dbContext.Devices.RemoveRange(devices);
+        await _dbContext.SaveChangesAsync();
+        return true;
+    }
+    
+    private static int GetOwnerId(string refreshToken)
+    {
+        return int.Parse(JwtTokenHelper
+            .GetClaimValue(JwtTokenHelper.GetClaims(refreshToken), ReservationClaimNames.Sub) ?? throw new
+            CustomHttpException(HttpStatusCode.BadRequest, "User id v refresh token není platný"));
     }
 }

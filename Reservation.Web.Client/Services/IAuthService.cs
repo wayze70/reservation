@@ -7,6 +7,6 @@ public interface IAuthService
 {
     public Task<HttpStatusCode> RegisterAsync(RegistrationRequest registerRequest);
     public Task<HttpStatusCode> LoginAsync(LoginRequest loginRequest);
-    public Task<HttpStatusCode> RefreshAsync(string refreshToken);
     public Task LogoutAsync();
+    public Task LogoutAllDevicesAsync();
 }

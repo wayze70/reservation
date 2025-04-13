@@ -15,15 +15,18 @@ namespace Reservation.Web.Client.CustomExtensions
     {
         private readonly ILocalStorageService _localStorage;
         private readonly IHttpClientFactory _httpClientFactory;
-        private readonly ILogoutService _logoutService;
+        private readonly AuthenticationStateProvider _authenticationStateProvider;
+        private readonly NavigationManager _navigationManager;
 
         public TokenRefreshHandler(ILocalStorageService localStorage, 
             IHttpClientFactory httpClientFactory,
-            ILogoutService logoutService)
+            AuthenticationStateProvider authenticationStateProvider,
+            NavigationManager navigationManager)
         {
             _localStorage = localStorage;
             _httpClientFactory = httpClientFactory;
-            _logoutService = logoutService;
+            _authenticationStateProvider = authenticationStateProvider;
+            _navigationManager = navigationManager;
         }
 
         protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
@@ -62,7 +65,21 @@ namespace Reservation.Web.Client.CustomExtensions
                     }
                     else
                     {
-                        await _logoutService.LogoutAsync();
+                        try
+                        {
+                            if (!string.IsNullOrWhiteSpace(refreshToken))
+                            {
+                                await client.PostAsJsonAsync("auth/logout", new LogoutRequest { RefreshToken = refreshToken }, cancellationToken: cancellationToken);
+                            }
+                        }
+                        finally
+                        {
+                            if (_authenticationStateProvider is CustomAuthenticationStateProvider authStateProvider)
+                            {
+                                await authStateProvider.MarkUserAsLoggedOut();
+                            }
+                            _navigationManager.NavigateTo(Constants.Routes.Login, true);
+                        }
                     }
                 }
             }

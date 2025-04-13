@@ -1,6 +1,6 @@
 @inject NavigationManager NavigationManager
 @inject IAccountService AccountService
-@using System.Globalization
+@inject IAuthService AuthService
 @using Microsoft.AspNetCore.Authorization
 @using Reservation.Shared.Common
 @inject ISnackbar Snackbar
@@ -97,6 +97,12 @@
             </EditForm>
         </MudPaper>
     </MudExpansionPanel>
+
+                <MudButton ButtonType="ButtonType.Button" OnClick="() => { AuthService.LogoutAllDevicesAsync();}" Color="Color.Error" Variant="Variant
+                .Filled" Class="mt-4">
+                    Test
+                </MudButton>
+
     <MudExpansionPanel Text="Zrušení účtu">
         <MudPaper Class="pa-6 mx-auto my-6" MaxWidth="MaxWidth.Small" Elevation="4">
             <EditForm Model="_deleteAccountRequest" OnValidSubmit="OnDeleteAccountValidSubmit" 

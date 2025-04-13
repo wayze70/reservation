@@ -67,44 +67,12 @@ public class JwtTokenHelper
 
         return tokenHandler.WriteToken(token);
     }
-
+    
     public ClaimsPrincipal? ValidateToken(string token)
-    {
-        try
-        {
-            var tokenHandler = new JwtSecurityTokenHandler();
-            byte[] key = Encoding.UTF8.GetBytes(_key);
+        => ValidateTokenInternal(token, validateLifetime: true);
 
-            var validationParameters = new TokenValidationParameters
-            {
-                ValidateIssuer = true,
-                ValidateAudience = true,
-                ValidateLifetime = true,
-                ValidateIssuerSigningKey = true,
-                ValidIssuer = _issuer,
-                ValidAudience = _audience,
-                IssuerSigningKey = new SymmetricSecurityKey(key),
-                ClockSkew = TimeSpan.Zero
-            };
-
-            // Token validation
-            var claimsPrincipal =
-                tokenHandler.ValidateToken(token, validationParameters, out SecurityToken validatedToken);
-
-            // Kontrola algoritmu tokenu
-            if (validatedToken is JwtSecurityToken jwtToken &&
-                !jwtToken.Header.Alg.Equals(SecurityAlgorithms.HmacSha256, StringComparison.InvariantCultureIgnoreCase))
-            {
-                throw new SecurityTokenException("Nevalidní algoritmus tokenu");
-            }
-
-            return claimsPrincipal;
-        }
-        catch (Exception)
-        {
-            return null;
-        }
-    }
+    public ClaimsPrincipal? ValidateTokenOrigin(string token)
+        => ValidateTokenInternal(token, validateLifetime: false);
 
     public static IEnumerable<Claim> GetClaims(string token)
     {
@@ -126,5 +94,43 @@ public class JwtTokenHelper
         }
 
         return authorization["Bearer ".Length..].Trim();
+    }
+    
+    private TokenValidationParameters CreateBaseValidationParameters(bool validateLifetime = true)
+    {
+        return new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidateLifetime = validateLifetime,
+            ValidateIssuerSigningKey = true,
+            ValidIssuer = _issuer,
+            ValidAudience = _audience,
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_key)),
+            ClockSkew = TimeSpan.Zero
+        };
+    }
+
+    private ClaimsPrincipal? ValidateTokenInternal(string token, bool validateLifetime)
+    {
+        try
+        {
+            var tokenHandler = new JwtSecurityTokenHandler();
+            var validationParameters = CreateBaseValidationParameters(validateLifetime);
+
+            var claimsPrincipal = tokenHandler.ValidateToken(token, validationParameters, out SecurityToken validatedToken);
+
+            if (validatedToken is JwtSecurityToken jwtToken &&
+                !jwtToken.Header.Alg.Equals(SecurityAlgorithms.HmacSha256, StringComparison.InvariantCultureIgnoreCase))
+            {
+                throw new SecurityTokenException("Nevalidní algoritmus tokenu");
+            }
+
+            return claimsPrincipal;
+        }
+        catch
+        {
+            return null;
+        }
     }
 }

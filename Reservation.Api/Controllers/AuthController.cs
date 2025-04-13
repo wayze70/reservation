@@ -73,7 +73,17 @@ public class AuthController : ControllerBase
         if (string.IsNullOrWhiteSpace(request.RefreshToken))
             throw new CustomHttpException(HttpStatusCode.BadRequest, "Refresh token je prázdný");
 
-        bool result = await _authService.LogoutAsync(request.RefreshToken);
-        return Ok(result);
+        bool response = await _authService.LogoutAsync(request.RefreshToken);
+        return Ok(response);
+    }
+    
+    [HttpPost("logout-all")]
+    public async Task<ActionResult<bool>> LogoutAllDevices([FromBody] LogoutRequest request)
+    {
+        if (string.IsNullOrWhiteSpace(request.RefreshToken))
+            throw new CustomHttpException(HttpStatusCode.BadRequest, "Refresh token je prázdný");
+        
+        bool response = await _authService.LogoutAllDevicesAsync(request.RefreshToken);
+        return Ok(response);
     }
 }
