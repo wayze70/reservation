@@ -11,4 +11,5 @@ public interface IAccountService
     public Task<AccountInfoResponse> GetAccountInfoAsync(int ownerId);
     Task<AccountInfoResponse> UpdateAccountInfoAsync(UpdateAccountInfoRequest request, int ownerId);
     Task<bool> UpdatePasswordAsync(UpdatePasswordRequest request, int ownerId);
+    Task<bool> DeleteAccountAsync(DeleteAccountRequest request, int ownerId);
 }

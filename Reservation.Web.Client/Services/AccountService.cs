@@ -47,4 +47,9 @@ public class AccountService : IAccountService
     {
         return await _httpClientService.GetAsync<AccountDescriptionResponse>(path);
     }
+
+    public async Task<ApiResponse<bool>> DeleteAccount(DeleteAccountRequest request)
+    {
+        return await _httpClientService.PostAsync<DeleteAccountRequest, bool>("account/delete", request);
+    }
 }

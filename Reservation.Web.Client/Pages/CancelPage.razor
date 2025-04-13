@@ -40,17 +40,17 @@
         }
         else
         {
-            if (result.StatusCode == HttpStatusCode.Locked)
+            switch (result.StatusCode)
             {
-                Snackbar.Add("Rezervace nelze již v tento moment zrušit", Severity.Warning);
-            }
-            else if (result.StatusCode == HttpStatusCode.BadRequest)
-            {
-                Snackbar.Add("Rezervace již byla úspěně zrušena", Severity.Info);
-            }
-            else
-            {
-                Snackbar.Add("Při zrušení rezervace došlo k chybě", Severity.Error);
+                case HttpStatusCode.Locked:
+                    Snackbar.Add("Rezervace nelze již v tento moment zrušit", Severity.Warning);
+                    break;
+                case HttpStatusCode.BadRequest:
+                    Snackbar.Add("Rezervace již byla úspěně zrušena", Severity.Info);
+                    break;
+                default:
+                    Snackbar.Add("Při zrušení rezervace došlo k chybě", Severity.Error);
+                    break;
             }
         }
     }

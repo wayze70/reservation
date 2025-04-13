@@ -19,15 +19,13 @@ public class ReservationController : ControllerBase
         _reservationService = reservationService;
     }
 
-    // 1. Vytvoření rezervací (více najednou) pro vlastníka
     [HttpPost]
     public async Task<ActionResult<List<ReservationResponse>>> CreateReservations(
-        [FromBody] List<ReservationCreateRequest> requests,
+        [FromBody] List<ReservationCreateRequest> request,
         [FromHeader(Name = "Authorization")] string authorization)
     {
-        int ownerId = Utils.GetUserIdFromAuthorizationHeader(authorization);
-        var result = await _reservationService.CreateReservationsAsync(requests, ownerId);
-        return Ok(result);
+        int ownerId = Utils.GetUserIdFromBearerToken(authorization);
+        return Ok(await _reservationService.CreateReservationsAsync(request, ownerId));
     }
 
     // 2. Získání detailu rezervace (včetně uživatelů) pro vlastníka
@@ -36,7 +34,7 @@ public class ReservationController : ControllerBase
         [FromHeader(Name = "Authorization")] string authorization,
         int reservationId)
     {
-        int ownerId = Utils.GetUserIdFromAuthorizationHeader(authorization);
+        int ownerId = Utils.GetUserIdFromBearerToken(authorization);
         var result = await _reservationService.GetReservationWithUsersAsync(ownerId, reservationId);
         return Ok(result);
     }
@@ -47,7 +45,7 @@ public class ReservationController : ControllerBase
     public async Task<ActionResult<List<ReservationResponse>>> GetReservationsForOwner(
         [FromHeader(Name = "Authorization")] string authorization)
     {
-        int ownerId = Utils.GetUserIdFromAuthorizationHeader(authorization);
+        int ownerId = Utils.GetUserIdFromBearerToken(authorization);
         var result = await _reservationService.GetReservationsByOwnerAsync(ownerId);
         return Ok(result);
     }
@@ -67,7 +65,7 @@ public class ReservationController : ControllerBase
         [FromHeader(Name = "Authorization")] string authorization,
         int reservationId)
     {
-        int ownerId = Utils.GetUserIdFromAuthorizationHeader(authorization);
+        int ownerId = Utils.GetUserIdFromBearerToken(authorization);
         bool result = await _reservationService.DeleteReservationAsync(ownerId, reservationId);
         return Ok(result);
     }
@@ -78,7 +76,7 @@ public class ReservationController : ControllerBase
         [FromHeader(Name = "Authorization")] string authorization,
         [FromBody] RemoveUserFromReservationRequest request)
     {
-        int ownerId = Utils.GetUserIdFromAuthorizationHeader(authorization);
+        int ownerId = Utils.GetUserIdFromBearerToken(authorization);
         bool isOwner = await _reservationService.OwnerOwnsReservationAsync(ownerId, request.ReservationId);
         if (!isOwner)
         {

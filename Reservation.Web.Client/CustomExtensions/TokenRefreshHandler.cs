@@ -2,22 +2,28 @@ using System.Net;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using Blazored.LocalStorage;
-using System.Text.Json;
-using System.Text;
-using Reservation.Shared.Dtos;  // předpokládaná umístění RefreshTokenRequest
-using System.Threading.Tasks;
+using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Authorization;
+using Reservation.Shared.Dtos;
+using Reservation.Web.Client.Services;
 
-namespace Reservation.Web.Client.Services
+// předpokládaná umístění RefreshTokenRequest
+
+namespace Reservation.Web.Client.CustomExtensions
 {
     public class TokenRefreshHandler : DelegatingHandler
     {
         private readonly ILocalStorageService _localStorage;
         private readonly IHttpClientFactory _httpClientFactory;
+        private readonly ILogoutService _logoutService;
 
-        public TokenRefreshHandler(ILocalStorageService localStorage, IHttpClientFactory httpClientFactory)
+        public TokenRefreshHandler(ILocalStorageService localStorage, 
+            IHttpClientFactory httpClientFactory,
+            ILogoutService logoutService)
         {
             _localStorage = localStorage;
             _httpClientFactory = httpClientFactory;
+            _logoutService = logoutService;
         }
 
         protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
@@ -28,7 +34,7 @@ namespace Reservation.Web.Client.Services
             if (response.StatusCode == HttpStatusCode.Unauthorized)
             {
                 // Načtení refresh tokenu z local storage
-                string? refreshToken = await _localStorage.GetItemAsync<string>("refreshToken", cancellationToken);
+                string? refreshToken = await _localStorage.GetItemAsync<string>(Constants.RefreshToken, cancellationToken);
                 if (!string.IsNullOrWhiteSpace(refreshToken))
                 {
                     // Vytvoříme HttpClient bez připojených handlerů
@@ -40,11 +46,11 @@ namespace Reservation.Web.Client.Services
                     var refreshResponse = await client.PostAsJsonAsync("auth/refresh", refreshRequest, cancellationToken);
                     if (refreshResponse.IsSuccessStatusCode)
                     {
-                        var newAccessToken = await refreshResponse.Content.ReadFromJsonAsync<string>(cancellationToken: cancellationToken);
+                        string? newAccessToken = await refreshResponse.Content.ReadFromJsonAsync<string>(cancellationToken: cancellationToken);
                         if (!string.IsNullOrEmpty(newAccessToken))
                         {
                             // Uložíme nový access token do local storage
-                            await _localStorage.SetItemAsync("accessToken", newAccessToken, cancellationToken);
+                            await _localStorage.SetItemAsync(Constants.AccessToken, newAccessToken, cancellationToken);
 
                             // Klonujeme původní požadavek, nastavíme nový header a znovu odešleme
                             var newRequest = await CloneHttpRequestMessageAsync(request);
@@ -54,12 +60,16 @@ namespace Reservation.Web.Client.Services
                             return await base.SendAsync(newRequest, cancellationToken);
                         }
                     }
+                    else
+                    {
+                        await _logoutService.LogoutAsync();
+                    }
                 }
             }
 
             return response;
         }
-
+        
         // Metoda pro klonování HttpRequestMessage, protože původní požadavek již nelze znovu použít
         private async Task<HttpRequestMessage> CloneHttpRequestMessageAsync(HttpRequestMessage request)
         {
@@ -73,7 +83,7 @@ namespace Reservation.Web.Client.Services
 
             if (request.Content != null)
             {
-                var contentBytes = await request.Content.ReadAsByteArrayAsync();
+                byte[] contentBytes = await request.Content.ReadAsByteArrayAsync();
                 clone.Content = new ByteArrayContent(contentBytes);
                 foreach (var header in request.Content.Headers)
                 {

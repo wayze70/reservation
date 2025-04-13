@@ -1,41 +1,47 @@
+using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace Reservation.Api.Models;
-
-public class Owner
+namespace Reservation.Api.Models
 {
-    [Key]
-    public int Id { get; private set; }
+    public class Owner
+    {
+        [Key]
+        public int Id { get; private set; }
 
-    [Required]
-    [StringLength(50)]
-    public string FirstName { get; set; }
-    
-    [Required]
-    [StringLength(50)]
-    public string LastName { get; set; }
+        [Required]
+        [StringLength(50)]
+        public string FirstName { get; set; }
+        
+        [Required]
+        [StringLength(50)]
+        public string LastName { get; set; }
+        
+        [Required]
+        [StringLength(50)]
+        public string Organization { get; set; }
 
-    [StringLength(50)]
-    public string Organization { get; set; } = string.Empty;
+        [StringLength(1000)]
+        public string Description { get; set; } = string.Empty;
+        
+        [Required]
+        [EmailAddress]
+        [StringLength(320)]
+        public string Email { get; set; }
+        
+        [Required]
+        [StringLength(100)]
+        public string PasswordHash { get; set; }
+        
+        [StringLength(50)]
+        public string? Path { get; set; }
 
-    [StringLength(1000)]
-    public string Description { get; set; } = string.Empty;
-    
-    [Required]
-    [EmailAddress]
-    [StringLength(320)]
-    public string Email { get; set; }
-    
-    [Required]
-    [StringLength(100)]
-    public string PasswordHash { get; set; }
-    [StringLength(1000)]
-    public string? RefreshToken { get; set; }
-    
-    [StringLength(50)]
-    public string? Path { get; set; }
+        // Vztah 1:n s entitou Device – každý Owner může mít více zařízení
+        public ICollection<Device> Devices { get; set; } = new List<Device>();
 
-    [InverseProperty("Owner")]
-    public ICollection<Reservation> Reservations { get; set; } = new List<Reservation>();
+        [InverseProperty("Owner")]
+        public ICollection<Reservation> Reservations { get; set; } = new List<Reservation>();
+    }
+
+ 
 }

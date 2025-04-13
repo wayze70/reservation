@@ -1,10 +1,9 @@
+using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using Blazored.LocalStorage;
-using System.IdentityModel.Tokens.Jwt;
 using Microsoft.AspNetCore.Components.Authorization;
-using Reservation.Web.Client.CustomExtensions;
 
-namespace Reservation.Web.Client.Services;
+namespace Reservation.Web.Client.CustomExtensions;
 
 public class CustomAuthenticationStateProvider : 
     AuthenticationStateProvider
@@ -55,6 +54,7 @@ public class CustomAuthenticationStateProvider :
     public async Task MarkUserAsLoggedOut()
     {
         await _localStorage.RemoveItemAsync(Constants.AccessToken);
+        await _localStorage.RemoveItemAsync(Constants.RefreshToken);
         var identity = new ClaimsIdentity();
         var user = new ClaimsPrincipal(identity);
         NotifyAuthenticationStateChanged(Task.FromResult(new AuthenticationState(user)));

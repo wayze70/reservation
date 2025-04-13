@@ -72,7 +72,7 @@
                       OnInvalidSubmit="OnAccountInfoInvalidSubmit">
                 <MudTextField T="string" Label="Jméno" @bind-Value="_accountInfo.FirstName" Required="true" />
                 <MudTextField T="string" Label="Příjmení" @bind-Value="_accountInfo.LastName" Required="true" />
-                <MudTextField T="string" Label="Organizace" @bind-Value="_accountInfo.Organization" />
+                <MudTextField T="string" Label="Organizace" @bind-Value="_accountInfo.Organization" Required="true" />
                 <MudTextField T="string" Label="Popis" @bind-Value="_accountInfo.Description" />
                 <MudTextField T="string" Label="E-mail" @bind-Value="_accountInfo.Email" Required="true" />
 
@@ -97,6 +97,21 @@
             </EditForm>
         </MudPaper>
     </MudExpansionPanel>
+    <MudExpansionPanel Text="Zrušení účtu">
+        <MudPaper Class="pa-6 mx-auto my-6" MaxWidth="MaxWidth.Small" Elevation="4">
+            <EditForm Model="_deleteAccountRequest" OnValidSubmit="OnDeleteAccountValidSubmit" 
+                      OnInvalidSubmit="OnDeleteAccountInvalidSubmit">
+                <MudTextField T="string" Label="Email" @bind-Value="_deleteAccountRequest.Email" Required="true"
+                              InputType="InputType.Email" />
+                <MudTextField T="string" Label="Heslo" @bind-Value="_deleteAccountRequest.Password" Required="true"
+                              InputType="InputType.Password" />
+
+                <MudButton ButtonType="ButtonType.Submit" Color="Color.Error" Variant="Variant.Filled" Class="mt-4">
+                    Smazat účet
+                </MudButton>
+            </EditForm>
+        </MudPaper>
+    </MudExpansionPanel>
 </MudExpansionPanels>
 
 @code
@@ -107,8 +122,8 @@
     bool IsPathValid { get; set; } = true;
     
     private AccountInfoResponse _accountInfo = new();
-    
     private UpdatePasswordRequest _updatePasswordRequest = new();
+    private DeleteAccountRequest _deleteAccountRequest = new();
 
     protected override async Task OnInitializedAsync()
     {
@@ -216,5 +231,25 @@
     private void OnPasswordInvalidSubmit()
     {
         Snackbar.Add("Vyplňte prosím obě pole pro změnu hesla.", Severity.Warning);
+    }
+
+    private async Task OnDeleteAccountValidSubmit()
+    {
+        var result = await AccountService.DeleteAccount(_deleteAccountRequest);
+        if (result.IsSuccess)
+        {
+            Snackbar.Add("Účet byl úspěšně zrušen.", Severity.Success);
+            NavigationManager.NavigateTo("/", true);
+        }
+        else
+        {
+            Snackbar.Add("Chyba při zrušení účtu.", Severity.Error);
+        }
+        
+    }
+    
+    private void OnDeleteAccountInvalidSubmit()
+    {
+        Snackbar.Add("Vyplňte prosím obě pole pro zrušení účtu.", Severity.Warning);
     }
 }

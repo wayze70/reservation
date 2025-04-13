@@ -13,5 +13,6 @@ public struct ReservationClaimNames
     public struct Custom
     {
         public const string GeneratedNumber = "gen_num";
+        public const string DeviceName = "device_name";
     }
 }

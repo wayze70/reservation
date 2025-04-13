@@ -12,4 +12,5 @@ public interface IAccountService
     public Task<ApiResponse<AccountInfoResponse>> UpdateAccountInfo(UpdateAccountInfoRequest request);
     public Task<ApiResponse<bool>> UpdatePassword(UpdatePasswordRequest request);
     public Task<ApiResponse<AccountDescriptionResponse>> GetAccountDescription(string path);
+    public Task<ApiResponse<bool>> DeleteAccount(DeleteAccountRequest request);
 }

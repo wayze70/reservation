@@ -10,4 +10,10 @@ public interface IEmailService
     public Task SendReservationConfirmationEmailWithUnsubscribeLinkAsync(string recipientEmail, string firstName, 
         string lastName, string reservationTitle, DateTime reservationDate, TimeSpan duration, int reservationId, string 
             unsubscribeLink, CultureInfo cultureInfo);
+    public Task SendReservationCancellationByOwnerDeletingAccountEmailAsync(string recipientEmail, string firstName, string lastName, 
+        string reservationTitle, string organization);
+
+    public Task SendReservationCancellationByOwnerEmailAsync(string recipientEmail, string firstName, string lastName,
+        string reservationTitle, DateTime reservationDate, CultureInfo cultureInfo);
+    public Task SendDeleteAccountEmailAsync(string recipientEmail, string firstName, string lastName);
 }

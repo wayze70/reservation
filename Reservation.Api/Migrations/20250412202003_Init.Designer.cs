@@ -12,8 +12,8 @@ using Reservation.Api;
 namespace Reservation.Api.Migrations
 {
     [DbContext(typeof(DataContext))]
-    [Migration("20250411135539_Init2")]
-    partial class Init2
+    [Migration("20250412202003_Init")]
+    partial class Init
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -24,6 +24,34 @@ namespace Reservation.Api.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
+
+            modelBuilder.Entity("Reservation.Api.Models.Device", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("DeviceName")
+                        .IsRequired()
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)");
+
+                    b.Property<int>("OwnerId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("RefreshToken")
+                        .IsRequired()
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("OwnerId");
+
+                    b.ToTable("Devices");
+                });
 
             modelBuilder.Entity("Reservation.Api.Models.Owner", b =>
                 {
@@ -66,10 +94,6 @@ namespace Reservation.Api.Migrations
                     b.Property<string>("Path")
                         .HasMaxLength(50)
                         .HasColumnType("character varying(50)");
-
-                    b.Property<string>("RefreshToken")
-                        .HasMaxLength(1000)
-                        .HasColumnType("character varying(1000)");
 
                     b.HasKey("Id");
 
@@ -166,6 +190,17 @@ namespace Reservation.Api.Migrations
                     b.ToTable("Users");
                 });
 
+            modelBuilder.Entity("Reservation.Api.Models.Device", b =>
+                {
+                    b.HasOne("Reservation.Api.Models.Owner", "Owner")
+                        .WithMany("Devices")
+                        .HasForeignKey("OwnerId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Owner");
+                });
+
             modelBuilder.Entity("Reservation.Api.Models.Reservation", b =>
                 {
                     b.HasOne("Reservation.Api.Models.Owner", "Owner")
@@ -190,6 +225,8 @@ namespace Reservation.Api.Migrations
 
             modelBuilder.Entity("Reservation.Api.Models.Owner", b =>
                 {
+                    b.Navigation("Devices");
+
                     b.Navigation("Reservations");
                 });
 

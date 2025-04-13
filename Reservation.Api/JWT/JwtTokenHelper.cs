@@ -32,16 +32,17 @@ public class JwtTokenHelper
             new Claim(ReservationClaimNames.FamilyName, owner.LastName)
         ];
 
-        return GenerateToken(claims, TimeSpan.FromMinutes(20)); // 20 minut
+        return GenerateToken(claims, TimeSpan.FromMinutes(15)); // 15 minut
     }
 
-    public string GenerateRefreshToken(Owner owner)
+    public string GenerateRefreshToken(Owner owner, string deviceName)
     {
         IEnumerable<Claim> claims =
         [
             new Claim(ReservationClaimNames.Sub, owner.Id.ToString()),
             new Claim(ReservationClaimNames.Email, owner.Email),
-            new Claim(ReservationClaimNames.Custom.GeneratedNumber, new Random().Next(0, 999).ToString())
+            new Claim(ReservationClaimNames.Custom.GeneratedNumber, new Random().Next(0, 999).ToString()),
+            new Claim(ReservationClaimNames.Custom.DeviceName, deviceName)
         ];
 
         return GenerateToken(claims, TimeSpan.FromDays(180)); // 6 měsíců
@@ -94,7 +95,7 @@ public class JwtTokenHelper
             if (validatedToken is JwtSecurityToken jwtToken &&
                 !jwtToken.Header.Alg.Equals(SecurityAlgorithms.HmacSha256, StringComparison.InvariantCultureIgnoreCase))
             {
-                throw new SecurityTokenException("Invalid token algorithm");
+                throw new SecurityTokenException("Nevalidní algoritmus tokenu");
             }
 
             return claimsPrincipal;

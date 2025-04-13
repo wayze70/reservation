@@ -21,7 +21,7 @@ public class AccountController : ControllerBase
     public async Task<ActionResult<string>> GetPath([FromHeader(Name = "Authorization")] string
         authorization)
     {
-        return Ok((await _accountService.GetPathAsync(Utils.GetUserIdFromAuthorizationHeader(authorization))) ??
+        return Ok((await _accountService.GetPathAsync(Utils.GetUserIdFromBearerToken(authorization))) ??
                   string.Empty);
     }
 
@@ -29,7 +29,7 @@ public class AccountController : ControllerBase
     public async Task<ActionResult<string>> SetPath([FromBody] PathRequest request, [FromHeader(Name = "Authorization")]
         string authorization)
     {
-        return Ok(await _accountService.SetPathAsync(request, Utils.GetUserIdFromAuthorizationHeader(authorization)));
+        return Ok(await _accountService.SetPathAsync(request, Utils.GetUserIdFromBearerToken(authorization)));
     }
 
     [HttpPost("path/taken")]
@@ -42,21 +42,21 @@ public class AccountController : ControllerBase
     public async Task<ActionResult<AccountInfoResponse>> GetAccountInfo(
         [FromHeader(Name = "Authorization")] string authorization)
     {
-        return Ok(await _accountService.GetAccountInfoAsync(Utils.GetUserIdFromAuthorizationHeader(authorization)));
+        return Ok(await _accountService.GetAccountInfoAsync(Utils.GetUserIdFromBearerToken(authorization)));
     }
 
     [HttpPut("account-info")]
     public async Task<ActionResult<AccountInfoResponse>> UpdatePath([FromBody] UpdateAccountInfoRequest request,
         [FromHeader(Name = "Authorization")] string authorization)
     {
-        return Ok(await _accountService.UpdateAccountInfoAsync(request, Utils.GetUserIdFromAuthorizationHeader(authorization)));
+        return Ok(await _accountService.UpdateAccountInfoAsync(request, Utils.GetUserIdFromBearerToken(authorization)));
     }
     
     [HttpPut("update-password")]
     public async Task<ActionResult<bool>> UpdatePassword([FromBody] UpdatePasswordRequest request,
         [FromHeader(Name = "Authorization")] string authorization)
     {
-        return Ok(await _accountService.UpdatePasswordAsync(request, Utils.GetUserIdFromAuthorizationHeader(authorization)));
+        return Ok(await _accountService.UpdatePasswordAsync(request, Utils.GetUserIdFromBearerToken(authorization)));
     }
         
     [AllowAnonymous]
@@ -64,5 +64,12 @@ public class AccountController : ControllerBase
     public async Task<ActionResult<AccountDescriptionResponse>> GetAccountDescription([FromRoute] string path)
     {
         return Ok(await _accountService.GetAccountDescriptionAsync(path));
+    }
+
+    [HttpPost("delete")] 
+    public async Task<ActionResult<bool>> DeleteAccount([FromHeader(Name = "Authorization")] string authorization, 
+    [FromBody] DeleteAccountRequest request)
+    {
+        return Ok(await _accountService.DeleteAccountAsync(request, Utils.GetUserIdFromBearerToken(authorization)));
     }
 }

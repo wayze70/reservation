@@ -78,6 +78,7 @@ public class Program
         builder.Services.AddScoped<IAccountService, AccountService>();
         builder.Services.AddSingleton<JwtTokenHelper>();
         builder.Services.AddSingleton<IEmailService, EmailService>();
+        builder.Services.AddHostedService<RefreshTokenCleanupWorker>();
         
         builder.Services.AddDbContext<DataContext>(options =>
             options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"),
@@ -102,6 +103,7 @@ public class Program
                     IssuerSigningKey =
                         new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"] ?? throw new
                             Exception("JWT key is missing"))),
+                    ClockSkew = TimeSpan.Zero
                 };
             });
         

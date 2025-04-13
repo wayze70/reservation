@@ -5,7 +5,7 @@ namespace Reservation.Api.JWT;
 
 public static class Utils
 {
-    public static int GetUserIdFromAuthorizationHeader(string authorization)
+    public static int GetUserIdFromBearerToken(string authorization)
     {
         if (string.IsNullOrWhiteSpace(authorization))
             throw new CustomHttpException(HttpStatusCode.BadRequest, "Authorization header je prázdný");

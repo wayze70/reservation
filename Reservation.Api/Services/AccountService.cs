@@ -142,7 +142,28 @@ public class AccountService : IAccountService
         await _dbContext.SaveChangesAsync();
         return true;
     }
-    
+
+    public async Task<bool> DeleteAccountAsync(DeleteAccountRequest request, int ownerId)
+    {
+        var owner = await FindOwnerById(ownerId);
+
+        if (owner.Email != request.Email)
+        {
+            throw new CustomHttpException(HttpStatusCode.BadRequest, "Zadaný email neodpovídá emailu vlastníka");
+        }
+        
+        var verificationResult = _passwordHasher.VerifyHashedPassword(owner, owner.PasswordHash, request.Password);
+        if (verificationResult != PasswordVerificationResult.Success &&
+            verificationResult != PasswordVerificationResult.SuccessRehashNeeded)
+        {
+            throw new CustomHttpException(HttpStatusCode.BadRequest, "Zadali jste špatné heslo");
+        }
+        
+        _dbContext.Owners.Remove(owner);
+        await _dbContext.SaveChangesAsync();
+        return true;
+    }
+
     private async Task<Owner> FindOwnerById(int ownerId)
     {
         var owner = await _dbContext.Owners.FirstOrDefaultAsync(a => a.Id == ownerId);
