@@ -1,5 +1,6 @@
 @inject IReservationService ReservationService
 @inject ISnackbar Snackbar
+@inject NavigationManager NavigationManager
 
 @page "/ucet/nova-rezervace"
 @using System.Globalization
@@ -7,6 +8,9 @@
 @attribute [Authorize]
 
 <MudPaper Class="pa-6" Elevation="4">
+    <MudButton Variant="Variant.Outlined" Color="Color.Primary" OnClick="Back">
+        Zpět na rezervace
+    </MudButton>
     <MudText Typo="Typo.h4" Align="Align.Center" GutterBottom="true">
         Vytvořit rezervaci
     </MudText>
@@ -68,10 +72,11 @@
                 }
             </MudSelect>
 
-            <MudButton Variant="Variant.Filled" Color="Color.Primary" ButtonType="ButtonType.Submit" Disabled="@IsSubmitting">
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" ButtonType="ButtonType.Submit"
+                       Disabled="@IsSubmitting">
                 @if (IsSubmitting)
                 {
-                    <MudProgressCircular Size="Size.Small" Color="Color.Inherit" />
+                    <MudProgressCircular Size="Size.Small" Color="Color.Inherit"/>
                     <span style="margin-left: 8px;">Odesílání...</span>
                 }
                 else
@@ -203,4 +208,10 @@
     {
         return SelectedDates.Any(d => d.Date == date.Date) ? "selected-date" : string.Empty;
     }
+
+    private void Back()
+    {
+        NavigationManager.NavigateTo(Constants.Routes.AccountRoute.AccountReservation);
+    }
+
 }

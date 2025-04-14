@@ -94,7 +94,6 @@
     private MudDatePicker _picker = null!;
     List<ReservationResponse>? Reservations { get; set; }
 
-
     protected override async Task OnInitializedAsync()
     {
         var response = await ReservationService.GetReservationsAsync();

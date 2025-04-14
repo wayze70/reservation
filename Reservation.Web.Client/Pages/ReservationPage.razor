@@ -65,7 +65,7 @@
                                         <MudText>
                                             Do: @reservation.End.ConvertToTimeZone(reservation.CustomTimeZoneId).ToShortTimeString()
                                         </MudText>
-                                        <MudText>Kapacita: @reservation.CurrentCapacity / @reservation.Capacity</MudText>
+                                        <MudText>Volná místa: @(reservation.Capacity - reservation.CurrentCapacity)</MudText>
                                     </MudCardContent>
                                     <MudCardActions>
                                         <MudButton Variant="Variant.Outlined"

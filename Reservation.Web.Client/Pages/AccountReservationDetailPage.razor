@@ -16,6 +16,9 @@
     {
         <!-- Editační formulář rezervace -->
         <MudPaper Class="pa-6 mb-6" Elevation="4">
+                <MudButton Variant="Variant.Outlined" Color="Color.Primary" OnClick="Back">
+                    Zpět na rezervace
+                </MudButton>
             <MudText Typo="Typo.h4" Align="Align.Center" GutterBottom="true">
                 Detail rezervace
             </MudText>
@@ -78,7 +81,7 @@
             </MudText>
             @if (ReservationDetail.Users is null || ReservationDetail.Users.Count == 0)
             {
-                <MudText>Nebyli nalezeni žádní uživatelé.</MudText>
+                <MudText>Žádný uživatel se zatím nepřihlásil</MudText>
             }
             else
             {
@@ -103,6 +106,7 @@
                     </RowTemplate>
                 </MudTable>
             }
+            
         </MudPaper>
     }
 
@@ -211,5 +215,9 @@
             Snackbar.Add("Nepodařilo se odhlásit uživatele.", Severity.Error);
         }
     }
-
+    
+    private void Back()
+    {
+        NavigationManager.NavigateTo(Constants.Routes.AccountRoute.AccountReservation);
+    }
 }

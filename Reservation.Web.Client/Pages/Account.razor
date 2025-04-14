@@ -10,113 +10,116 @@
 
 <PageTitle>Účet</PageTitle>
 <MudExpansionPanels>
-    <MudExpansionPanel Text="Identifikátoru" Expanded="true">
-    
-    <MudPaper Class="pa-6 mx-auto my-6" MaxWidth="MaxWidth.Small" Elevation="4">
+    <MudExpansionPanel Text="Identifikátor rezervace" Expanded="true">
         <MudText Typo="Typo.h5" Align="Align.Center" GutterBottom="true">
-            Nastavení URL cesty
+            Nastavení identifikátoru rezervace
         </MudText>
 
         @if (string.IsNullOrWhiteSpace(CurrentPath))
         {
             <MudText>
-                Nastavte si URL cestu pro vaši rezervaci.
+                Zadejte unikátní identifikátor, který bude součástí URL vaší rezervace.
+                Může to být například vaše jméno, název firmy nebo jiný stručný název, podle kterého si rezervaci snadno zapamatujete.
             </MudText>
         }
         else
         {
             <MudText>
-                Aktuální URL cesta:
-                <MudLink Href="@Constants.Routes.Reservation(CurrentPath)">
+                Aktuální adresa vaší rezervace:
+            </MudText>
+            <MudText>
+                <MudLink Href="@Constants.Routes.Reservation(CurrentPath)" Style="word-wrap: break-word; word-break: break-all;">
                     @(NavigationManager.BaseUri)@Constants.Routes.Reservation(CurrentPath).Remove(0, 1)
                 </MudLink>
             </MudText>
         }
 
         <MudStack Spacing="2" Class="mt-4">
-            <MudTextField T="string" Disabled="@(CurrentPath is null)" Value="Path" ValueChanged="OnPathChange" 
-                          Label="Nastavte si
-         URL" DebounceInterval="500" />
+            <MudTextField T="string" Disabled="@(CurrentPath is null)" Value="Path" ValueChanged="OnPathChange"
+                          Label="Identifikátor" DebounceInterval="500"/>
+
             <MudStack Row="false" AlignItems="AlignItems.Center" Spacing="1">
                 @if ((IsPathTaken && CurrentPath != Path) || !IsPathValid)
                 {
-                    <MudIcon Icon="@Icons.Material.Filled.Close" Color="Color.Error" Size="Size.Small" />
+                    <MudIcon Icon="@Icons.Material.Filled.Close" Color="Color.Error" Size="Size.Small"/>
                 }
                 else
                 {
-                    <MudIcon Icon="@Icons.Material.Filled.CheckCircleOutline" Color="Color.Success" Size="Size.Small" />
+                    <MudIcon Icon="@Icons.Material.Filled.CheckCircleOutline" Color="Color.Success" Size="Size.Small"/>
                 }
+
                 @if (IsPathTaken && CurrentPath == Path)
                 {
-                    <MudText Color="Color.Info">Tato URL je vaše URL</MudText>
+                    <MudText Color="Color.Info">Toto je vaše aktuální adresa</MudText>
                 }
                 else if (IsPathTaken)
                 {
-                    <MudText Color="Color.Error">Tato URL cesta je již zabraná</MudText>
+                    <MudText Color="Color.Error">Tato adresa je již obsazená</MudText>
                 }
                 else if (!IsPathValid)
                 {
-                    <MudText Color="Color.Error">URL cesta obsahuje nepovolené znaky</MudText>
+                    <MudText Color="Color.Error">Adresa obsahuje nepovolené znaky</MudText>
                 }
             </MudStack>
-            <MudButton OnClick="UpdatePath" Variant="Variant.Filled" Color="Color.Primary" ButtonType="ButtonType.Button" FullWidth="true">
-                Aktualizovat URL cestu
+
+            <MudButton OnClick="UpdatePath" Color="Color.Primary" Variant="Variant.Filled" ButtonType="ButtonType.Button">
+                Uložit identifikátor
             </MudButton>
         </MudStack>
-    </MudPaper>
-        </MudExpansionPanel>
+    </MudExpansionPanel>
 
-    <MudExpansionPanel Text="Nastavení účtu">
-        <MudPaper Class="pa-6 mx-auto my-6" MaxWidth="MaxWidth.Small" Elevation="4">
-            <EditForm Model="_accountInfo" OnValidSubmit="OnAccountInfoValidSubmit" 
+
+    <MudExpansionPanel Text="Osobní údaje">
+            <EditForm Model="_accountInfo" OnValidSubmit="OnAccountInfoValidSubmit"
                       OnInvalidSubmit="OnAccountInfoInvalidSubmit">
-                <MudTextField T="string" Label="Jméno" @bind-Value="_accountInfo.FirstName" Required="true" />
-                <MudTextField T="string" Label="Příjmení" @bind-Value="_accountInfo.LastName" Required="true" />
-                <MudTextField T="string" Label="Organizace" @bind-Value="_accountInfo.Organization" Required="true" />
-                <MudTextField T="string" Label="Popis" @bind-Value="_accountInfo.Description" />
-                <MudTextField T="string" Label="E-mail" @bind-Value="_accountInfo.Email" Required="true" />
+                <MudTextField T="string" Label="Jméno" @bind-Value="_accountInfo.FirstName" Required="true"/>
+                <MudTextField T="string" Label="Příjmení" @bind-Value="_accountInfo.LastName" Required="true"/>
+                <MudTextField T="string" Label="Organizace" @bind-Value="_accountInfo.Organization"
+                              Required="true"/>
+                <MudTextField T="string" Label="Popis" @bind-Value="_accountInfo.Description"/>
+                <MudTextField T="string" Label="E-mail" @bind-Value="_accountInfo.Email" Required="true"/>
 
-                <MudButton ButtonType="ButtonType.Submit" Color="Color.Primary" Variant="Variant.Filled" Class="mt-4">
+                <MudButton ButtonType="ButtonType.Submit" Color="Color.Primary" Variant="Variant.Filled"
+                           Class="mt-4">
                     Uložit změny
                 </MudButton>
             </EditForm>
-        </MudPaper>
     </MudExpansionPanel>
 
     <MudExpansionPanel Text="Změna hesla">
-        <MudPaper Class="pa-6 mx-auto my-6" MaxWidth="MaxWidth.Small" Elevation="4">
-            <EditForm Model="_updatePasswordRequest" OnValidSubmit="OnPasswordValidSubmit" OnInvalidSubmit="OnPasswordInvalidSubmit">
-                <MudTextField T="string" Label="Staré heslo" @bind-Value="_updatePasswordRequest.OldPassword" Required="true"
-                              InputType="InputType.Password" />
-                <MudTextField T="string" Label="Nové heslo" @bind-Value="_updatePasswordRequest.NewPassword" Required="true"
-                              InputType="InputType.Password" />
+            <EditForm Model="_updatePasswordRequest" OnValidSubmit="OnPasswordValidSubmit"
+                      OnInvalidSubmit="OnPasswordInvalidSubmit">
+                <MudTextField T="string" Label="Staré heslo" @bind-Value="_updatePasswordRequest.OldPassword"
+                              Required="true"
+                              InputType="InputType.Password"/>
+                <MudTextField T="string" Label="Nové heslo" @bind-Value="_updatePasswordRequest.NewPassword"
+                              Required="true"
+                              InputType="InputType.Password"/>
 
-                <MudButton ButtonType="ButtonType.Submit" Color="Color.Primary" Variant="Variant.Filled" Class="mt-4">
+                <MudButton ButtonType="ButtonType.Submit" Color="Color.Primary" Variant="Variant.Filled"
+                           Class="mt-4">
                     Změnit heslo
                 </MudButton>
             </EditForm>
-        </MudPaper>
     </MudExpansionPanel>
 
-                <MudButton ButtonType="ButtonType.Button" OnClick="() => { AuthService.LogoutAllDevicesAsync();}" Color="Color.Error" Variant="Variant
-                .Filled" Class="mt-4">
-                    Test
-                </MudButton>
+    <MudButton ButtonType="ButtonType.Button" OnClick="() => { AuthService.LogoutAllDevicesAsync();}"
+               Color="Color.Warning" Variant="Variant.Filled" Class="mt-4">
+        Odhlásit se ze všech zařízení
+    </MudButton>
 
-    <MudExpansionPanel Text="Zrušení účtu">
-        <MudPaper Class="pa-6 mx-auto my-6" MaxWidth="MaxWidth.Small" Elevation="4">
-            <EditForm Model="_deleteAccountRequest" OnValidSubmit="OnDeleteAccountValidSubmit" 
+    <MudExpansionPanel Text="Zrušení účtu" Class="mt-5">
+            <EditForm Model="_deleteAccountRequest" OnValidSubmit="OnDeleteAccountValidSubmit"
                       OnInvalidSubmit="OnDeleteAccountInvalidSubmit">
                 <MudTextField T="string" Label="Email" @bind-Value="_deleteAccountRequest.Email" Required="true"
-                              InputType="InputType.Email" />
+                              InputType="InputType.Email"/>
                 <MudTextField T="string" Label="Heslo" @bind-Value="_deleteAccountRequest.Password" Required="true"
-                              InputType="InputType.Password" />
+                              InputType="InputType.Password"/>
 
                 <MudButton ButtonType="ButtonType.Submit" Color="Color.Error" Variant="Variant.Filled" Class="mt-4">
                     Smazat účet
                 </MudButton>
             </EditForm>
-        </MudPaper>
     </MudExpansionPanel>
 </MudExpansionPanels>
 
@@ -126,7 +129,7 @@
     string? CurrentPath { get; set; } = null;
     bool IsPathTaken { get; set; }
     bool IsPathValid { get; set; } = true;
-    
+
     private AccountInfoResponse _accountInfo = new();
     private UpdatePasswordRequest _updatePasswordRequest = new();
     private DeleteAccountRequest _deleteAccountRequest = new();
@@ -139,7 +142,7 @@
         {
             Path = CurrentPath;
         }
-        
+
         var accountInfoResult = await AccountService.GetAccountInfo();
         if (accountInfoResult is { IsSuccess: true, Data: not null })
         {
@@ -162,13 +165,13 @@
             IsPathValid = false;
             return;
         }
-        
+
         var response = await AccountService.UpdatePath(new PathRequest() { Path = Path });
 
         if (response is { IsSuccess: true, Data: not null })
         {
             CurrentPath = response.Data;
-            
+
             Snackbar.Add("URL cesta byla úspěšně aktualizována.", Severity.Success);
         }
     }
@@ -192,7 +195,7 @@
             IsPathValid = false;
         }
     }
-    
+
     private async Task OnAccountInfoValidSubmit()
     {
         var updateRequest = new UpdateAccountInfoRequest
@@ -219,7 +222,7 @@
     {
         Snackbar.Add("Zkontrolujte, prosím, že jste vyplnili všechna povinná pole.", Severity.Warning);
     }
-    
+
     private async Task OnPasswordValidSubmit()
     {
         var result = await AccountService.UpdatePassword(_updatePasswordRequest);
@@ -251,9 +254,8 @@
         {
             Snackbar.Add("Chyba při zrušení účtu.", Severity.Error);
         }
-        
     }
-    
+
     private void OnDeleteAccountInvalidSubmit()
     {
         Snackbar.Add("Vyplňte prosím obě pole pro zrušení účtu.", Severity.Warning);

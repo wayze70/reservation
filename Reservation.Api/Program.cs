@@ -103,7 +103,6 @@ public class Program
                     IssuerSigningKey =
                         new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"] ?? throw new
                             Exception("JWT key is missing"))),
-                    ClockSkew = TimeSpan.Zero
                 };
             });
         
