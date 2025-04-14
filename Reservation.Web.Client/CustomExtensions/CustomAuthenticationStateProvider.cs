@@ -2,6 +2,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using Blazored.LocalStorage;
 using Microsoft.AspNetCore.Components.Authorization;
+using Reservation.Shared.Authorization;
 
 namespace Reservation.Web.Client.CustomExtensions;
 
@@ -17,23 +18,26 @@ public class CustomAuthenticationStateProvider :
 
     public override async Task<AuthenticationState> GetAuthenticationStateAsync()
     {
-        // Načtení tokenu z local storage
         string? token = await _localStorage.GetItemAsync<string>(Constants.AccessToken);
 
-        ClaimsIdentity identity;
+        if (string.IsNullOrWhiteSpace(token))
+            return new AuthenticationState(new ClaimsPrincipal(new ClaimsIdentity()));
 
-        if (!string.IsNullOrWhiteSpace(token))
+        var claims = ParseClaimsFromJwt(token);
+        if (claims == null)
+            return new AuthenticationState(new ClaimsPrincipal(new ClaimsIdentity()));
+
+        // Create new identity with authentication type "jwt"
+        var identity = new ClaimsIdentity(claims, "jwt");
+
+        // Get role from claims and add it as a new Role claim
+        var roleClaim = claims.FirstOrDefault(c => c.Type == ReservationClaimNames.Custom.Role);
+        if (roleClaim != null && Enum.TryParse<Role>(roleClaim.Value, out var role))
         {
-            // Token lze zpracovat – např. pomocí metody, která z tokenu vytáhne claimy
-            identity = new ClaimsIdentity(ParseClaimsFromJwt(token), "jwt");
-        }
-        else
-        {
-            identity = new ClaimsIdentity();
+            identity.AddClaim(new Claim(ClaimTypes.Role, role.ToString()));
         }
 
-        var user = new ClaimsPrincipal(identity);
-        return new AuthenticationState(user);
+        return new AuthenticationState(new ClaimsPrincipal(identity));
     }
     
     public static IEnumerable<Claim>? ParseClaimsFromJwt(string token)

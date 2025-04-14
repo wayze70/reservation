@@ -36,7 +36,7 @@ public class AuthController : ControllerBase
         }
 
         // Předáme také DeviceName do metody LoginAsync
-        var authResponse = await _authService.LoginAsync(request.Email, request.Password, userAgent);
+        var authResponse = await _authService.LoginAsync(request.Email, request.Password, request.Identifier, userAgent);
         return Ok(authResponse);
     }
 
@@ -53,8 +53,7 @@ public class AuthController : ControllerBase
             userAgent = UnknownDevice;
         }
 
-        var authResponse = await _authService.RegisterAsync(request.FirstName, request.LastName, request.Organization,
-            request.Email,
+        var authResponse = await _authService.RegisterAsync(request.FirstName, request.LastName, request.Organization, request.Identifier, request.Email,
             request.Password, userAgent);
 
         return Ok(authResponse);

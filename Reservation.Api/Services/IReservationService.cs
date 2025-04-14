@@ -6,24 +6,24 @@ namespace Reservation.Api.Services
     public interface IReservationService
     {
         // Vytváření
-        Task<ReservationResponse> CreateReservationAsync(ReservationCreateRequest request, int ownerId);
-        Task<List<ReservationResponse>> CreateReservationsAsync(List<ReservationCreateRequest> requests, int ownerId);
+        Task<ReservationResponse> CreateReservationAsync(ReservationCreateRequest request, int accountId);
+        Task<List<ReservationResponse>> CreateReservationsAsync(List<ReservationCreateRequest> requests, int accountId);
 
         // Načítání rezervací
-        Task<List<ReservationResponse>> GetReservationsByOwnerAsync(int ownerId);
+        Task<List<ReservationResponse>> GetReservationsByAccountAsync(int accountId);
         Task<List<ReservationResponse>> GetReservationsByPathAsync(string path);
-        Task<ReservationResponse> GetReservationByPathAndIdAsync(string path, int reservationId);
-        Task<ReservationResponseWithUser> GetReservationWithUsersAsync(int ownerId, int reservationId);
+        Task<ReservationResponse> GetReservationByPathAndIdAsync(string path, int accountId);
+        Task<ReservationResponseWithUser> GetReservationWithUsersAsync(int accountId, int reservationId);
 
         // Úpravy a správa rezervací
         Task<ReservationResponse> UpdateReservationAsync(ReservationCreateRequest request, int reservationId);
-        Task<bool> DeleteReservationAsync(int ownerId, int reservationId);
+        Task<bool> DeleteReservationAsync(int accountId, int reservationId);
 
         // Přihlášení/zrušení rezervace
         Task<ReservationResponse> SignUpForReservationAsync(int reservationId, ReservationSignUpRequest request, 
             CultureInfo cultureInfo);
         Task<ReservationResponse> CancelReservationAsync(int reservationId, string cancellationCode, CultureInfo cultureInfo);
         Task<bool> RemoveUserFromReservationAsync(int reservationId, string userEmail);
-        Task<bool> OwnerOwnsReservationAsync(int ownerId, int reservationId);
+        Task<bool> AccountOwnsReservationAsync(int accountId, int reservationId);
     }
 }

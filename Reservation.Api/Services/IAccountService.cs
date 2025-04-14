@@ -4,12 +4,12 @@ namespace Reservation.Api.Services;
 
 public interface IAccountService
 {
-    public Task<string?> GetPathAsync(int ownerId);
-    public Task<string> SetPathAsync(PathRequest request, int ownerId);
+    public Task<string?> GetPathAsync(int accountId);
+    public Task<string> SetPathAsync(PathRequest request, int accountId);
     public Task<bool> IsPathTakenAsync(string path);
     Task<AccountDescriptionResponse> GetAccountDescriptionAsync(string path);
-    public Task<AccountInfoResponse> GetAccountInfoAsync(int ownerId);
-    Task<AccountInfoResponse> UpdateAccountInfoAsync(UpdateAccountInfoRequest request, int ownerId);
+    public Task<AccountInfoResponse> GetAccountInfoAsync(int accountId);
+    Task<AccountInfoResponse> UpdateAccountInfoAsync(UpdateAccountInfoRequest request, int accountId);
     Task<bool> UpdatePasswordAsync(UpdatePasswordRequest request, int ownerId);
-    Task<bool> DeleteAccountAsync(DeleteAccountRequest request, int ownerId);
+    Task<bool> DeleteAccountAsync(DeleteAccountRequest request, int accountId);
 }

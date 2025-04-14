@@ -13,6 +13,7 @@
         <DataAnnotationsValidator />
         <ValidationSummary />
 
+        <MudTextField T="string" Label="Identifkátor"  @bind-Value="LoginUser.Identifier" Required="true" />
         <MudTextField T="string" Label="Email" @bind-Value="LoginUser.Email" Required="true" />
         <MudTextField T="string" Label="Heslo" InputType="InputType.Password" @bind-Value="LoginUser.Password" Required="true" />
 

@@ -7,29 +7,41 @@
 
 <PageTitle>Registrace</PageTitle>
 
-<MudPaper Class="mx-auto my-10 pa-6" MaxWidth="500px">
-    <MudText Typo="Typo.h5" Align="Align.Center" GutterBottom="true">
-        Registrace
-    </MudText>
-    <EditForm Model="@RegistrationUser" OnValidSubmit="@OnSubmit">
+<EditForm Model="@RegistrationUser" OnValidSubmit="@OnSubmit">
+    <MudPaper Class="mx-auto my-10 pa-6" MaxWidth="500px">
+        <MudText Typo="Typo.h5" Align="Align.Center" GutterBottom="true">
+            Registrace
+        </MudText>
+        <MudText Typo="Typo.h6" Align="Align.Center" GutterBottom="true">
+            Informace o uživatelském účtu
+        </MudText>
         <DataAnnotationsValidator />
         <ValidationSummary />
 
         <MudTextField T="string" Label="Jméno" @bind-Value="RegistrationUser.FirstName" Required="true" />
         <MudTextField T="string" Label="Příjmení" @bind-Value="RegistrationUser.LastName" Required="true" />
-        <MudTextField T="string" Label="Organizace" @bind-Value="RegistrationUser.Organization" Required="true" />
-        <MudTextField T="string" Label="Email" @bind-Value="RegistrationUser.Email" Required="true" />
-        <MudTextField T="string" Label="Heslo" InputType="InputType.Password" @bind-Value="RegistrationUser.Password" Required="true" />
+        <MudTextField T="string" Label="Email" InputType="InputType.Email" @bind-Value="RegistrationUser.Email" Required="true" />
+        <MudTextField T="string" Label="Heslo" InputType="InputType.Password" @bind-Value="RegistrationUser.Password" 
+                      Required="true" />
 
-        <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary" FullWidth="true" Class="mt-4">
-            Zaregistrovat se
-        </MudButton>
+    <MudText Typo="Typo.h6" Align="Align.Center" GutterBottom="true" Class="mt-5">
+        Informace o účtu
+    </MudText>
 
-        <MudText Align="Align.Center" Class="mt-4">
-            Už máte účet? <MudLink Href="@Constants.Routes.Login">Přihlašte se</MudLink>
-        </MudText>
-    </EditForm>
+    <MudTextField T="string" Label="Organizace" @bind-Value="RegistrationUser.Organization" Required="true" />
+    <MudTextField T="string" Label="Identifikátor" @bind-Value="RegistrationUser.Identifier" Required="true" />
+
+    <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary" FullWidth="true" Class="mt-4">
+        Zaregistrovat se
+    </MudButton>
+
+    <MudText Align="Align.Center" Class="mt-4">
+        Už máte účet? <MudLink Href="@Constants.Routes.Login">Přihlašte se</MudLink>
+    </MudText>
 </MudPaper>
+</EditForm>
+
+
 
 @code {
     // Zde použijte správný model pro registraci, např. RegistrationRequest

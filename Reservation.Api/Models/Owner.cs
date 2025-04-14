@@ -1,6 +1,7 @@
 using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using Reservation.Shared.Authorization;
 
 namespace Reservation.Api.Models
 {
@@ -35,13 +36,13 @@ namespace Reservation.Api.Models
         
         [StringLength(50)]
         public string? Path { get; set; }
-
-        // Vztah 1:n s entitou Device – každý Owner může mít více zařízení
-        public ICollection<Device> Devices { get; set; } = new List<Device>();
-
-        [InverseProperty("Owner")]
-        public ICollection<Reservation> Reservations { get; set; } = new List<Reservation>();
+        
+        public Role Role { get; set; }
+        
+        [Required]
+        public int AccountId { get; set; }
+        
+        [ForeignKey("AccountId")]
+        public virtual Account Account { get; set; }
     }
-
- 
 }

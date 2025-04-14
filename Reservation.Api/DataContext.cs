@@ -12,19 +12,36 @@ public class DataContext : DbContext
         _emailService = emailService;
     }
 
-    public DbSet<Owner> Owners { get; set; }
+    public DbSet<Account> Accounts { get; set; }
     public DbSet<Models.Reservation> Reservations { get; set; }
     public DbSet<User> Users { get; set; }
     public DbSet<Device> Devices { get; set; }
+    public DbSet<Owner> Owners { get; set; }
     
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        modelBuilder.Entity<Owner>()
-            .HasMany(o => o.Reservations)
-            .WithOne(r => r.Owner)
-            .HasForeignKey(r => r.OwnerId)
+        // Account -> Owner relationship
+        modelBuilder.Entity<Account>()
+            .HasMany(a => a.Owners)
+            .WithOne(o => o.Account)
+            .HasForeignKey(o => o.AccountId)
             .OnDelete(DeleteBehavior.Cascade);
 
+        // Account -> Device relationship
+        modelBuilder.Entity<Account>()
+            .HasMany(a => a.Devices)
+            .WithOne(d => d.Account)
+            .HasForeignKey(d => d.AccountId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        // Account -> Reservation relationship
+        modelBuilder.Entity<Account>()
+            .HasMany(a => a.Reservations)
+            .WithOne(r => r.Account)
+            .HasForeignKey(r => r.AccountId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        // Reservation -> SignedUsers relationship
         modelBuilder.Entity<Models.Reservation>()
             .HasMany(r => r.SignedUsers)
             .WithOne(u => u.Reservation)
@@ -34,29 +51,54 @@ public class DataContext : DbContext
     
     public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
     {
-        // Najdeme všechny entity Owner, které jsou označené ke smazání.
-        var deletedOwners = ChangeTracker.Entries<Owner>()
+        var deletedAccounts = ChangeTracker.Entries<Account>()
             .Where(e => e.State == EntityState.Deleted)
             .Select(e => e.Entity)
             .ToList();
-    
-        // Uložíme změny (smazání proběhne v databázi i kaskádově).
+
+        foreach (var account in deletedAccounts)
+        {
+            // Load related data before deletion
+            await Entry(account)
+                .Collection(a => a.Owners)
+                .LoadAsync(cancellationToken);
+
+            await Entry(account)
+                .Collection(a => a.Reservations)
+                .LoadAsync(cancellationToken);
+
+            foreach (var reservation in account.Reservations)
+            {
+                await Entry(reservation)
+                    .Collection(r => r.SignedUsers)
+                    .LoadAsync(cancellationToken);
+            }
+        }
+
         int result = await base.SaveChangesAsync(cancellationToken);
 
-        // Po dokončení smazání můžeme pro každého smazaného vlastníka volat notifikační logiku.
-        foreach (var owner in deletedOwners)
+        foreach (var account in deletedAccounts)
         {
-            // Příklad: Pošli e-mail vlastníkovi (pokud to dává smysl)
-            await _emailService.SendDeleteAccountEmailAsync(owner.Email, owner.FirstName, owner.LastName);
+            // Notify owners
+            foreach (var owner in account.Owners)
+            {
+                await _emailService.SendDeleteAccountEmailAsync(
+                    owner.Email,
+                    owner.FirstName,
+                    owner.LastName);
+            }
 
-            // Pokud chcete posílat e-mail také všem uživatelům, kteří byli přihlášeni k rezervacím,
-            // je třeba iterovat přes rezervace a jejich SignedUsers.
-            foreach (var reservation in owner.Reservations)
+            // Notify users signed up for reservations
+            foreach (var reservation in account.Reservations)
             {
                 foreach (var user in reservation.SignedUsers)
                 {
-                    await _emailService.SendReservationCancellationByOwnerDeletingAccountEmailAsync(user.Email, user
-                        .FirstName, user.LastName, reservation.Title, owner.Organization);
+                    await _emailService.SendReservationCancellationByOwnerDeletingAccountEmailAsync(
+                        user.Email,
+                        user.FirstName,
+                        user.LastName,
+                        reservation.Title,
+                        account.Organization);
                 }
             }
         }

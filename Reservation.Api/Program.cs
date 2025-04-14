@@ -79,6 +79,7 @@ public class Program
         builder.Services.AddSingleton<JwtTokenHelper>();
         builder.Services.AddSingleton<IEmailService, EmailService>();
         builder.Services.AddHostedService<RefreshTokenCleanupWorker>();
+        builder.Services.AddScoped<IEmployeeService, EmployeeService>();
         
         builder.Services.AddDbContext<DataContext>(options =>
             options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"),

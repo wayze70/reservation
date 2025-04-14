@@ -10,7 +10,7 @@ public class Reservation
     public int Id { get; private set; }
 
     [Required]
-    public int OwnerId { get; set; }
+    public int AccountId { get; set; }
 
     [Required]
     public int Capacity { get; set; }
@@ -40,9 +40,8 @@ public class Reservation
     [MaxLength(100)]
     public string CustomTimeZoneId { get; set; } = string.Empty;
 
-    [ForeignKey("OwnerId")]
-    public Owner Owner { get; set; } = default!;
+    [ForeignKey("AccountId")]
+    public virtual Account Account { get; set; } = default!;
     
-    [InverseProperty("Reservation")]
-    public List<User> SignedUsers { get; set; } = new List<User>();
+    public virtual List<User> SignedUsers { get; set; } = new List<User>();
 }

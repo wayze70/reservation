@@ -1,7 +1,9 @@
 @inject NavigationManager NavigationManager
 @inject IAccountService AccountService
 @inject IAuthService AuthService
+@inject IEmployeeService EmployeeService
 @using Microsoft.AspNetCore.Authorization
+@using Reservation.Shared.Authorization
 @using Reservation.Shared.Common
 @inject ISnackbar Snackbar
 
@@ -10,9 +12,9 @@
 
 <PageTitle>Účet</PageTitle>
 <MudExpansionPanels>
-    <MudExpansionPanel Text="Identifikátor rezervace" Expanded="true">
+    <MudExpansionPanel Text="Identifikátor" Expanded="true">
         <MudText Typo="Typo.h5" Align="Align.Center" GutterBottom="true">
-            Nastavení identifikátoru rezervace
+            Nastavení identifikátoru
         </MudText>
 
         @if (string.IsNullOrWhiteSpace(CurrentPath))
@@ -62,31 +64,58 @@
                 }
             </MudStack>
 
-            <MudButton OnClick="UpdatePath" Color="Color.Primary" Variant="Variant.Filled" ButtonType="ButtonType.Button">
+            <MudButton OnClick="UpdatePath" Color="Color.Primary" Variant="Variant.Filled" ButtonType="ButtonType.Button" Style="width: fit-content !important;">
                 Uložit identifikátor
             </MudButton>
         </MudStack>
     </MudExpansionPanel>
+    <MudExpansionPanel Text="Informace o účtu">
+        <EditForm Model="_accountInfo" OnValidSubmit="OnAccountInfoValidSubmit"
+                  OnInvalidSubmit="OnAccountInfoInvalidSubmit">
+            <MudText Typo="Typo.h5" Align="Align.Center" GutterBottom="true">
+                Informací o účtu
+            </MudText>
 
+            <MudTextField T="string" Label="Organizace" @bind-Value="_accountInfo.Organization"
+                          Required="true"/>
+            <MudTextField T="string" Label="Popis" @bind-Value="_accountInfo.Description"/>
 
-    <MudExpansionPanel Text="Osobní údaje">
-            <EditForm Model="_accountInfo" OnValidSubmit="OnAccountInfoValidSubmit"
-                      OnInvalidSubmit="OnAccountInfoInvalidSubmit">
-                <MudTextField T="string" Label="Jméno" @bind-Value="_accountInfo.FirstName" Required="true"/>
-                <MudTextField T="string" Label="Příjmení" @bind-Value="_accountInfo.LastName" Required="true"/>
-                <MudTextField T="string" Label="Organizace" @bind-Value="_accountInfo.Organization"
-                              Required="true"/>
-                <MudTextField T="string" Label="Popis" @bind-Value="_accountInfo.Description"/>
-                <MudTextField T="string" Label="E-mail" @bind-Value="_accountInfo.Email" Required="true"/>
+            <MudButton ButtonType="ButtonType.Submit" Color="Color.Primary" Variant="Variant.Filled" Class="mt-4">
+                Uložit informace o účtu
+            </MudButton>
+        </EditForm>
+    </MudExpansionPanel>
+    <MudExpansionPanel Text="Osobní údaje o přihlášeném uživateli">
+        <EditForm Model="SelectedEmployee" OnValidSubmit="OnAccountInfoValidSubmit"
+                  OnInvalidSubmit="OnAccountInfoInvalidSubmit">
 
-                <MudButton ButtonType="ButtonType.Submit" Color="Color.Primary" Variant="Variant.Filled"
-                           Class="mt-4">
-                    Uložit změny
-                </MudButton>
-            </EditForm>
+            <MudGrid>
+                <MudItem xs="12" sm="6">
+                    <MudTextField T="string" Label="Jméno" @bind-Value="SelectedEmployee.FirstName" Required="true" />
+                </MudItem>
+                <MudItem xs="12" sm="6">
+                    <MudTextField T="string" Label="Příjmení" @bind-Value="SelectedEmployee.LastName" Required="true" />
+                </MudItem>
+                <MudItem xs="12" sm="6">
+                    <MudTextField T="string" Label="Email" @bind-Value="SelectedEmployee.Email" Required="true" />
+                </MudItem>
+                <MudItem xs="12" sm="6">
+                    <MudSelect T="Role" Label="Pozice" @bind-Value="SelectedEmployee.Role" Required="true">
+                        @foreach (Role role in Enum.GetValues(typeof(Role)))
+                        {
+                            <MudSelectItem Value="@role">@role.ToString()</MudSelectItem>
+                        }
+                    </MudSelect>
+                </MudItem>
+            </MudGrid>
+            <MudButton ButtonType="ButtonType.Submit" Color="Color.Primary" Variant="Variant.Filled"
+                       Class="mt-4">
+                Uložit osobní údaje
+            </MudButton>
+        </EditForm>
     </MudExpansionPanel>
 
-    <MudExpansionPanel Text="Změna hesla">
+    <MudExpansionPanel Text="Změna hesla přihlášeného uživatele">
             <EditForm Model="_updatePasswordRequest" OnValidSubmit="OnPasswordValidSubmit"
                       OnInvalidSubmit="OnPasswordInvalidSubmit">
                 <MudTextField T="string" Label="Staré heslo" @bind-Value="_updatePasswordRequest.OldPassword"
@@ -130,6 +159,8 @@
     bool IsPathTaken { get; set; }
     bool IsPathValid { get; set; } = true;
 
+    private EmployeeResponse SelectedEmployee = new EmployeeResponse();
+    
     private AccountInfoResponse _accountInfo = new();
     private UpdatePasswordRequest _updatePasswordRequest = new();
     private DeleteAccountRequest _deleteAccountRequest = new();
@@ -141,6 +172,17 @@
         if (CurrentPath is not null)
         {
             Path = CurrentPath;
+        }
+
+        var employeesResult = await EmployeeService.GetCurrentEmployee();
+        
+        if (employeesResult is { IsSuccess: true, Data: not null })
+        {
+            SelectedEmployee = employeesResult.Data;
+        }
+        else
+        {
+            Snackbar.Add("Nepodařilo se načíst údaje o zaměstnanci.", Severity.Error);
         }
 
         var accountInfoResult = await AccountService.GetAccountInfo();
@@ -200,11 +242,8 @@
     {
         var updateRequest = new UpdateAccountInfoRequest
         {
-            FirstName = _accountInfo.FirstName,
-            LastName = _accountInfo.LastName,
             Organization = _accountInfo.Organization,
             Description = _accountInfo.Description,
-            Email = _accountInfo.Email
         };
 
         var result = await AccountService.UpdateAccountInfo(updateRequest);

@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using MudBlazor;
 using MudBlazor.Services;
+using Reservation.Shared.Authorization;
 using Reservation.Web.Client.CustomExtensions;
 using Reservation.Web.Client.Services;
 
@@ -31,7 +32,7 @@ namespace Reservation.Web.Client
             
             builder.Services.AddBlazoredLocalStorage();
             builder.Services.AddAuthorizationCore();
-
+            
             // Registrace handlerů
             builder.Services.AddTransient<AuthTokenHandler>();
             builder.Services.AddTransient<TokenRefreshHandler>();
@@ -60,6 +61,7 @@ namespace Reservation.Web.Client
             builder.Services.AddScoped<IAccountService, AccountService>();
             builder.Services.AddScoped<AuthenticationStateProvider, CustomAuthenticationStateProvider>();
             builder.Services.AddSingleton<GlobalState>();
+            builder.Services.AddScoped<IEmployeeService, EmployeeService>();
             
             await builder.Build().RunAsync();
         }

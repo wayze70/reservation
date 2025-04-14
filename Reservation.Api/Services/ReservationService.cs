@@ -17,14 +17,14 @@ namespace Reservation.Api.Services
             _emailService = emailService;
         }
 
-        public async Task<ReservationResponse> CreateReservationAsync(ReservationCreateRequest request, int ownerId)
+        public async Task<ReservationResponse> CreateReservationAsync(ReservationCreateRequest request, int accountId)
         {
             if (request == null)
             {
                 throw new CustomHttpException(HttpStatusCode.BadRequest, "Žádná rezervace nebyla poskytnuta");
             }
 
-            var reservationEntity = (await _dbContext.Reservations.AddAsync(CreateReservationEntity(request, ownerId)))
+            var reservationEntity = (await _dbContext.Reservations.AddAsync(CreateReservationEntity(request, accountId)))
                 .Entity;
 
             await _dbContext.SaveChangesAsync();
@@ -33,7 +33,7 @@ namespace Reservation.Api.Services
         }
 
         public async Task<List<ReservationResponse>> CreateReservationsAsync(List<ReservationCreateRequest> requests,
-            int ownerId)
+            int accountId)
         {
             if (requests is null || requests.Count == 0)
             {
@@ -48,7 +48,7 @@ namespace Reservation.Api.Services
                 foreach (var request in requests)
                 {
                     var reservationEntity =
-                        (await _dbContext.Reservations.AddAsync(CreateReservationEntity(request, ownerId))).Entity;
+                        (await _dbContext.Reservations.AddAsync(CreateReservationEntity(request, accountId))).Entity;
 
                     reservationsDto.Add(MapToDto(reservationEntity));
                 }
@@ -66,15 +66,15 @@ namespace Reservation.Api.Services
             }
         }
 
-        public async Task<List<ReservationResponse>> GetReservationsByOwnerAsync(int ownerId)
+        public async Task<List<ReservationResponse>> GetReservationsByAccountAsync(int accountId)
         {
-            if (!await _dbContext.Owners.AnyAsync(o => o.Id == ownerId))
+            if (!await _dbContext.Accounts.AnyAsync(o => o.Id == accountId))
             {
                 throw new CustomHttpException(HttpStatusCode.NotFound, "Vlastník nebyl nalezen");
             }
 
             var records = await _dbContext.Reservations
-                .Where(r => r.OwnerId == ownerId)
+                .Where(r => r.AccountId == accountId)
                 .Include(r => r.SignedUsers)
                 .ToListAsync();
 
@@ -83,20 +83,20 @@ namespace Reservation.Api.Services
 
         public async Task<List<ReservationResponse>> GetReservationsByPathAsync(string path)
         {
-            var owner = await _dbContext.Owners.FirstOrDefaultAsync(o => o.Path == path)
+            var account = await _dbContext.Accounts.FirstOrDefaultAsync(o => o.Path == path)
                         ?? throw new CustomHttpException(HttpStatusCode.NotFound, "Cesta nebyla nalezena");
 
-            return await GetReservationsByOwnerAsync(owner.Id);
+            return await GetReservationsByAccountAsync(account.Id);
         }
 
-        public async Task<ReservationResponse> GetReservationByPathAndIdAsync(string path, int reservationId)
+        public async Task<ReservationResponse> GetReservationByPathAndIdAsync(string path, int accountId)
         {
-            var owner = await _dbContext.Owners.FirstOrDefaultAsync(o => o.Path == path)
+            var owner = await _dbContext.Accounts.FirstOrDefaultAsync(o => o.Path == path)
                         ?? throw new CustomHttpException(HttpStatusCode.NotFound, "Cesta nebyla nalezena");
 
             var reservation = await _dbContext.Reservations
                 .Include(r => r.SignedUsers)
-                .FirstOrDefaultAsync(r => r.Id == reservationId && r.OwnerId == owner.Id);
+                .FirstOrDefaultAsync(r => r.Id == accountId && r.AccountId == owner.Id);
 
             if (reservation == null)
             {
@@ -106,12 +106,12 @@ namespace Reservation.Api.Services
             return MapToDto(reservation);
         }
 
-        public async Task<ReservationResponseWithUser> GetReservationWithUsersAsync(int ownerId, int reservationId)
+        public async Task<ReservationResponseWithUser> GetReservationWithUsersAsync(int accountId, int reservationId)
         {
-            var owner = await _dbContext.Owners
+            var owner = await _dbContext.Accounts
                             .Include(o => o.Reservations)
                             .ThenInclude(r => r.SignedUsers)
-                            .FirstOrDefaultAsync(o => o.Id == ownerId)
+                            .FirstOrDefaultAsync(o => o.Id == accountId)
                         ?? throw new CustomHttpException(HttpStatusCode.NotFound, "Vlastník nebyl nalezen");
 
             var reservation = owner.Reservations.FirstOrDefault(r => r.Id == reservationId);
@@ -238,11 +238,11 @@ namespace Reservation.Api.Services
             return MapToDto(reservation);
         }
 
-        public async Task<bool> DeleteReservationAsync(int ownerId, int reservationId)
+        public async Task<bool> DeleteReservationAsync(int accountId, int reservationId)
         {
-            var owner = await _dbContext.Owners
+            var owner = await _dbContext.Accounts
                 .Include(o => o.Reservations)
-                .FirstOrDefaultAsync(o => o.Id == ownerId);
+                .FirstOrDefaultAsync(o => o.Id == accountId);
 
             if (owner == null)
                 throw new CustomHttpException(HttpStatusCode.NotFound, "Vlastník nebyl nalezen");
@@ -276,9 +276,9 @@ namespace Reservation.Api.Services
             return true;
         }
 
-        public async Task<bool> OwnerOwnsReservationAsync(int ownerId, int reservationId)
+        public async Task<bool> AccountOwnsReservationAsync(int accountId, int reservationId)
         {
-            return await _dbContext.Reservations.AnyAsync(r => r.OwnerId == ownerId && r.Id == reservationId);
+            return await _dbContext.Reservations.AnyAsync(r => r.AccountId == accountId && r.Id == reservationId);
         }
 
         private static ReservationResponseWithUser MapToWithUsersDto(Models.Reservation reservation)
@@ -323,11 +323,11 @@ namespace Reservation.Api.Services
             };
         }
 
-        private static Models.Reservation CreateReservationEntity(ReservationCreateRequest request, int ownerId)
+        private static Models.Reservation CreateReservationEntity(ReservationCreateRequest request, int accountId)
         {
             return new Models.Reservation
             {
-                OwnerId = ownerId,
+                AccountId = accountId,
                 Capacity = request.Capacity,
                 Title = request.Title,
                 Description = request.Description,

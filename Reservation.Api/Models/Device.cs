@@ -19,7 +19,7 @@ public class Device
     public string RefreshToken { get; set; }
 
     // Cizí klíč propojující zařízení s konkrétním majitelem
-    [ForeignKey("Owner")]
-    public int OwnerId { get; set; }
-    public Owner Owner { get; set; }
+    [ForeignKey("Account")]
+    public int AccountId { get; set; }
+    public Account Account { get; set; }
 }

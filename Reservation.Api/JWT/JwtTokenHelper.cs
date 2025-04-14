@@ -3,6 +3,7 @@ using System.Security.Claims;
 using System.Text;
 using Microsoft.IdentityModel.Tokens;
 using Reservation.Api.Models;
+using Reservation.Shared.Authorization;
 
 namespace Reservation.Api.JWT;
 
@@ -22,27 +23,31 @@ public class JwtTokenHelper
                     ?? throw new InvalidOperationException("Chybí konfigurace 'Jwt:Audience'.");
     }
 
-    public string GenerateAccessToken(Owner owner)
+    public string GenerateAccessToken(Owner owner, int accountId)
     {
         IEnumerable<Claim> claims =
         [
             new Claim(ReservationClaimNames.Sub, owner.Id.ToString()),
+            new Claim(ReservationClaimNames.Custom.AccountId, accountId.ToString()),
             new Claim(ReservationClaimNames.Email, owner.Email),
             new Claim(ReservationClaimNames.GivenName, owner.FirstName),
-            new Claim(ReservationClaimNames.FamilyName, owner.LastName)
+            new Claim(ReservationClaimNames.FamilyName, owner.LastName),
+            new Claim(ReservationClaimNames.Custom.Role, owner.Role.ToString()),
         ];
 
         return GenerateToken(claims, TimeSpan.FromMinutes(15)); // 15 minut
     }
 
-    public string GenerateRefreshToken(Owner owner, string deviceName)
+    public string GenerateRefreshToken(Owner owner, int accountId, string deviceName)
     {
         IEnumerable<Claim> claims =
         [
             new Claim(ReservationClaimNames.Sub, owner.Id.ToString()),
+            new Claim(ReservationClaimNames.Custom.AccountId, accountId.ToString()),
             new Claim(ReservationClaimNames.Email, owner.Email),
             new Claim(ReservationClaimNames.Custom.GeneratedNumber, new Random().Next(0, 999).ToString()),
-            new Claim(ReservationClaimNames.Custom.DeviceName, deviceName)
+            new Claim(ReservationClaimNames.Custom.DeviceName, deviceName),
+            new Claim(ReservationClaimNames.Custom.Role, owner.Role.ToString()),
         ];
 
         return GenerateToken(claims, TimeSpan.FromDays(180)); // 6 měsíců

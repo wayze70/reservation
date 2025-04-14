@@ -20,18 +20,18 @@ public class AccountService : IAccountService
         _passwordHasher = new PasswordHasher<Owner>();
     }
     
-    public async Task<string?> GetPathAsync(int ownerId)
+    public async Task<string?> GetPathAsync(int accountId)
     {
-        var owner = await FindOwnerById(ownerId);
-        return owner.Path;
+        var account = await FindAccountById(accountId);
+        return account.Path;
     }
     
-    public async Task<string> SetPathAsync(PathRequest request, int ownerId)
+    public async Task<string> SetPathAsync(PathRequest request, int accountId)
     {
         if (string.IsNullOrWhiteSpace(request.Path))
             throw new CustomHttpException(HttpStatusCode.BadRequest, "Adresa nesmí být prázdná");
 
-        var owner = await FindOwnerById(ownerId);
+        var account = await FindAccountById(accountId);
         
         string normalizedPath = request.Path.Trim().ToLowerInvariant();
         
@@ -39,25 +39,25 @@ public class AccountService : IAccountService
             throw new CustomHttpException(HttpStatusCode.BadRequest, "Adresa obsahuje nepovolené znaky");
 
         // Kontrola, zda nová cesta není již obsazená (pokud se liší od té aktuální)
-        if (!string.Equals(owner.Path, normalizedPath, StringComparison.OrdinalIgnoreCase) &&
-            await _dbContext.Owners.AnyAsync(a => a.Path == normalizedPath))
+        if (!string.Equals(account.Path, normalizedPath, StringComparison.OrdinalIgnoreCase) &&
+            await _dbContext.Accounts.AnyAsync(a => a.Path == normalizedPath))
         {
             throw new CustomHttpException(HttpStatusCode.Conflict, "Adresa je zabraná");
         }
 
-        owner.Path = normalizedPath;
+        account.Path = normalizedPath;
         await _dbContext.SaveChangesAsync();
-        return owner.Path;
+        return account.Path;
     }
     
     public async Task<bool> IsPathTakenAsync(string path)
     {
-        return await _dbContext.Owners.AnyAsync(a => a.Path == path);
+        return await _dbContext.Accounts.AnyAsync(a => a.Path == path);
     }
     
     public async Task<AccountDescriptionResponse> GetAccountDescriptionAsync(string path)
     {
-        var owner = await _dbContext.Owners.FirstOrDefaultAsync(o => o.Path == path);
+        var owner = await _dbContext.Accounts.FirstOrDefaultAsync(o => o.Path == path);
 
         if (owner is null)
         {
@@ -68,57 +68,33 @@ public class AccountService : IAccountService
         {
             Organization = owner.Organization,
             Description = owner.Description,
-            Email = owner.Email,
         };
     }
 
-    public async Task<AccountInfoResponse> GetAccountInfoAsync(int ownerId)
+    public async Task<AccountInfoResponse> GetAccountInfoAsync(int accountId)
     {
-        var owner = await FindOwnerById(ownerId);
+        var owner = await FindAccountById(accountId);
         
         return new AccountInfoResponse()
         {
-            FirstName = owner.FirstName,
-            LastName = owner.LastName,
             Organization = owner.Organization,
             Description = owner.Description,
-            Email = owner.Email
+            Path = owner.Path ?? string.Empty,
         };
     }
 
-    public async Task<AccountInfoResponse> UpdateAccountInfoAsync(UpdateAccountInfoRequest request, int ownerId)
+    public async Task<AccountInfoResponse> UpdateAccountInfoAsync(UpdateAccountInfoRequest request, int accountId)
     {
-        var owner = await FindOwnerById(ownerId);
+        var owner = await FindAccountById(accountId);
         
-        if (string.IsNullOrWhiteSpace(request.FirstName) || string.IsNullOrWhiteSpace(request.LastName))
-        {
-            throw new CustomHttpException(HttpStatusCode.BadRequest, "Jméno a příjmení nesmí být prázdné");
-        }
-        
-        if (!Utils.IsValidEmail(request.Email))
-        {
-            throw new CustomHttpException(HttpStatusCode.BadRequest, "Email nemá validní formát");
-        }
-        
-        if (await _dbContext.Owners.AnyAsync(a => a.Email == request.Email && a.Id != ownerId))
-        {
-            throw new CustomHttpException(HttpStatusCode.Conflict, "Email je již obsazen");
-        }
-        
-        owner.FirstName = request.FirstName;
-        owner.LastName = request.LastName;
         owner.Organization = request.Organization;
         owner.Description = request.Description;
-        owner.Email = request.Email;
         await _dbContext.SaveChangesAsync();
         
         return new AccountInfoResponse()
         {
-            FirstName = owner.FirstName,
-            LastName = owner.LastName,
             Organization = owner.Organization,
             Description = owner.Description,
-            Email = owner.Email
         };
     }
 
@@ -128,48 +104,47 @@ public class AccountService : IAccountService
         {
             throw new CustomHttpException(HttpStatusCode.BadRequest, "Heslo musí mít alespoň 6 znaků");
         }
-        
+
         var owner = await FindOwnerById(ownerId);
-        
+
         var verificationResult = _passwordHasher.VerifyHashedPassword(owner, owner.PasswordHash, request.OldPassword);
         if (verificationResult != PasswordVerificationResult.Success &&
             verificationResult != PasswordVerificationResult.SuccessRehashNeeded)
         {
             throw new CustomHttpException(HttpStatusCode.BadRequest, "Zadali jste špatné staré heslo");
         }
-        
+
         owner.PasswordHash = _passwordHasher.HashPassword(owner, request.NewPassword);
         await _dbContext.SaveChangesAsync();
         return true;
     }
 
-    public async Task<bool> DeleteAccountAsync(DeleteAccountRequest request, int ownerId)
+    public async Task<bool> DeleteAccountAsync(DeleteAccountRequest request, int accountId)
     {
-        var owner = await FindOwnerById(ownerId);
+        var owner = await FindAccountById(accountId);
 
-        if (owner.Email != request.Email)
-        {
-            throw new CustomHttpException(HttpStatusCode.BadRequest, "Zadaný email neodpovídá emailu vlastníka");
-        }
-        
-        var verificationResult = _passwordHasher.VerifyHashedPassword(owner, owner.PasswordHash, request.Password);
-        if (verificationResult != PasswordVerificationResult.Success &&
-            verificationResult != PasswordVerificationResult.SuccessRehashNeeded)
-        {
-            throw new CustomHttpException(HttpStatusCode.BadRequest, "Zadali jste špatné heslo");
-        }
-        
-        _dbContext.Owners.Remove(owner);
+        _dbContext.Accounts.Remove(owner);
         await _dbContext.SaveChangesAsync();
         return true;
     }
 
+    private async Task<Account> FindAccountById(int ownerId)
+    {
+        var account = await _dbContext.Accounts.FirstOrDefaultAsync(a => a.Id == ownerId);
+        if (account is null)
+        {
+            throw new CustomHttpException(HttpStatusCode.NotFound, "Účet nenalezen");
+        }
+
+        return account;
+    }
+    
     private async Task<Owner> FindOwnerById(int ownerId)
     {
         var owner = await _dbContext.Owners.FirstOrDefaultAsync(a => a.Id == ownerId);
         if (owner is null)
         {
-            throw new CustomHttpException(HttpStatusCode.NotFound, "Vlastník nenalezen");
+            throw new CustomHttpException(HttpStatusCode.NotFound, "Účet nenalezen");
         }
 
         return owner;

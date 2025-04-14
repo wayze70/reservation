@@ -12,7 +12,7 @@ using Reservation.Api;
 namespace Reservation.Api.Migrations
 {
     [DbContext(typeof(DataContext))]
-    [Migration("20250412202003_Init")]
+    [Migration("20250414120643_Init")]
     partial class Init
     {
         /// <inheritdoc />
@@ -25,6 +25,33 @@ namespace Reservation.Api.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
+            modelBuilder.Entity("Reservation.Api.Models.Account", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)");
+
+                    b.Property<string>("Organization")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<string>("Path")
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Accounts");
+                });
+
             modelBuilder.Entity("Reservation.Api.Models.Device", b =>
                 {
                     b.Property<int>("Id")
@@ -33,13 +60,13 @@ namespace Reservation.Api.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
+                    b.Property<int>("AccountId")
+                        .HasColumnType("integer");
+
                     b.Property<string>("DeviceName")
                         .IsRequired()
                         .HasMaxLength(1000)
                         .HasColumnType("character varying(1000)");
-
-                    b.Property<int>("OwnerId")
-                        .HasColumnType("integer");
 
                     b.Property<string>("RefreshToken")
                         .IsRequired()
@@ -48,7 +75,7 @@ namespace Reservation.Api.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("OwnerId");
+                    b.HasIndex("AccountId");
 
                     b.ToTable("Devices");
                 });
@@ -60,6 +87,9 @@ namespace Reservation.Api.Migrations
                         .HasColumnType("integer");
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("AccountId")
+                        .HasColumnType("integer");
 
                     b.Property<string>("Description")
                         .IsRequired()
@@ -95,7 +125,12 @@ namespace Reservation.Api.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("character varying(50)");
 
+                    b.Property<int>("Role")
+                        .HasColumnType("integer");
+
                     b.HasKey("Id");
+
+                    b.HasIndex("AccountId");
 
                     b.ToTable("Owners");
                 });
@@ -107,6 +142,9 @@ namespace Reservation.Api.Migrations
                         .HasColumnType("integer");
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("AccountId")
+                        .HasColumnType("integer");
 
                     b.Property<TimeSpan>("CancellationOffset")
                         .HasColumnType("interval");
@@ -130,9 +168,6 @@ namespace Reservation.Api.Migrations
                     b.Property<bool>("IsAvailable")
                         .HasColumnType("boolean");
 
-                    b.Property<int>("OwnerId")
-                        .HasColumnType("integer");
-
                     b.Property<DateTime>("StartTime")
                         .HasColumnType("timestamp with time zone");
 
@@ -143,7 +178,7 @@ namespace Reservation.Api.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("OwnerId");
+                    b.HasIndex("AccountId");
 
                     b.ToTable("Reservations");
                 });
@@ -192,24 +227,35 @@ namespace Reservation.Api.Migrations
 
             modelBuilder.Entity("Reservation.Api.Models.Device", b =>
                 {
-                    b.HasOne("Reservation.Api.Models.Owner", "Owner")
+                    b.HasOne("Reservation.Api.Models.Account", "Account")
                         .WithMany("Devices")
-                        .HasForeignKey("OwnerId")
+                        .HasForeignKey("AccountId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("Owner");
+                    b.Navigation("Account");
+                });
+
+            modelBuilder.Entity("Reservation.Api.Models.Owner", b =>
+                {
+                    b.HasOne("Reservation.Api.Models.Account", "Account")
+                        .WithMany("Owners")
+                        .HasForeignKey("AccountId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Account");
                 });
 
             modelBuilder.Entity("Reservation.Api.Models.Reservation", b =>
                 {
-                    b.HasOne("Reservation.Api.Models.Owner", "Owner")
+                    b.HasOne("Reservation.Api.Models.Account", "Account")
                         .WithMany("Reservations")
-                        .HasForeignKey("OwnerId")
+                        .HasForeignKey("AccountId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("Owner");
+                    b.Navigation("Account");
                 });
 
             modelBuilder.Entity("Reservation.Api.Models.User", b =>
@@ -223,9 +269,11 @@ namespace Reservation.Api.Migrations
                     b.Navigation("Reservation");
                 });
 
-            modelBuilder.Entity("Reservation.Api.Models.Owner", b =>
+            modelBuilder.Entity("Reservation.Api.Models.Account", b =>
                 {
                     b.Navigation("Devices");
+
+                    b.Navigation("Owners");
 
                     b.Navigation("Reservations");
                 });
