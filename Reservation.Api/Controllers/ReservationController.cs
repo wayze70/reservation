@@ -70,7 +70,6 @@ public class ReservationController : ControllerBase
         return Ok(result);
     }
 
-    // 6. Odebrání uživatele z rezervace (vyžaduje, aby uživatel byl vlastníkem)
     [HttpPost("remove-user")]
     public async Task<ActionResult<bool>> RemoveUserFromReservation(
         [FromHeader(Name = "Authorization")] string authorization,

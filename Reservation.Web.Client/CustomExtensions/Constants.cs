@@ -5,6 +5,7 @@ namespace Reservation.Web.Client.CustomExtensions;
 public static class Constants
 {
     public const string ApiBaseAddress = "https://www.api.rezervario.cz/";
+    public const string AppName = "Rezervario";
     
     public class Routes
     {

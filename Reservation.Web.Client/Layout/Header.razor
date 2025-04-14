@@ -1,10 +1,16 @@
+@implements IDisposable
 @inject NavigationManager NavigationManager
+@inject GlobalState GlobalState
 
 <header class="bg-dark p-3">
     <div class="container d-flex justify-content-between">
-        <h1 class="my-auto"><a class="text-white" href="@Constants.Routes.Home">Rezervario</a></h1>
-        @if (!IsReservationRoute)
+        @if (IsReservationRoute)
         {
+            <h1 class="my-auto"><a class="text-white" href="@Constants.Routes.Home">@GlobalState.Title</a></h1>
+        }
+        else
+        {
+            <h1 class="my-auto"><a class="text-white" href="@Constants.Routes.Home">@Constants.AppName</a></h1>
             <Navigation/>
         }
     </div>
@@ -13,22 +19,24 @@
 @code
 {
     string Uri => NavigationManager.ToBaseRelativePath(NavigationManager.Uri);
-    
+
     bool IsReservationRoute => (Uri.StartsWith("rezervace", StringComparison.OrdinalIgnoreCase) ||
                                 Uri.StartsWith("zruseni-rezervace", StringComparison.OrdinalIgnoreCase));
 
     protected override void OnInitialized()
     {
         NavigationManager.LocationChanged += OnLocationChanged;
-    }
-
-    private void OnLocationChanged(object? sender, LocationChangedEventArgs e)
-    {
-        InvokeAsync(StateHasChanged);
+        GlobalState.OnStateChanged += StateHasChanged;
     }
 
     public void Dispose()
     {
         NavigationManager.LocationChanged -= OnLocationChanged;
+        GlobalState.OnStateChanged -= StateHasChanged;
+    }
+
+    private void OnLocationChanged(object? sender, LocationChangedEventArgs e)
+    {
+        InvokeAsync(StateHasChanged);
     }
 }

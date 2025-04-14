@@ -2,10 +2,9 @@
   flex-direction: unset !important;
 }
 
-.reservation-highlight {
-  color: #000 !important;
+.reservation-highlight p {
   text-decoration: underline !important;
-  overflow: visible;
+  font-weight: 900 !important;
 }
 
 #new-reservation .mud-picker-calendar .selected-date {
@@ -23,7 +22,7 @@
 }
 
 .reservation-empty {
-  color: grey !important;
+  color: lightgray !important;
 }
 
 /*# sourceMappingURL=styles.css.map */
