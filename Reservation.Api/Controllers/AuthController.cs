@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 using Reservation.Api.CustomException;
 using Reservation.Api.JWT;
 using Reservation.Api.Services;
+using Reservation.Shared.Authorization;
 using Reservation.Shared.Common;
 using Reservation.Shared.Dtos;
 
@@ -77,6 +78,7 @@ public class AuthController : ControllerBase
     }
     
     [HttpPost("logout-all")]
+    [Authorize(Roles = nameof(Role.Admin))]
     public async Task<ActionResult<bool>> LogoutAllDevices([FromBody] LogoutRequest request)
     {
         if (string.IsNullOrWhiteSpace(request.RefreshToken))

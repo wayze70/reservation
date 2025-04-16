@@ -1,0 +1,70 @@
+@page "/ucet/zamestnanci/vytvorit"
+@using Microsoft.AspNetCore.Authorization
+@using Reservation.Shared.Authorization
+@inject IEmployeeService EmployeeService
+@inject NavigationManager NavigationManager
+@inject ISnackbar Snackbar
+
+<PageTitle>Nový pracovník</PageTitle>
+@attribute [Authorize(Roles = nameof(Role.Admin))]
+
+<MudPaper Class="pa-6 mb-6" Elevation="4">
+  <MudButton Variant="Variant.Outlined" Color="Color.Primary"
+             OnClick="@(() => NavigationManager.NavigateTo("/ucet/zamestnanci"))">
+    Zpět na seznam pracovníků
+  </MudButton>
+  <MudText Typo="Typo.h4" Align="Align.Center" GutterBottom="true">
+    Nový pracovník
+  </MudText>
+  <EditForm Model="@NewEmployee" OnValidSubmit="@CreateEmployee">
+    <DataAnnotationsValidator/>
+    <MudGrid>
+      <MudItem xs="12" sm="6">
+        <MudTextField T="string" Label="Jméno" @bind-Value="NewEmployee.FirstName" Required="true"/>
+      </MudItem>
+      <MudItem xs="12" sm="6">
+        <MudTextField T="string" Label="Příjmení" @bind-Value="NewEmployee.LastName" Required="true"/>
+      </MudItem>
+      <MudItem xs="12" sm="6">
+        <MudTextField T="string" InputType="InputType.Email" Label="Email" @bind-Value="NewEmployee.Email"
+                      Required="true"/>
+      </MudItem>
+      <MudItem xs="12" sm="6">
+        <MudTextField T="string" InputType="InputType.Password" Label="Heslo - po přihlášení je možné heslo změnit"
+                      @bind-Value="NewEmployee.Password"
+                      Required="true"/>
+      </MudItem>
+      <MudItem xs="12" sm="6">
+        <MudSelect T="Role" Label="Pozice" @bind-Value="NewEmployee.Role" Required="true">
+          @foreach (var role in Constants.RoleInfo.GetAll())
+          {
+            <MudSelectItem Value="@role.Key">@role.Value.DisplayName - @role.Value.Description</MudSelectItem>
+          }
+        </MudSelect>
+      </MudItem>
+    </MudGrid>
+    <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary" Class="mt-4"
+               FullWidth="true">
+      Vytvořit pracovníka
+    </MudButton>
+  </EditForm>
+</MudPaper>
+
+@code {
+  EmployeeCreateRequest NewEmployee { get; set; } = new();
+
+  private async Task CreateEmployee()
+  {
+    var response = await EmployeeService.CreateEmployee(NewEmployee);
+    if (response.IsSuccess)
+    {
+      Snackbar.Add("Zaměstnanec byl úspěšně vytvořen.", Severity.Success);
+      NavigationManager.NavigateTo("/ucet/zamestnanci");
+    }
+    else
+    {
+      Snackbar.Add("Nepodařilo se vytvořit zaměstnance.", Severity.Error);
+    }
+  }
+
+}

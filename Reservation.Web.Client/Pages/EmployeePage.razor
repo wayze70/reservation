@@ -1,64 +1,30 @@
 @page "/ucet/zamestnanci"
-@using System.Globalization
 @using Microsoft.AspNetCore.Authorization
 @using Reservation.Shared.Authorization
+@using Reservation.Shared.Dtos
 @inject IEmployeeService EmployeeService
 @inject NavigationManager NavigationManager
 @inject ISnackbar Snackbar
 
-<PageTitle>Správa zaměstnanců</PageTitle>
-@attribute [Authorize]
+<PageTitle>Správa pracovníků</PageTitle>
+@attribute [Authorize(Roles = nameof(Role.Admin))]
 
-<!-- Formulář pro přidání/úpravu zaměstnance -->
-<MudPaper Class="pa-6 mb-6" Elevation="4">
-  <MudText Typo="Typo.h4" Align="Align.Center" GutterBottom="true">
-    Detaily zaměstnance
-  </MudText>
-  <EditForm Model="@SelectedEmployee" OnValidSubmit="@SaveChanges">
-    <DataAnnotationsValidator />
-    <MudGrid>
-      <MudItem xs="12" sm="6">
-        <MudTextField T="string" Label="Jméno" @bind-Value="SelectedEmployee.FirstName" Required="true" />
-      </MudItem>
-      <MudItem xs="12" sm="6">
-        <MudTextField T="string" Label="Příjmení" @bind-Value="SelectedEmployee.LastName" Required="true" />
-      </MudItem>
-      <MudItem xs="12" sm="6">
-        <MudTextField T="string" Label="Email" @bind-Value="SelectedEmployee.Email" Required="true" />
-      </MudItem>
-      <MudItem xs="12" sm="6">
-        <MudSelect T="Role" Label="Pozice" @bind-Value="SelectedEmployee.Role" Required="true">
-          @foreach (Role role in Enum.GetValues(typeof(Role)))
-          {
-            <MudSelectItem Value="@role">@role.ToString()</MudSelectItem>
-          }
-        </MudSelect>
-      </MudItem>
-    </MudGrid>
-    <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary" Class="mt-4" FullWidth="true">
-      Uložit změny
-    </MudButton>
-  </EditForm>
-</MudPaper>
-
-<!-- Seznam zaměstnanců -->
-<MudPaper Class="pa-6" Elevation="4">
-  <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
-    <MudText Typo="Typo.h5" GutterBottom="true">
-      Seznam zaměstnanců
+  <MudStack Class="mb-4" Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
+    <MudText Typo="Typo.h5">
+      Seznam pracovníků
     </MudText>
     <MudButton Variant="Variant.Outlined" Color="Color.Primary" OnClick="@CreateNewEmployee">
-      Nový zaměstnanec
+      Vytvořit nového pracovníka
     </MudButton>
   </MudStack>
 
   @if (Employees is null)
   {
-    <MudText>Načítám zaměstnance...</MudText>
+    <MudText>Načítám pracovníky...</MudText>
   }
   else if (Employees.Count == 0)
   {
-    <MudText>Nejsou žádní zaměstnanci.</MudText>
+    <MudText>Nejsou žádní pracovníci.</MudText>
   }
   else
   {
@@ -68,33 +34,71 @@
         <MudTh>Příjmení</MudTh>
         <MudTh>Email</MudTh>
         <MudTh>Pozice</MudTh>
-        <MudTh></MudTh>
+        <MudTh>Akce</MudTh>
       </HeaderContent>
       <RowTemplate>
-        <MudTd DataLabel="Jméno">@context.FirstName</MudTd>
-        <MudTd DataLabel="Příjmení">@context.LastName</MudTd>
-        <MudTd DataLabel="Email">@context.Email</MudTd>
-        <MudTd DataLabel="Pozice">@context.Role</MudTd>
-        <MudTd DataLabel="Akce">
-          <MudButton Variant="Variant.Outlined" Color="Color.Primary" Size="Size.Small" OnClick="@(() => EditEmployee(@context))">
-            Upravit
-          </MudButton>
-          <MudButton Variant="Variant.Outlined" Color="Color.Error" Size="Size.Small" OnClick="@(() => RemoveEmployee(@context))">
-            Smazat
-          </MudButton>
-        </MudTd>
+        @if (editingEmployeeId == @context.Id)
+        {
+          <!-- Řádek v režimu editace -->
+          <MudTd DataLabel="Jméno">
+            <MudTextField T="string" Label="Jméno" @bind-Value="editEmployee.FirstName" Required="true" />
+          </MudTd>
+          <MudTd DataLabel="Příjmení">
+            <MudTextField T="string" Label="Příjmení" @bind-Value="editEmployee.LastName" Required="true" />
+          </MudTd>
+          <MudTd DataLabel="Email">
+            <MudTextField T="string" Label="Email" InputType="InputType.Email" @bind-Value="editEmployee.Email" Required="true" />
+          </MudTd>
+          <MudTd DataLabel="Pozice">
+            <MudSelect T="Role" Label="Pozice" @bind-Value="editEmployee.Role" Required="true">
+              @foreach (var role in Constants.RoleInfo.GetAll())
+              {
+                <MudSelectItem Value="@role.Key">@role.Value.DisplayName</MudSelectItem>
+              }
+            </MudSelect>
+          </MudTd>
+          <MudTd DataLabel="Akce">
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" Size="Size.Small" OnClick="@(() => 
+          SaveEmployee(@context.Id))">
+              Uložit
+            </MudButton>
+            <MudButton Variant="Variant.Outlined" Color="Color.Secondary" Size="Size.Small" OnClick="@CancelEdit">
+              Zrušit
+            </MudButton>
+          </MudTd>
+        }
+        else
+        {
+          <!-- Řádek v režimu zobrazení -->
+          <MudTd DataLabel="Jméno">@context.FirstName</MudTd>
+          <MudTd DataLabel="Příjmení">@context.LastName</MudTd>
+          <MudTd DataLabel="Email">@context.Email</MudTd>
+          <MudTd DataLabel="Pozice">
+            @(Constants.RoleInfo.GetAll().TryGetValue(context.Role, out var roleInfo)
+              ? roleInfo.DisplayName
+              : context.Role.ToString())
+          </MudTd>
+          <MudTd DataLabel="Akce">
+            <MudButton Variant="Variant.Outlined" Color="Color.Primary" Size="Size.Small" OnClick="@(() => EditEmployee(@context))">
+              Upravit
+            </MudButton>
+            <MudButton Variant="Variant.Outlined" Color="Color.Error" Size="Size.Small" OnClick="@(() => RemoveEmployee(@context))">
+              Smazat
+            </MudButton>
+          </MudTd>
+        }
       </RowTemplate>
     </MudTable>
   }
-</MudPaper>
 
 @code {
   // Seznam zaměstnanců
   private List<EmployeeResponse> Employees;
 
-  // Model pro aktuálně vybíraného či nového zaměstnance
-  // Předpokládáme, že EmployeeResponse má vlastnost Id, která je 0 u nového záznamu.
-  private EmployeeResponse SelectedEmployee = new EmployeeResponse();
+  // ID zaměstnance, který se aktuálně edituje (null pokud není nikdo v režimu editace)
+  private int? editingEmployeeId = null;
+  // Model pro úpravu - využíváme DTO určené pro aktualizaci
+  private EmployeeUpdateRequest editEmployee = new EmployeeUpdateRequest();
 
   protected override async Task OnInitializedAsync()
   {
@@ -118,76 +122,15 @@
   }
 
   /// <summary>
-  /// Uloží změny pro aktuálně vybraného nebo nového zaměstnance.
+  /// Připraví formulář pro úpravu daného zaměstnance.
+  /// Vytvoříme kopii dat, abychom neovlivnili zobrazení, dokud se neuloží změny.
   /// </summary>
-  private async Task SaveChanges()
-  {
-    if (SelectedEmployee.Id == 0)
-    {
-      // Vytvoření nového zaměstnance
-      var request = new EmployeeCreateRequest
-      {
-        FirstName = SelectedEmployee.FirstName,
-        LastName = SelectedEmployee.LastName,
-        Email = SelectedEmployee.Email,
-        Role = SelectedEmployee.Role
-      };
-
-      var response = await EmployeeService.CreateEmployee(request);
-      if (response.IsSuccess)
-      {
-        Snackbar.Add("Zaměstnanec byl úspěšně přidán.", Severity.Success);
-        await LoadEmployees();
-        SelectedEmployee = new EmployeeResponse();
-      }
-      else
-      {
-        Snackbar.Add("Nepodařilo se přidat zaměstnance.", Severity.Error);
-      }
-    }
-    else
-    {
-      // Aktualizace existujícího zaměstnance
-      var request = new EmployeeUpdateRequest
-      {
-        FirstName = SelectedEmployee.FirstName,
-        LastName = SelectedEmployee.LastName,
-        Email = SelectedEmployee.Email,
-        Role = SelectedEmployee.Role
-      };
-
-      var response = await EmployeeService.UpdateEmployee(SelectedEmployee.Id, request);
-      if (response.IsSuccess)
-      {
-        Snackbar.Add("Zaměstnanec byl úspěšně aktualizován.", Severity.Success);
-        await LoadEmployees();
-        SelectedEmployee = new EmployeeResponse();
-      }
-      else
-      {
-        Snackbar.Add("Nepodařilo se aktualizovat údaje zaměstnance.", Severity.Error);
-      }
-    }
-  }
-
-  /// <summary>
-  /// Připraví formulář pro vložení nového zaměstnance.
-  /// </summary>
-  private void CreateNewEmployee()
-  {
-    SelectedEmployee = new EmployeeResponse();
-  }
-
-  /// <summary>
-  /// Na základě vybraného zaměstnance připraví formulář pro úpravu.
-  /// </summary>
-  /// <param name="employee">Vybraný zaměstnanec</param>
+  /// <param name="employee">Zaměstnanec k editaci</param>
   private void EditEmployee(EmployeeResponse employee)
   {
-    // Pro jednoduchost vytváříme kopii vybraného zaměstnance
-    SelectedEmployee = new EmployeeResponse
+    editingEmployeeId = employee.Id;
+    editEmployee = new EmployeeUpdateRequest
     {
-      Id = employee.Id,
       FirstName = employee.FirstName,
       LastName = employee.LastName,
       Email = employee.Email,
@@ -196,9 +139,45 @@
   }
 
   /// <summary>
+  /// Uloží změny provedené u zaměstnance.
+  /// </summary>
+  /// <param name="employeeId">ID zaměstnance, který se právě edituje</param>
+  private async Task SaveEmployee(int employeeId)
+  {
+    var response = await EmployeeService.UpdateEmployee(employeeId, editEmployee);
+    if (response.IsSuccess)
+    {
+      Snackbar.Add("Zaměstnanec byl úspěšně aktualizován.", Severity.Success);
+      // Aktualizujeme lokální seznam pro okamžitou reakci uživatele
+      var employeeToUpdate = Employees.FirstOrDefault(e => e.Id == employeeId);
+      if (employeeToUpdate is not null)
+      {
+        employeeToUpdate.FirstName = editEmployee.FirstName;
+        employeeToUpdate.LastName = editEmployee.LastName;
+        employeeToUpdate.Email = editEmployee.Email;
+        employeeToUpdate.Role = editEmployee.Role;
+      }
+      editingEmployeeId = null;
+    }
+    else
+    {
+      Snackbar.Add("Nepodařilo se aktualizovat údaje zaměstnance.", Severity.Error);
+    }
+  }
+
+  /// <summary>
+  /// Zruší editační režim.
+  /// </summary>
+  private void CancelEdit()
+  {
+    editingEmployeeId = null;
+    editEmployee = new EmployeeUpdateRequest();
+  }
+
+  /// <summary>
   /// Odstraní záznam o zaměstnanci.
   /// </summary>
-  /// <param name="employee">Zaměstnanec, kterého chceme smazat</param>
+  /// <param name="employee">Zaměstnanec k odstranění</param>
   private async Task RemoveEmployee(EmployeeResponse employee)
   {
     var response = await EmployeeService.DeleteEmployee(employee.Id);
@@ -211,5 +190,13 @@
     {
       Snackbar.Add("Nepodařilo se smazat zaměstnance.", Severity.Error);
     }
+  }
+
+  /// <summary>
+  /// Připraví formulář pro vložení nového zaměstnance – může přesměrovat na speciální stránku.
+  /// </summary>
+  private void CreateNewEmployee()
+  {
+    NavigationManager.NavigateTo("/ucet/zamestnanci/vytvorit");
   }
 }

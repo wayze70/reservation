@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Reservation.Api.JWT;
 using Reservation.Api.Services;
+using Reservation.Shared.Authorization;
 using Reservation.Shared.Dtos;
 
 namespace Reservation.Api.Controllers;
@@ -28,7 +29,9 @@ public class AccountController : ControllerBase
                   string.Empty);
     }
 
+    
     [HttpPost("path")]
+    [Authorize(Roles = nameof(Role.Admin))]
     public async Task<ActionResult<string>> SetPath([FromBody] PathRequest request, [FromHeader(Name = "Authorization")]
         string authorization)
     {
@@ -49,6 +52,7 @@ public class AccountController : ControllerBase
     }
 
     [HttpPut("account-info")]
+    [Authorize(Roles = nameof(Role.Admin))]
     public async Task<ActionResult<AccountInfoResponse>> UpdatePath([FromBody] UpdateAccountInfoRequest request,
         [FromHeader(Name = "Authorization")] string authorization)
     {
@@ -70,7 +74,8 @@ public class AccountController : ControllerBase
         return Ok(await _accountService.GetAccountDescriptionAsync(path));
     }
 
-    [HttpPost("delete")] 
+    [HttpPost("delete")]
+    [Authorize(Roles = nameof(Role.Admin))]
     public async Task<ActionResult<bool>> DeleteAccount([FromHeader(Name = "Authorization")] string authorization, 
     [FromBody] DeleteAccountRequest request)
     {

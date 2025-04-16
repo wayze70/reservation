@@ -1,17 +1,21 @@
 using System.Net;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Reservation.Api.CustomException;
 using Reservation.Api.Models;
+using Reservation.Shared.Dtos;
 
 namespace Reservation.Api.Services;
 
 public class EmployeeService : IEmployeeService
 {
     private readonly DataContext _context;
+    private readonly IPasswordHasher<Owner> _passwordHasher;
 
-    public EmployeeService(DataContext context)
+    public EmployeeService(DataContext context, IPasswordHasher<Owner> passwordHasher)
     {
         _context = context;
+        _passwordHasher = passwordHasher;
     }
 
     public async Task<List<EmployeeResponse>> GetEmployeesAsync(int accountId)
@@ -48,6 +52,7 @@ public class EmployeeService : IEmployeeService
             LastName = request.LastName,
             Email = request.Email,
             Role = request.Role,
+            PasswordHash = _passwordHasher.HashPassword(new Owner(), request.Password),
             AccountId = accountId,
         };
 

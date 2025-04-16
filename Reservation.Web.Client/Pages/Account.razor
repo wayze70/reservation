@@ -3,8 +3,10 @@
 @inject IAuthService AuthService
 @inject IEmployeeService EmployeeService
 @using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Authorization.Infrastructure
 @using Reservation.Shared.Authorization
 @using Reservation.Shared.Common
+@using Microsoft.AspNetCore.Components.Authorization
 @inject ISnackbar Snackbar
 
 @page "/ucet"
@@ -12,92 +14,94 @@
 
 <PageTitle>Účet</PageTitle>
 <MudExpansionPanels>
-    <MudExpansionPanel Text="Identifikátor" Expanded="true">
-        <MudText Typo="Typo.h5" Align="Align.Center" GutterBottom="true">
-            Nastavení identifikátoru
-        </MudText>
+    <AuthorizeView Roles="@nameof(Role.Admin)">
+        <Authorized Context="authContext">
+            <MudExpansionPanel Text="Identifikátor" Expanded="true">
 
-        @if (string.IsNullOrWhiteSpace(CurrentPath))
-        {
-            <MudText>
-                Zadejte unikátní identifikátor, který bude součástí URL vaší rezervace.
-                Může to být například vaše jméno, název firmy nebo jiný stručný název, podle kterého si rezervaci snadno zapamatujete.
-            </MudText>
-        }
-        else
-        {
-            <MudText>
-                Aktuální adresa vaší rezervace:
-            </MudText>
-            <MudText>
-                <MudLink Href="@Constants.Routes.Reservation(CurrentPath)" Style="word-wrap: break-word; word-break: break-all;">
-                    @(NavigationManager.BaseUri)@Constants.Routes.Reservation(CurrentPath).Remove(0, 1)
-                </MudLink>
-            </MudText>
-        }
-
-        <MudStack Spacing="2" Class="mt-4">
-            <MudTextField T="string" Disabled="@(CurrentPath is null)" Value="Path" ValueChanged="OnPathChange"
-                          Label="Identifikátor" DebounceInterval="500"/>
-
-            <MudStack Row="false" AlignItems="AlignItems.Center" Spacing="1">
-                @if ((IsPathTaken && CurrentPath != Path) || !IsPathValid)
+                @if (string.IsNullOrWhiteSpace(CurrentPath))
                 {
-                    <MudIcon Icon="@Icons.Material.Filled.Close" Color="Color.Error" Size="Size.Small"/>
+                    <MudText>
+                        Zadejte unikátní identifikátor, který bude součástí URL vaší rezervace.
+                        Může to být například vaše jméno, název firmy nebo jiný stručný název, podle kterého si
+                        rezervaci snadno zapamatujete.
+                    </MudText>
                 }
                 else
                 {
-                    <MudIcon Icon="@Icons.Material.Filled.CheckCircleOutline" Color="Color.Success" Size="Size.Small"/>
+                    <MudText>
+                        Aktuální adresa vaší rezervace:
+                    </MudText>
+                    <MudText>
+                        <MudLink Href="@Constants.Routes.Reservation(CurrentPath)"
+                                 Style="word-wrap: break-word; word-break: break-all;">
+                            @(NavigationManager.BaseUri)@Constants.Routes.Reservation(CurrentPath).Remove(0, 1)
+                        </MudLink>
+                    </MudText>
                 }
 
-                @if (IsPathTaken && CurrentPath == Path)
-                {
-                    <MudText Color="Color.Info">Toto je vaše aktuální adresa</MudText>
-                }
-                else if (IsPathTaken)
-                {
-                    <MudText Color="Color.Error">Tato adresa je již obsazená</MudText>
-                }
-                else if (!IsPathValid)
-                {
-                    <MudText Color="Color.Error">Adresa obsahuje nepovolené znaky</MudText>
-                }
-            </MudStack>
+                <MudStack Spacing="2" Class="mt-4">
+                    <MudTextField T="string" Disabled="@(CurrentPath is null)" Value="Path" ValueChanged="OnPathChange"
+                                  Label="Identifikátor" DebounceInterval="500"/>
 
-            <MudButton OnClick="UpdatePath" Color="Color.Primary" Variant="Variant.Filled" ButtonType="ButtonType.Button" Style="width: fit-content !important;">
-                Uložit identifikátor
-            </MudButton>
-        </MudStack>
-    </MudExpansionPanel>
-    <MudExpansionPanel Text="Informace o účtu">
-        <EditForm Model="_accountInfo" OnValidSubmit="OnAccountInfoValidSubmit"
-                  OnInvalidSubmit="OnAccountInfoInvalidSubmit">
-            <MudText Typo="Typo.h5" Align="Align.Center" GutterBottom="true">
-                Informací o účtu
-            </MudText>
+                    <MudStack Row="false" AlignItems="AlignItems.Center" Spacing="1">
+                        @if ((IsPathTaken && CurrentPath != Path) || !IsPathValid)
+                        {
+                            <MudIcon Icon="@Icons.Material.Filled.Close" Color="Color.Error" Size="Size.Small"/>
+                        }
+                        else
+                        {
+                            <MudIcon Icon="@Icons.Material.Filled.CheckCircleOutline" Color="Color.Success"
+                                     Size="Size.Small"/>
+                        }
 
-            <MudTextField T="string" Label="Organizace" @bind-Value="_accountInfo.Organization"
-                          Required="true"/>
-            <MudTextField T="string" Label="Popis" @bind-Value="_accountInfo.Description"/>
+                        @if (IsPathTaken && CurrentPath == Path)
+                        {
+                            <MudText Color="Color.Info">Toto je vaše aktuální adresa</MudText>
+                        }
+                        else if (IsPathTaken)
+                        {
+                            <MudText Color="Color.Error">Tato adresa je již obsazená</MudText>
+                        }
+                        else if (!IsPathValid)
+                        {
+                            <MudText Color="Color.Error">Adresa obsahuje nepovolené znaky</MudText>
+                        }
+                    </MudStack>
 
-            <MudButton ButtonType="ButtonType.Submit" Color="Color.Primary" Variant="Variant.Filled" Class="mt-4">
-                Uložit informace o účtu
-            </MudButton>
-        </EditForm>
-    </MudExpansionPanel>
+                    <MudButton OnClick="UpdatePath" Color="Color.Primary" Variant="Variant.Filled"
+                               ButtonType="ButtonType.Button" Style="width: fit-content !important;">
+                        Uložit identifikátor
+                    </MudButton>
+                </MudStack>
+            </MudExpansionPanel>
+            <MudExpansionPanel Text="Informace o účtu">
+                <EditForm Model="_accountInfo" OnValidSubmit="OnAccountInfoValidSubmit"
+                          OnInvalidSubmit="OnAccountInfoInvalidSubmit">
+                    <MudTextField T="string" Label="Organizace" @bind-Value="_accountInfo.Organization"
+                                  Required="true"/>
+                    <MudTextField T="string" Label="Popis" @bind-Value="_accountInfo.Description"/>
+
+                    <MudButton ButtonType="ButtonType.Submit" Color="Color.Primary" Variant="Variant.Filled"
+                               Class="mt-4">
+                        Uložit informace o účtu
+                    </MudButton>
+                </EditForm>
+            </MudExpansionPanel>
+        </Authorized>
+    </AuthorizeView>
+
     <MudExpansionPanel Text="Osobní údaje o přihlášeném uživateli">
         <EditForm Model="SelectedEmployee" OnValidSubmit="OnAccountInfoValidSubmit"
                   OnInvalidSubmit="OnAccountInfoInvalidSubmit">
-
             <MudGrid>
                 <MudItem xs="12" sm="6">
-                    <MudTextField T="string" Label="Jméno" @bind-Value="SelectedEmployee.FirstName" Required="true" />
+                    <MudTextField T="string" Label="Jméno" @bind-Value="SelectedEmployee.FirstName" Required="true"/>
                 </MudItem>
                 <MudItem xs="12" sm="6">
-                    <MudTextField T="string" Label="Příjmení" @bind-Value="SelectedEmployee.LastName" Required="true" />
+                    <MudTextField T="string" Label="Příjmení" @bind-Value="SelectedEmployee.LastName" Required="true"/>
                 </MudItem>
                 <MudItem xs="12" sm="6">
-                    <MudTextField T="string" Label="Email" @bind-Value="SelectedEmployee.Email" Required="true" />
+                    <MudTextField T="string" Label="Email" @bind-Value="SelectedEmployee.Email" Required="true"/>
                 </MudItem>
                 <MudItem xs="12" sm="6">
                     <MudSelect T="Role" Label="Pozice" @bind-Value="SelectedEmployee.Role" Required="true">
@@ -113,42 +117,43 @@
                 Uložit osobní údaje
             </MudButton>
         </EditForm>
-    </MudExpansionPanel>
 
+    </MudExpansionPanel>
     <MudExpansionPanel Text="Změna hesla přihlášeného uživatele">
-            <EditForm Model="_updatePasswordRequest" OnValidSubmit="OnPasswordValidSubmit"
-                      OnInvalidSubmit="OnPasswordInvalidSubmit">
-                <MudTextField T="string" Label="Staré heslo" @bind-Value="_updatePasswordRequest.OldPassword"
-                              Required="true"
-                              InputType="InputType.Password"/>
-                <MudTextField T="string" Label="Nové heslo" @bind-Value="_updatePasswordRequest.NewPassword"
-                              Required="true"
-                              InputType="InputType.Password"/>
 
-                <MudButton ButtonType="ButtonType.Submit" Color="Color.Primary" Variant="Variant.Filled"
-                           Class="mt-4">
-                    Změnit heslo
-                </MudButton>
-            </EditForm>
+        <EditForm Model="_updatePasswordRequest" OnValidSubmit="OnPasswordValidSubmit"
+                  OnInvalidSubmit="OnPasswordInvalidSubmit">
+            <MudTextField T="string" Label="Staré heslo" @bind-Value="_updatePasswordRequest.OldPassword"
+                          Required="true"
+                          InputType="InputType.Password"/>
+            <MudTextField T="string" Label="Nové heslo" @bind-Value="_updatePasswordRequest.NewPassword"
+                          Required="true"
+                          InputType="InputType.Password"/>
+
+            <MudButton ButtonType="ButtonType.Submit" Color="Color.Primary" Variant="Variant.Filled"
+                       Class="mt-4">
+                Změnit heslo
+            </MudButton>
+        </EditForm>
     </MudExpansionPanel>
 
-    <MudButton ButtonType="ButtonType.Button" OnClick="() => { AuthService.LogoutAllDevicesAsync();}"
+    <MudButton ButtonType="ButtonType.Button" OnClick="@(async () => await AuthService.LogoutAllDevicesAsync())"
                Color="Color.Warning" Variant="Variant.Filled" Class="mt-4">
         Odhlásit se ze všech zařízení
     </MudButton>
 
     <MudExpansionPanel Text="Zrušení účtu" Class="mt-5">
-            <EditForm Model="_deleteAccountRequest" OnValidSubmit="OnDeleteAccountValidSubmit"
-                      OnInvalidSubmit="OnDeleteAccountInvalidSubmit">
-                <MudTextField T="string" Label="Email" @bind-Value="_deleteAccountRequest.Email" Required="true"
-                              InputType="InputType.Email"/>
-                <MudTextField T="string" Label="Heslo" @bind-Value="_deleteAccountRequest.Password" Required="true"
-                              InputType="InputType.Password"/>
+        <EditForm Model="_deleteAccountRequest" OnValidSubmit="OnDeleteAccountValidSubmit"
+                  OnInvalidSubmit="OnDeleteAccountInvalidSubmit">
+            <MudTextField T="string" Label="Email" @bind-Value="_deleteAccountRequest.Email" Required="true"
+                          InputType="InputType.Email"/>
+            <MudTextField T="string" Label="Heslo" @bind-Value="_deleteAccountRequest.Password" Required="true"
+                          InputType="InputType.Password"/>
 
-                <MudButton ButtonType="ButtonType.Submit" Color="Color.Error" Variant="Variant.Filled" Class="mt-4">
-                    Smazat účet
-                </MudButton>
-            </EditForm>
+            <MudButton ButtonType="ButtonType.Submit" Color="Color.Error" Variant="Variant.Filled" Class="mt-4">
+                Smazat účet
+            </MudButton>
+        </EditForm>
     </MudExpansionPanel>
 </MudExpansionPanels>
 
@@ -160,7 +165,7 @@
     bool IsPathValid { get; set; } = true;
 
     private EmployeeResponse SelectedEmployee = new EmployeeResponse();
-    
+
     private AccountInfoResponse _accountInfo = new();
     private UpdatePasswordRequest _updatePasswordRequest = new();
     private DeleteAccountRequest _deleteAccountRequest = new();
@@ -175,7 +180,7 @@
         }
 
         var employeesResult = await EmployeeService.GetCurrentEmployee();
-        
+
         if (employeesResult is { IsSuccess: true, Data: not null })
         {
             SelectedEmployee = employeesResult.Data;

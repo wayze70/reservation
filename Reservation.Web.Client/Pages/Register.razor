@@ -49,8 +49,6 @@
 
     async Task OnSubmit()
     {
-        
-        
         var response = await AuthService.RegisterAsync(RegistrationUser);
 
         switch (response)

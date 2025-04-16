@@ -31,7 +31,6 @@ namespace Reservation.Web.Client
             });
             
             builder.Services.AddBlazoredLocalStorage();
-            builder.Services.AddAuthorizationCore();
             
             // Registrace handlerů
             builder.Services.AddTransient<AuthTokenHandler>();
@@ -62,7 +61,8 @@ namespace Reservation.Web.Client
             builder.Services.AddScoped<AuthenticationStateProvider, CustomAuthenticationStateProvider>();
             builder.Services.AddSingleton<GlobalState>();
             builder.Services.AddScoped<IEmployeeService, EmployeeService>();
-            
+            builder.Services.AddAuthorizationCore();
+
             await builder.Build().RunAsync();
         }
     }

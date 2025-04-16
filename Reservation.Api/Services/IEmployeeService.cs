@@ -1,4 +1,9 @@
 // Services/IEmployeeService.cs
+
+using Reservation.Shared.Dtos;
+
+namespace Reservation.Api.Services;
+
 public interface IEmployeeService
 {
     Task<List<EmployeeResponse>> GetEmployeesAsync(int accountId);

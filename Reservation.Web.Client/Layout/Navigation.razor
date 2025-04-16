@@ -1,10 +1,26 @@
+@using System.Security.Claims
 @using Microsoft.AspNetCore.Components.Authorization
+@using Reservation.Shared.Authorization
 @inject IAuthService AuthService
 @inject NavigationManager NavigationManager
 
 <MudNavMenu Class="mud-nav-menu">
-    <AuthorizeView>
+    <AuthorizeView Context="authState">
         <Authorized>
+            <MudText Align="Align.Center">
+                @{
+                    string? roleValue = authState.User.FindFirst(ClaimTypes.Role)?.Value;
+                    if (Enum.TryParse<Role>(roleValue, out var role) && Constants.RoleInfo.GetAll().TryGetValue(role, out var roleInfo))
+                    {
+                        @roleInfo.DisplayName
+                    }
+                    else
+                    {
+                        @roleValue
+                    }
+                }
+            </MudText>
+
             <MudNavLink Href="@Constants.Routes.AccountRoute.Account"
                         Class="me-3"
                         Icon="@Icons.Material.Filled.AccountCircle"
@@ -12,18 +28,35 @@
                 Nastavení účtu
             </MudNavLink>
 
-            <MudNavLink Href="@Constants.Routes.AccountRoute.AccountReservation" Class="me-3" Icon="@Icons.Material.Filled.CalendarToday">
+            <AuthorizeView Roles="@nameof(Role.Admin)">
+                <Authorized>
+                    <MudNavLink Href="/ucet/zamestnanci"
+                                Class="me-3"
+                                Icon="@Icons.Material.Filled.People">
+                        Zaměstnanci
+                    </MudNavLink>
+                </Authorized>
+            </AuthorizeView>
+
+            <MudNavLink Href="@Constants.Routes.AccountRoute.AccountReservation"
+                        Class="me-3"
+                        Icon="@Icons.Material.Filled.CalendarToday">
                 Kalendář
             </MudNavLink>
-            <MudNavLink OnClick="@Logout" Class="me-3" Icon="@Icons.Material.Filled.ExitToApp">
-                Odlásit se
+
+            <MudNavLink OnClick="@Logout"
+                        Class="me-3"
+                        Icon="@Icons.Material.Filled.ExitToApp">
+                Odhlásit se
             </MudNavLink>
         </Authorized>
         <NotAuthorized>
-            <MudNavLink Href="@Constants.Routes.Login" Icon="@Icons.Material.Filled.Login">
+            <MudNavLink Href="@Constants.Routes.Login"
+                        Icon="@Icons.Material.Filled.Login">
                 Přihlášení
             </MudNavLink>
-            <MudNavLink Href="@Constants.Routes.Register" Icon="@Icons.Material.Filled.PersonAdd">
+            <MudNavLink Href="@Constants.Routes.Register"
+                        Icon="@Icons.Material.Filled.PersonAdd">
                 Registrace
             </MudNavLink>
         </NotAuthorized>

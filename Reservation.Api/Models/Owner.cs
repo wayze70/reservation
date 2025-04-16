@@ -19,13 +19,6 @@ namespace Reservation.Api.Models
         public string LastName { get; set; }
         
         [Required]
-        [StringLength(50)]
-        public string Organization { get; set; }
-
-        [StringLength(1000)]
-        public string Description { get; set; } = string.Empty;
-        
-        [Required]
         [EmailAddress]
         [StringLength(320)]
         public string Email { get; set; }
@@ -33,9 +26,6 @@ namespace Reservation.Api.Models
         [Required]
         [StringLength(100)]
         public string PasswordHash { get; set; }
-        
-        [StringLength(50)]
-        public string? Path { get; set; }
         
         public Role Role { get; set; }
         

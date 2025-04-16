@@ -21,6 +21,7 @@ public class ReservationController : ControllerBase
     }
 
     [HttpPost]
+    [Authorize(Roles = $"{nameof(Role.Admin)}, {nameof(Role.Reservationist)}")]
     public async Task<ActionResult<List<ReservationResponse>>> CreateReservations(
         [FromBody] List<ReservationCreateRequest> request,
         [FromHeader(Name = "Authorization")] string authorization)
@@ -53,6 +54,7 @@ public class ReservationController : ControllerBase
 
     // 4. Aktualizace rezervace
     [HttpPut("{reservationId:int}")]
+    [Authorize(Roles = $"{nameof(Role.Admin)}, {nameof(Role.Reservationist)}")]
     public async Task<ActionResult<ReservationResponse>> UpdateReservation(
         [FromBody] ReservationCreateRequest request, int reservationId)
     {
@@ -62,6 +64,7 @@ public class ReservationController : ControllerBase
 
     // 5. Smazání rezervace
     [HttpDelete("{reservationId:int}")]
+    [Authorize(Roles = $"{nameof(Role.Admin)}, {nameof(Role.Reservationist)}")]
     public async Task<ActionResult<bool>> DeleteReservation(
         [FromHeader(Name = "Authorization")] string authorization,
         int reservationId)
@@ -72,6 +75,7 @@ public class ReservationController : ControllerBase
     }
 
     [HttpPost("remove-user")]
+    [Authorize(Roles = $"{nameof(Role.Admin)}, {nameof(Role.Reservationist)}")]
     public async Task<ActionResult<bool>> RemoveUserFromReservation(
         [FromHeader(Name = "Authorization")] string authorization,
         [FromBody] RemoveUserFromReservationRequest request)

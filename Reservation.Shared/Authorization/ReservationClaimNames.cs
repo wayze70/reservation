@@ -1,5 +1,4 @@
 using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
 
 namespace Reservation.Shared.Authorization;
 
@@ -17,6 +16,6 @@ public struct ReservationClaimNames
         public const string GeneratedNumber = "gen_num";
         public const string DeviceName = "device_name";
         public const string AccountId = "aid";
-        public const string Role = ClaimTypes.Role;
+        public const string Role = "role";
     }
 }

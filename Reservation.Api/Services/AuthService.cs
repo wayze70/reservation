@@ -19,12 +19,14 @@ public class AuthService : IAuthService
     private readonly IPasswordHasher<Owner> _passwordHasher;
     private readonly IEmailService _emailService;
 
-    public AuthService(DataContext dbContext, JwtTokenHelper jwtTokenHelper, IEmailService emailService)
+    public AuthService(DataContext dbContext, JwtTokenHelper jwtTokenHelper, IEmailService emailService, IPasswordHasher<Owner> passwordHasher)
     {
         _dbContext = dbContext;
         _jwtTokenHelper = jwtTokenHelper;
         _passwordHasher = new PasswordHasher<Owner>();
         _emailService = emailService;
+        _passwordHasher = passwordHasher;
+
     }
 
     public async Task<AuthResponse> LoginAsync(string email, string password, string identifier, string deviceName)
@@ -102,7 +104,6 @@ public class AuthService : IAuthService
             FirstName = firstName,
             LastName = lastName,
             Email = email,
-            Organization = organization,
             Role = Role.Admin,
             PasswordHash = _passwordHasher.HashPassword(new Owner(), password)
         };

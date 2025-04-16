@@ -1,5 +1,6 @@
 using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc.Authorization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -7,6 +8,7 @@ using Microsoft.OpenApi.Any;
 using Microsoft.OpenApi.Models;
 using Reservation.Api.CustomException;
 using Reservation.Api.JWT;
+using Reservation.Api.Models;
 using Reservation.Api.Services;
 
 namespace Reservation.Api;
@@ -80,6 +82,8 @@ public class Program
         builder.Services.AddSingleton<IEmailService, EmailService>();
         builder.Services.AddHostedService<RefreshTokenCleanupWorker>();
         builder.Services.AddScoped<IEmployeeService, EmployeeService>();
+        builder.Services.AddScoped<IPasswordHasher<Owner>, PasswordHasher<Owner>>();
+
         
         builder.Services.AddDbContext<DataContext>(options =>
             options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"),

@@ -23,7 +23,7 @@ public class CustomAuthenticationStateProvider :
         if (string.IsNullOrWhiteSpace(token))
             return new AuthenticationState(new ClaimsPrincipal(new ClaimsIdentity()));
 
-        var claims = ParseClaimsFromJwt(token);
+        var claims = ParseClaimsFromJwt(token)?.ToList();
         if (claims == null)
             return new AuthenticationState(new ClaimsPrincipal(new ClaimsIdentity()));
 
@@ -32,11 +32,12 @@ public class CustomAuthenticationStateProvider :
 
         // Get role from claims and add it as a new Role claim
         var roleClaim = claims.FirstOrDefault(c => c.Type == ReservationClaimNames.Custom.Role);
+
         if (roleClaim != null && Enum.TryParse<Role>(roleClaim.Value, out var role))
         {
             identity.AddClaim(new Claim(ClaimTypes.Role, role.ToString()));
         }
-
+        
         return new AuthenticationState(new ClaimsPrincipal(identity));
     }
     

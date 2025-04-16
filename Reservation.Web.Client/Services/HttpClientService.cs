@@ -1,3 +1,4 @@
+using System.Net;
 using System.Net.Http.Json;
 using Reservation.Web.Client.CustomExtensions;
 
@@ -32,7 +33,10 @@ public class HttpClientService : IHttpClientService
 
         if (response.IsSuccessStatusCode)
         {
-            apiResponse.Data = await response.Content.ReadFromJsonAsync<T>();
+            if (response.Content.Headers.ContentLength > 0)
+            {
+                apiResponse.Data = await response.Content.ReadFromJsonAsync<T>();
+            }
         }
         else
         {
