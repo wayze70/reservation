@@ -3,6 +3,7 @@
 @using Reservation.Shared.Authorization
 @inject IAuthService AuthService
 @inject NavigationManager NavigationManager
+@inject AuthenticationStateProvider AuthStateProvider
 
 <MudNavMenu Class="mud-nav-menu">
     <AuthorizeView Context="authState">

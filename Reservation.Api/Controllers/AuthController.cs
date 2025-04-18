@@ -23,7 +23,7 @@ public class AuthController : ControllerBase
     {
         _authService = authService;
     }
-
+    
     [HttpPost("login")]
     public async Task<ActionResult<AuthResponse>> Login([FromBody] LoginRequest request)
     {
@@ -35,7 +35,7 @@ public class AuthController : ControllerBase
         {
             userAgent = UnknownDevice;
         }
-
+        
         // Předáme také DeviceName do metody LoginAsync
         var authResponse = await _authService.LoginAsync(request.Email, request.Password, request.Identifier, userAgent);
         return Ok(authResponse);

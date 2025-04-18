@@ -27,6 +27,7 @@ namespace Reservation.Api.Models
         [StringLength(100)]
         public string PasswordHash { get; set; }
         
+        [Required]
         public Role Role { get; set; }
         
         [Required]

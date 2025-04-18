@@ -2,6 +2,13 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Reservation.Shared.Dtos;
 
+public class AccountsByEmailRequest
+{
+        [Required]
+        [EmailAddress]
+        public string Email { get; set; } = string.Empty;
+}
+
 public class PathRequest
 {
         public string Path { get; set; } = string.Empty;
@@ -23,7 +30,7 @@ public class AccountInfoResponse
 {
         public string Organization { get; set; } = string.Empty;
         public string Description { get; set; } = string.Empty;
-        public string Path { get; set; } = string.Empty;
+        public string Identifier { get; set; } = string.Empty;
 }
 
 public class UpdatePasswordRequest

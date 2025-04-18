@@ -19,32 +19,32 @@ public class AuthService : IAuthService
     private readonly IPasswordHasher<Owner> _passwordHasher;
     private readonly IEmailService _emailService;
 
-    public AuthService(DataContext dbContext, JwtTokenHelper jwtTokenHelper, IEmailService emailService, IPasswordHasher<Owner> passwordHasher)
+    public AuthService(DataContext dbContext, JwtTokenHelper jwtTokenHelper, IEmailService emailService,
+        IPasswordHasher<Owner> passwordHasher)
     {
         _dbContext = dbContext;
         _jwtTokenHelper = jwtTokenHelper;
         _passwordHasher = new PasswordHasher<Owner>();
         _emailService = emailService;
         _passwordHasher = passwordHasher;
-
     }
-
+    
     public async Task<AuthResponse> LoginAsync(string email, string password, string identifier, string deviceName)
     {
         var account = await _dbContext.Accounts
                           .Include(a => a.Owners)
                           .FirstOrDefaultAsync(a => a.Path == identifier) ??
-                      throw new CustomHttpException(HttpStatusCode.NotFound, "Účet s tímto identifikátorem nebyl nalezen");
+                      throw new CustomHttpException(HttpStatusCode.NotFound,
+                          "Účet s tímto identifikátorem nebyl nalezen");
 
-        
-        
+
         // Najdeme uživatele podle emailu (heslo ověříme až dále)
         var user = account.Owners.FirstOrDefault(u => u.Email == email);
         if (user is null)
         {
             throw new CustomHttpException(HttpStatusCode.BadRequest, "Nevalidní email nebo heslo");
         }
-    
+
         // Ověříme heslo pomocí hashování
         var verificationResult = _passwordHasher.VerifyHashedPassword(user, user.PasswordHash, password);
         if (verificationResult != PasswordVerificationResult.Success &&
@@ -52,12 +52,12 @@ public class AuthService : IAuthService
         {
             throw new CustomHttpException(HttpStatusCode.BadRequest, "Nevalidní email nebo heslo");
         }
-        
+
         deviceName = deviceName.ToLower();
-    
+
         string accessToken = _jwtTokenHelper.GenerateAccessToken(user, account.Id);
         string refreshToken = _jwtTokenHelper.GenerateRefreshToken(user, account.Id, deviceName);
-    
+
         var device = new Device
         {
             DeviceName = deviceName,
@@ -73,48 +73,71 @@ public class AuthService : IAuthService
         return new AuthResponse { AccessToken = accessToken, RefreshToken = refreshToken };
     }
 
-    public async Task<AuthResponse> RegisterAsync(string firstName, string lastName, string organization, string identifier, string email, string password, string deviceName)
+    public async Task<AuthResponse> RegisterAsync(string firstName, string lastName, string organization,
+        string identifier,
+        string email, string password, string deviceName)
     {
+        if (string.IsNullOrWhiteSpace(identifier) || string.IsNullOrWhiteSpace(email) ||
+            string.IsNullOrWhiteSpace(password))
+            throw new CustomHttpException(HttpStatusCode.BadRequest, "Povinná pole nemohou být prázdná");
+
         identifier = identifier.Trim().ToLowerInvariant();
-        if (await _dbContext.Accounts.AnyAsync(a => a.Path == identifier))
-            throw new CustomHttpException(HttpStatusCode.Conflict, "Účet s tímto identifikátorem již existuje");
+        email = email.Trim().ToLowerInvariant();
 
-        if (await _dbContext.Owners.AnyAsync(u => u.Email == email))
-            throw new CustomHttpException(HttpStatusCode.Conflict, "Uživatel s tímto emailem již existuje");
-
+        // Všechny validace na začátku
         if (password.Length < 6)
             throw new CustomHttpException(HttpStatusCode.BadRequest, "Heslo musí mít alespoň 6 znaků");
 
         if (!Utils.IsValidEmail(email))
             throw new CustomHttpException(HttpStatusCode.BadRequest, "Email nemá validní formát");
 
-        var account = new Account
+        // Spojení obou validací do jednoho DB dotazu
+        var existingCheck = await _dbContext.Accounts
+            .Include(a => a.Owners)
+            .FirstOrDefaultAsync(a => a.Path == identifier);
+
+        if (existingCheck != null)
+            throw new CustomHttpException(HttpStatusCode.Conflict, "Účet s tímto identifikátorem již existuje");
+
+        if (existingCheck?.Owners.Any(o => o.Email == email) == true)
+            throw new CustomHttpException(HttpStatusCode.Conflict,
+                "Uživatel s tímto emailem již existuje u daného účtu");
+
+        // Vytvoření účtu a vlastníka v jedné transakci
+        await using var transaction = await _dbContext.Database.BeginTransactionAsync();
+        try
         {
-            Organization = organization,
-            Path = identifier
-        };
+            var account = new Account
+            {
+                Organization = organization,
+                Path = identifier
+            };
 
-        // First save the account
-        await _dbContext.Accounts.AddAsync(account);
-        await _dbContext.SaveChangesAsync();
+            _dbContext.Accounts.Add(account);
+            await _dbContext.SaveChangesAsync();
 
-        var owner = new Owner
+            var owner = new Owner
+            {
+                AccountId = account.Id,
+                FirstName = firstName,
+                LastName = lastName,
+                Email = email,
+                Role = Role.Admin,
+                PasswordHash = _passwordHasher.HashPassword(new Owner(), password)
+            };
+
+            _dbContext.Owners.Add(owner);
+            await _dbContext.SaveChangesAsync();
+            await transaction.CommitAsync();
+
+            await _emailService.SendRegistrationSuccessEmailAsync(owner.Email, owner.FirstName, owner.LastName);
+            return await LoginAsync(owner.Email, password, identifier, deviceName);
+        }
+        catch
         {
-            AccountId = account.Id,
-            FirstName = firstName,
-            LastName = lastName,
-            Email = email,
-            Role = Role.Admin,
-            PasswordHash = _passwordHasher.HashPassword(new Owner(), password)
-        };
-
-        // Then save the owner
-        await _dbContext.Owners.AddAsync(owner);
-        await _dbContext.SaveChangesAsync();
-    
-        await _emailService.SendRegistrationSuccessEmailAsync(owner.Email, owner.FirstName, owner.LastName);
-
-        return await LoginAsync(owner.Email, password, identifier, deviceName);
+            await transaction.RollbackAsync();
+            throw;
+        }
     }
 
     public async Task<string> RefreshAsync(string refreshToken)
@@ -126,50 +149,51 @@ public class AuthService : IAuthService
             throw new CustomHttpException(HttpStatusCode.BadRequest, "Nevalidní token");
 
         int ownerId = GetOwnerId(refreshToken);
-    
+
         var owner = await _dbContext.Owners
             .Include(o => o.Account)
             .ThenInclude(a => a.Devices)
-            .FirstOrDefaultAsync(o => 
-                o.Id == ownerId && 
+            .FirstOrDefaultAsync(o =>
+                o.Id == ownerId &&
                 o.Account.Devices.Any(d => d.RefreshToken == refreshToken));
 
         if (owner is null)
             throw new CustomHttpException(HttpStatusCode.BadRequest, "Neplatný refresh token nebo vlastník");
 
-        return _jwtTokenHelper.GenerateAccessToken(owner ,owner.Account.Id);
+        return _jwtTokenHelper.GenerateAccessToken(owner, owner.Account.Id);
     }
-    
+
     public async Task<bool> LogoutAsync(string refreshToken)
     {
         if (string.IsNullOrWhiteSpace(refreshToken))
             throw new CustomHttpException(HttpStatusCode.BadRequest, "Refresh token je prázdný");
-    
+
         if (_jwtTokenHelper.ValidateTokenOrigin(refreshToken) is null)
             throw new CustomHttpException(HttpStatusCode.BadRequest, "Nevalidní token");
-    
+
         int ownerId = GetOwnerId(refreshToken);
-    
+
         var device = await _dbContext.Devices
             .Include(d => d.Account)
             .ThenInclude(a => a.Owners)
-            .FirstOrDefaultAsync(d => 
-                d.RefreshToken == refreshToken && 
+            .FirstOrDefaultAsync(d =>
+                d.RefreshToken == refreshToken &&
                 d.Account.Owners.Any(o => o.Id == ownerId));
-    
+
         if (device is null)
-            throw new CustomHttpException(HttpStatusCode.BadRequest, "Zařízení nenalezeno nebo nepatří danému uživateli");
+            throw new CustomHttpException(HttpStatusCode.BadRequest,
+                "Zařízení nenalezeno nebo nepatří danému uživateli");
 
         _dbContext.Devices.Remove(device);
         await _dbContext.SaveChangesAsync();
         return true;
     }
-    
+
     public async Task CleanupInvalidRefreshTokensAsync()
     {
         var devices = await _dbContext.Devices.ToListAsync();
         var invalidDevices = devices.Where(d => _jwtTokenHelper.ValidateToken(d.RefreshToken) is null);
-    
+
         _dbContext.Devices.RemoveRange(invalidDevices);
         await _dbContext.SaveChangesAsync();
     }
@@ -211,10 +235,10 @@ public class AuthService : IAuthService
     private Owner GetOwner(string refreshToken)
     {
         return _dbContext.Owners
-            .FirstOrDefault(o => o.Id == GetOwnerId(refreshToken)) ??
+                   .FirstOrDefault(o => o.Id == GetOwnerId(refreshToken)) ??
                throw new CustomHttpException(HttpStatusCode.BadRequest, "Neplatný refresh token nebo vlastník");
     }
-    
+
     private static int GetOwnerId(string refreshToken)
     {
         return int.Parse(JwtTokenHelper

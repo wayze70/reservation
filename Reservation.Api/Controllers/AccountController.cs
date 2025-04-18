@@ -19,6 +19,14 @@ public class AccountController : ControllerBase
         _accountService = accountService;
         _authService = authService;
     }
+    
+    [AllowAnonymous]
+    [HttpPost("accounts-by-email")]
+    public async Task<ActionResult<List<AccountInfoResponse>>> GetAccountsByEmail([FromBody] AccountsByEmailRequest 
+        request)
+    {
+        return Ok(await _accountService.GetAccountsByEmailAsync(request.Email));
+    }
 
     [HttpGet("path")]
     public async Task<ActionResult<string>> GetPath([FromHeader(Name = "Authorization")] string
@@ -28,7 +36,6 @@ public class AccountController : ControllerBase
         return Ok((await _accountService.GetPathAsync(Utils.GetAccountIdFromBearerToken(authorization))) ??
                   string.Empty);
     }
-
     
     [HttpPost("path")]
     [Authorize(Roles = nameof(Role.Admin))]

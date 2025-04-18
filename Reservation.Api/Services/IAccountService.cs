@@ -4,6 +4,7 @@ namespace Reservation.Api.Services;
 
 public interface IAccountService
 {
+    Task<List<AccountInfoResponse>> GetAccountsByEmailAsync(string email);
     public Task<string?> GetPathAsync(int accountId);
     public Task<string> SetPathAsync(PathRequest request, int accountId);
     public Task<bool> IsPathTakenAsync(string path);

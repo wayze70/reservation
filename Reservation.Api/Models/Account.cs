@@ -10,13 +10,14 @@ public class Account
 
     [Required]
     [StringLength(50)]
-    public string Organization { get; set; }
+    public string Organization { get; set; } = string.Empty;
 
     [StringLength(1000)]
     public string Description { get; set; } = string.Empty;
     
+    [Required]
     [StringLength(50)]
-    public string? Path { get; set; }
+    public string Path { get; set; } = string.Empty;
 
     // Vztah 1:n s entitou Device – každý Owner může mít více zařízení
     public virtual ICollection<Device> Devices { get; set; } = new List<Device>();

@@ -5,8 +5,8 @@ namespace Reservation.Api.Services;
 
 public interface IAuthService
 {
-    Task<AuthResponse> LoginAsync(string email, string password, string idetifier, string devinceName);
-    Task<AuthResponse> RegisterAsync(string firstName, string lastName, string organization, string idetifier, string email, 
+    Task<AuthResponse> LoginAsync(string email, string password, string identifier, string deviceName);
+    Task<AuthResponse> RegisterAsync(string firstName, string lastName, string organization, string identifier, string email, 
         string password, string deviceName);
     Task<string> RefreshAsync(string refreshToken);
     Task<bool> LogoutAsync(string refreshToken);

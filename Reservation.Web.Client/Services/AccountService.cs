@@ -11,6 +11,11 @@ public class AccountService : IAccountService
     {
         _httpClientService = httpClientService;
     }
+    
+    public async Task<ApiResponse<List<AccountInfoResponse>>> GetAccountsByEmail(AccountsByEmailRequest request)
+    {
+        return await _httpClientService.PostAsync<AccountsByEmailRequest ,List<AccountInfoResponse>>($"account/accounts-by-email", request);
+    }
 
     public async Task<ApiResponse<string>> GetPath()
     {

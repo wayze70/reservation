@@ -20,6 +20,31 @@ public class AccountService : IAccountService
         _passwordHasher = new PasswordHasher<Owner>();
     }
     
+    public async Task<List<AccountInfoResponse>> GetAccountsByEmailAsync(string email)
+    {
+        if (string.IsNullOrWhiteSpace(email))
+            throw new CustomHttpException(HttpStatusCode.BadRequest, "Email je prázdný");
+
+        if (!Utils.IsValidEmail(email))
+            throw new CustomHttpException(HttpStatusCode.BadRequest, "Email nemá validní formát");
+
+        var accounts = await _dbContext.Accounts
+            .Include(a => a.Owners)
+            .Where(a => a.Owners.Any(o => o.Email == email))
+            .Select(a => new AccountInfoResponse
+            {
+                Organization = a.Organization,
+                Description = a.Description,
+                Identifier = a.Path
+            })
+            .ToListAsync();
+
+        if (accounts.Count == 0)
+            throw new CustomHttpException(HttpStatusCode.NotFound, "Pro tento email neexistují žádné účty");
+
+        return accounts;
+    }
+    
     public async Task<string?> GetPathAsync(int accountId)
     {
         var account = await FindAccountById(accountId);
@@ -79,7 +104,7 @@ public class AccountService : IAccountService
         {
             Organization = owner.Organization,
             Description = owner.Description,
-            Path = owner.Path ?? string.Empty,
+            Identifier = owner.Path ?? string.Empty,
         };
     }
 

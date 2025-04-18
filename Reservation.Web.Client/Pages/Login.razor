@@ -1,46 +1,199 @@
+@page "/prihlaseni"
+@using System.ComponentModel.DataAnnotations
+@using System.Net
+@using Microsoft.AspNetCore.Components.Authorization
+@using Reservation.Web.Client.Components
 @inject IAuthService AuthService
+@inject IAccountService AccountService
 @inject NavigationManager NavigationManager
 @inject ISnackbar Snackbar
-@using System.Net
-
-@page "/prihlaseni"
+@inject AuthenticationStateProvider AuthStateProvider
 
 <PageTitle>Přihlášení</PageTitle>
 
-<MudPaper Class="mx-auto my-10 pa-6" MaxWidth="500px">
-    <MudText Typo="Typo.h5" Align="Align.Center" GutterBottom="true">Přihlášení</MudText>
-    <EditForm Model="@LoginUser" OnValidSubmit="@OnSubmit">
-        <DataAnnotationsValidator />
-        <ValidationSummary />
+<MudPaper Class="mx-auto my-10 pa-6" MaxWidth="@((_step == 1 && accounts?.Count > 1) ? null : "400px")">
+    
+    @if (IsFetching)
+    {
+        <Loading/>
+    }
 
-        <MudTextField T="string" Label="Identifkátor"  @bind-Value="LoginUser.Identifier" Required="true" />
-        <MudTextField T="string" Label="Email" @bind-Value="LoginUser.Email" Required="true" />
-        <MudTextField T="string" Label="Heslo" InputType="InputType.Password" @bind-Value="LoginUser.Password" Required="true" />
-
-        <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary" FullWidth="true" Class="mt-4">
-            Přihlásit se
+    @if (_step != 0)
+    {
+        <MudButton Variant="Variant.Outlined"
+                   Color="Color.Primary"
+                   OnClick="ResetStep">
+            <MudIcon Icon="@Icons.Material.Rounded.ArrowBack"></MudIcon>
         </MudButton>
+    }
+    <MudText Typo="Typo.h5" Align="Align.Center" GutterBottom="true">Přihlášení</MudText>
 
+    @if (_step == 0)
+    {
+        <EditForm Model="emailModel" OnValidSubmit="CheckAccounts">
+            <DataAnnotationsValidator/>
+            <ValidationSummary/>
+
+            <MudTextField T="string" Label="Email" @bind-Value="emailModel.Email" Required="true"/>
+            <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary" FullWidth="true"
+                       Class="mt-4">
+                Pokračovat
+            </MudButton>
+        </EditForm>
         <MudText Align="Align.Center" Class="mt-4">
             Nemáte účet? <MudLink Href="@Constants.Routes.Register">Zaregistrujte se</MudLink>
         </MudText>
-    </EditForm>
+
+    }
+    else if (_step == 1 && accounts?.Count > 1)
+    {
+        <MudText Typo="Typo.subtitle1" Class="mb-2">Vyberte organizaci</MudText>
+
+        <MudGrid Spacing="2">
+
+            @foreach (var acc in accounts)
+            {
+                <MudItem xs="12" sm="6" md="6" lg="4">
+                    <MudButton ButtonType="ButtonType.Button"
+                               OnClick="@(() => ChooseAccount(acc))"
+                               FullWidth="true">
+                        <MudCard Outlined="true"
+                                 Style="width: 100%"
+                                 Class="cursor-pointer">
+                            <MudCardHeader>
+                                <MudText Typo="Typo.h6">@acc.Organization</MudText>
+                            </MudCardHeader>
+                            <MudCardContent>
+                                <MudText Style="word-break: break-word">@acc.Description</MudText>
+                                <MudText Typo="Typo.caption">@acc.Identifier</MudText>
+                            </MudCardContent>
+                        </MudCard>
+                    </MudButton>
+                </MudItem>
+            }
+
+        </MudGrid>
+    }
+    else if ((_step == 1 && accounts?.Count == 1) || _step == 2)
+    {
+        <EditForm Model="loginModel" OnValidSubmit="SubmitLogin">
+            <DataAnnotationsValidator/>
+            <ValidationSummary/>
+
+            <MudTextField T="string" Label="Email" Value="emailModel.Email" Disabled="true"/>
+            <MudTextField T="string" Label="Identifikátor" Value="currentIdentifier" Disabled="true" Class="mt-2"/>
+            <MudTextField T="string" Label="Heslo" InputType="InputType.Password" @bind-Value="loginModel.Password"
+                          Required="true" Class="mt-2"/>
+
+            <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary" FullWidth="true"
+                       Class="mt-6">
+                Přihlásit se
+            </MudButton>
+        </EditForm>
+    }
 </MudPaper>
 
 @code {
-    LoginRequest LoginUser { get; set; } = new();
-
-    async Task OnSubmit()
+    class EmailModel
     {
-        var response = await AuthService.LoginAsync(LoginUser);
-        if (response == HttpStatusCode.OK)
+        [Required]
+        public string Email { get; set; } = string.Empty;
+    }
+    
+    private int _step = 0;
+    bool IsFetching { get; set; } = false;
+    private EmailModel emailModel = new();
+    private LoginRequest loginModel = new() { Email = string.Empty, Identifier = string.Empty };
+    private List<AccountInfoResponse>? accounts;
+    private AccountInfoResponse? selectedAccount;
+    private string currentIdentifier => selectedAccount?.Identifier
+                                        ?? accounts?[0].Identifier
+                                        ?? string.Empty;
+
+    protected override void OnInitialized()
+    {
+        loginModel = new LoginRequest();
+    }
+
+    private async Task CheckAccounts()
+    {
+        try
         {
-            Snackbar.Add("Přihlášení proběhlo úspěšně", Severity.Success);
-            NavigationManager.NavigateTo(Constants.Routes.AccountRoute.AccountReservation);
+            IsFetching = true;
+            var response = await AccountService.GetAccountsByEmail(new AccountsByEmailRequest() { Email = emailModel.Email });
+            IsFetching = false;
+            
+            if (!response.IsSuccess || response.Data is null || response.Data.Count == 0)
+            {
+                Snackbar.Add("Pro tento e‑mail nejsou žádné účty.", Severity.Error);
+                return;
+            }
+
+            accounts = response.Data;
+            loginModel.Email = emailModel.Email;
+
+            if (accounts.Count == 1)
+            {
+                selectedAccount = accounts[0];
+                loginModel.Identifier = selectedAccount.Identifier;
+                _step = 2;
+            }
+            else
+            {
+                _step = 1;
+            }
         }
-        else
+        catch
         {
-            Snackbar.Add("Nesprávné přihlašovací údaje", Severity.Error);
+            IsFetching = false;
+            Snackbar.Add("Chyba při načítání účtů.", Severity.Error);
+        }
+    }
+
+    private void ChooseAccount(AccountInfoResponse acc)
+    {
+        selectedAccount = acc;
+        loginModel.Identifier = acc.Identifier;
+        _step = 2;
+    }
+
+    private async Task SubmitLogin()
+    {
+        try 
+        {
+            IsFetching = true;
+            var response = await AuthService.LoginAsync(loginModel);
+            IsFetching = false;
+            if (response == HttpStatusCode.OK)
+            {
+                Snackbar.Add("Přihlášení proběhlo úspěšně", Severity.Success);
+                NavigationManager.NavigateTo("/ucet/rezervace", true);
+            }
+            else
+            {
+                Snackbar.Add("Nesprávné přihlašovací údaje", Severity.Error);
+            }
+        }
+        catch (Exception ex)
+        {
+            IsFetching = false;
+            Snackbar.Add("Chyba při přihlašování", Severity.Error);
+        }
+    }
+    
+    private void ResetStep()
+    {
+        _step -= 1;
+        if (_step == 0)
+        {
+            selectedAccount = null;
+            loginModel = new LoginRequest();
+        }
+        else if (_step == 1 && accounts?.Count == 1)
+        {
+            _step -= 1;
+            selectedAccount = null;
+            loginModel.Identifier = string.Empty;
         }
     }
 }
