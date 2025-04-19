@@ -2,7 +2,6 @@ using System.Net;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Reservation.Api.CustomException;
-using Reservation.Api.JWT;
 using Reservation.Api.Services;
 using Reservation.Shared.Dtos;
 using Reservation.Shared.Authorization;
@@ -23,32 +22,26 @@ public class ReservationController : ControllerBase
     [HttpPost]
     [Authorize(Roles = $"{nameof(Role.Admin)}, {nameof(Role.Reservationist)}")]
     public async Task<ActionResult<List<ReservationResponse>>> CreateReservations(
-        [FromBody] List<ReservationCreateRequest> request,
-        [FromHeader(Name = "Authorization")] string authorization)
+        [FromBody] List<ReservationCreateRequest> request)
     {
-        int accountId = Utils.GetAccountIdFromBearerToken(authorization);
-        return Ok(await _reservationService.CreateReservationsAsync(request, accountId));
+        return Ok(await _reservationService.CreateReservationsAsync(request, HttpContext.GetAccountIdFromBearer()));
     }
 
     // 2. Získání detailu rezervace (včetně uživatelů) pro vlastníka
     [HttpGet("{reservationId:int}")]
     public async Task<ActionResult<ReservationResponseWithUser>> GetReservationDetailForOwner(
-        [FromHeader(Name = "Authorization")] string authorization,
-        int reservationId)
+        [FromRoute] int reservationId)
     {
-        int accountId = Utils.GetAccountIdFromBearerToken(authorization);
-        var result = await _reservationService.GetReservationWithUsersAsync(accountId, reservationId);
+        var result = await _reservationService.GetReservationWithUsersAsync(HttpContext.GetAccountIdFromBearer(), reservationId);
         return Ok(result);
     }
 
     // 3. Získání rezervací pro vlastníka
     // Abychom odlišili tento endpoint od veřejných, přidáváme do routy prefix "owner"
     [HttpGet("owner")]
-    public async Task<ActionResult<List<ReservationResponse>>> GetReservationsForOwner(
-        [FromHeader(Name = "Authorization")] string authorization)
+    public async Task<ActionResult<List<ReservationResponse>>> GetReservationsForOwner()
     {
-        int ownerId = Utils.GetAccountIdFromBearerToken(authorization);
-        var result = await _reservationService.GetReservationsByAccountAsync(ownerId);
+        var result = await _reservationService.GetReservationsByAccountAsync(HttpContext.GetAccountIdFromBearer());
         return Ok(result);
     }
 
@@ -56,7 +49,7 @@ public class ReservationController : ControllerBase
     [HttpPut("{reservationId:int}")]
     [Authorize(Roles = $"{nameof(Role.Admin)}, {nameof(Role.Reservationist)}")]
     public async Task<ActionResult<ReservationResponse>> UpdateReservation(
-        [FromBody] ReservationCreateRequest request, int reservationId)
+        [FromBody] ReservationCreateRequest request, [FromRoute] int reservationId)
     {
         var result = await _reservationService.UpdateReservationAsync(request, reservationId);
         return Ok(result);
@@ -65,23 +58,19 @@ public class ReservationController : ControllerBase
     // 5. Smazání rezervace
     [HttpDelete("{reservationId:int}")]
     [Authorize(Roles = $"{nameof(Role.Admin)}, {nameof(Role.Reservationist)}")]
-    public async Task<ActionResult<bool>> DeleteReservation(
-        [FromHeader(Name = "Authorization")] string authorization,
-        int reservationId)
+    public async Task<ActionResult<bool>> DeleteReservation([FromRoute] int reservationId)
     {
-        int accountId = Utils.GetAccountIdFromBearerToken(authorization);
-        bool result = await _reservationService.DeleteReservationAsync(accountId, reservationId);
+        bool result = await _reservationService.DeleteReservationAsync(HttpContext.GetAccountIdFromBearer(), reservationId);
         return Ok(result);
     }
 
     [HttpPost("remove-user")]
     [Authorize(Roles = $"{nameof(Role.Admin)}, {nameof(Role.Reservationist)}")]
     public async Task<ActionResult<bool>> RemoveUserFromReservation(
-        [FromHeader(Name = "Authorization")] string authorization,
         [FromBody] RemoveUserFromReservationRequest request)
     {
-        int accountId = Utils.GetAccountIdFromBearerToken(authorization);
-        bool isOwner = await _reservationService.AccountOwnsReservationAsync(accountId, request.ReservationId);
+        bool isOwner =
+            await _reservationService.AccountOwnsReservationAsync(HttpContext.GetAccountIdFromBearer(), request.ReservationId);
         if (!isOwner)
         {
             throw new CustomHttpException(HttpStatusCode.Forbidden, "Nejste vlastníkem rezervace");
@@ -96,7 +85,7 @@ public class ReservationController : ControllerBase
     // Přidáváme prefix "public", aby nedošlo ke kolizi s endpointy pro vlastníka
     [AllowAnonymous]
     [HttpGet("public/{path}")]
-    public async Task<ActionResult<List<ReservationResponse>>> GetReservationsByPath(string path)
+    public async Task<ActionResult<List<ReservationResponse>>> GetReservationsByPath([FromRoute] string path)
     {
         var result = await _reservationService.GetReservationsByPathAsync(path);
         return Ok(result);
@@ -105,7 +94,8 @@ public class ReservationController : ControllerBase
     // 8. Získání rezervace podle cesty a ID (public)
     [AllowAnonymous]
     [HttpGet("public/{path}/{id:int}")]
-    public async Task<ActionResult<ReservationResponse>> GetReservationByPathAndId(string path, int id)
+    public async Task<ActionResult<ReservationResponse>> GetReservationByPathAndId([FromRoute] string path,
+        [FromRoute] int id)
     {
         var result = await _reservationService.GetReservationByPathAndIdAsync(path, id);
         return Ok(result);
@@ -115,11 +105,10 @@ public class ReservationController : ControllerBase
     [AllowAnonymous]
     [HttpPost("signup/{reservationId:int}")]
     public async Task<ActionResult<ReservationResponse>> SignUpForReservation(
-        int reservationId, [FromBody] ReservationSignUpRequest request,
-        [FromHeader(Name = "Accept-language")] string acceptLanguage)
+        [FromRoute] int reservationId, [FromBody] ReservationSignUpRequest request)
     {
-        var userCurrentCulture = Shared.Common.Utils.GetUserPreferredCurrentCulture(Shared.Common.Utils.GetUserLanguages(acceptLanguage));
-        var result = await _reservationService.SignUpForReservationAsync(reservationId, request, userCurrentCulture);
+        var result = await _reservationService.SignUpForReservationAsync(reservationId, request,
+            HttpContext.GetUserPreferredCurrentCulture());
         return Ok(result);
     }
 
@@ -127,11 +116,10 @@ public class ReservationController : ControllerBase
     [AllowAnonymous]
     [HttpPost("cancel/{reservationId:int}")]
     public async Task<ActionResult<ReservationResponse>> CancelReservation(
-        [FromRoute] int reservationId, [FromBody] string cancellationCode,
-        [FromHeader(Name = "Accept-language")] string acceptLanguage)
+        [FromRoute] int reservationId, [FromBody] string cancellationCode)
     {
-        var userCurrentCulture = Shared.Common.Utils.GetUserPreferredCurrentCulture(Shared.Common.Utils.GetUserLanguages(acceptLanguage));
-        var result = await _reservationService.CancelReservationAsync(reservationId, cancellationCode, userCurrentCulture);
+        var result = await _reservationService.CancelReservationAsync(reservationId, cancellationCode,
+            HttpContext.GetUserPreferredCurrentCulture());
         return Ok(result);
     }
 }

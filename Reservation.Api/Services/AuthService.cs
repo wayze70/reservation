@@ -74,8 +74,7 @@ public class AuthService : IAuthService
     }
 
     public async Task<AuthResponse> RegisterAsync(string firstName, string lastName, string organization,
-        string identifier,
-        string email, string password, string deviceName)
+        string identifier, string email, string password, string deviceName)
     {
         if (string.IsNullOrWhiteSpace(identifier) || string.IsNullOrWhiteSpace(email) ||
             string.IsNullOrWhiteSpace(password))

@@ -26,7 +26,7 @@ public class EmployeeController : ControllerBase
     [Authorize(Roles = nameof(Role.Admin))]
     public async Task<ActionResult<List<EmployeeResponse>>> GetEmployees()
     {
-        int accountId = HttpContext.GetAccountId();
+        int accountId = HttpContext.GetAccountIdFromBearer();
         var employees = await _employeeService.GetEmployeesAsync(accountId);
         return Ok(employees);
     }
@@ -34,17 +34,17 @@ public class EmployeeController : ControllerBase
     [HttpGet("current")]
     public async Task<ActionResult<EmployeeResponse>> GetCurrentEmployee()
     {
-        int userId = HttpContext.GetUserId();
-        int accountId = HttpContext.GetAccountId();
+        int userId = HttpContext.GetUserIdFromBearer();
+        int accountId = HttpContext.GetAccountIdFromBearer();
         var employee = await _employeeService.GetEmployeeByUserIdAsync(userId, accountId);
         return Ok(employee);
     }
 
-    [HttpGet("{id}")]
+    [HttpGet("{id:int}")]
     [Authorize(Roles = nameof(Role.Admin))]
-    public async Task<ActionResult<EmployeeResponse>> GetEmployee(int id)
+    public async Task<ActionResult<EmployeeResponse>> GetEmployee([FromRoute] int id)
     {
-        int accountId = HttpContext.GetAccountId();
+        int accountId = HttpContext.GetAccountIdFromBearer();
         var employee = await _employeeService.GetEmployeeAsync(id, accountId);
         return Ok(employee);
     }
@@ -53,26 +53,26 @@ public class EmployeeController : ControllerBase
     [Authorize(Roles = nameof(Role.Admin))]
     public async Task<ActionResult<EmployeeResponse>> CreateEmployee(EmployeeCreateRequest request)
     {
-        int accountId = HttpContext.GetAccountId();
+        int accountId = HttpContext.GetAccountIdFromBearer();
         var employee = await _employeeService.CreateEmployeeAsync(request, accountId);
         return CreatedAtAction(nameof(GetEmployee), new { id = employee.Id }, employee);
     }
 
-    [HttpPut("{id}")]
+    [HttpPut("{id:int}")]
     [Authorize(Roles = nameof(Role.Admin))]
-    public async Task<ActionResult<EmployeeResponse>> UpdateEmployee(int id, EmployeeUpdateRequest request)
+    public async Task<ActionResult<EmployeeResponse>> UpdateEmployee([FromRoute] int id, EmployeeUpdateRequest request)
     {
-        int accountId = HttpContext.GetAccountId();
+        int accountId = HttpContext.GetAccountIdFromBearer();
         var employee = await _employeeService.UpdateEmployeeAsync(id, request, accountId);
         return Ok(employee);
     }
 
-    [HttpDelete("{id}")]
+    [HttpDelete("{id:int}")]
     [Authorize(Roles = nameof(Role.Admin))]
-    public async Task<ActionResult> DeleteEmployee(int id)
+    public async Task<ActionResult> DeleteEmployee([FromRoute] int id)
     {
-        int accountId = HttpContext.GetAccountId();
-        int requestEmployeeId = HttpContext.GetUserId();
+        int accountId = HttpContext.GetAccountIdFromBearer();
+        int requestEmployeeId = HttpContext.GetUserIdFromBearer();
         
         if (id == requestEmployeeId)
         {
