@@ -10,9 +10,9 @@ namespace Reservation.Api.Services;
 public class EmployeeService : IEmployeeService
 {
     private readonly DataContext _context;
-    private readonly IPasswordHasher<Owner> _passwordHasher;
+    private readonly IPasswordHasher<User> _passwordHasher;
 
-    public EmployeeService(DataContext context, IPasswordHasher<Owner> passwordHasher)
+    public EmployeeService(DataContext context, IPasswordHasher<User> passwordHasher)
     {
         _context = context;
         _passwordHasher = passwordHasher;
@@ -20,7 +20,7 @@ public class EmployeeService : IEmployeeService
 
     public async Task<List<EmployeeResponse>> GetEmployeesAsync(int accountId)
     {
-        var employees = await _context.Owners
+        var employees = await _context.Users
             .Where(e => e.AccountId == accountId)
             .ToListAsync();
 
@@ -29,7 +29,7 @@ public class EmployeeService : IEmployeeService
 
     public async Task<EmployeeResponse> GetEmployeeByUserIdAsync(int userId, int accountId)
     {
-        var employee = await _context.Owners
+        var employee = await _context.Users
             .FirstOrDefaultAsync(e => e.Id == userId && e.AccountId == accountId);
 
         if (employee == null)
@@ -46,17 +46,17 @@ public class EmployeeService : IEmployeeService
 
     public async Task<EmployeeResponse> CreateEmployeeAsync(EmployeeCreateRequest request, int accountId)
     {
-        var employee = new Owner
+        var employee = new User
         {
             FirstName = request.FirstName,
             LastName = request.LastName,
             Email = request.Email,
             Role = request.Role,
-            PasswordHash = _passwordHasher.HashPassword(new Owner(), request.Password),
+            PasswordHash = _passwordHasher.HashPassword(new User(), request.Password),
             AccountId = accountId,
         };
 
-        _context.Owners.Add(employee);
+        _context.Users.Add(employee);
         await _context.SaveChangesAsync();
 
         return ToUserResponse(employee);
@@ -92,13 +92,13 @@ public class EmployeeService : IEmployeeService
     public async Task DeleteEmployeeAsync(int id, int accountId)
     {
         var employee = await GetEmployeeEntity(id, accountId);
-        _context.Owners.Remove(employee);
+        _context.Users.Remove(employee);
         await _context.SaveChangesAsync();
     }
 
-    private async Task<Owner> GetEmployeeEntity(int id, int accountId)
+    private async Task<User> GetEmployeeEntity(int id, int accountId)
     {
-        var employee = await _context.Owners
+        var employee = await _context.Users
             .FirstOrDefaultAsync(e => e.Id == id && e.AccountId == accountId);
 
         if (employee == null)
@@ -107,7 +107,7 @@ public class EmployeeService : IEmployeeService
         return employee;
     }
 
-    private static EmployeeResponse ToUserResponse(Owner employee)
+    private static EmployeeResponse ToUserResponse(User employee)
     {
         return new EmployeeResponse
         {

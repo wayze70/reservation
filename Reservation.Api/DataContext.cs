@@ -14,15 +14,15 @@ public class DataContext : DbContext
 
     public DbSet<Account> Accounts { get; set; }
     public DbSet<Models.Reservation> Reservations { get; set; }
-    public DbSet<User> Users { get; set; }
+    public DbSet<Customer> Customers { get; set; }
     public DbSet<Device> Devices { get; set; }
-    public DbSet<Owner> Owners { get; set; }
+    public DbSet<User> Users { get; set; }
     
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         // Account -> Owner relationship
         modelBuilder.Entity<Account>()
-            .HasMany(a => a.Owners)
+            .HasMany(a => a.Users)
             .WithOne(o => o.Account)
             .HasForeignKey(o => o.AccountId)
             .OnDelete(DeleteBehavior.Cascade);
@@ -60,7 +60,7 @@ public class DataContext : DbContext
         {
             // Load related data before deletion
             await Entry(account)
-                .Collection(a => a.Owners)
+                .Collection(a => a.Users)
                 .LoadAsync(cancellationToken);
 
             await Entry(account)
@@ -80,7 +80,7 @@ public class DataContext : DbContext
         foreach (var account in deletedAccounts)
         {
             // Notify owners
-            foreach (var owner in account.Owners)
+            foreach (var owner in account.Users)
             {
                 await _emailService.SendDeleteAccountEmailAsync(
                     owner.Email,

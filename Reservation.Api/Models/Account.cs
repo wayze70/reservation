@@ -22,5 +22,5 @@ public class Account
     // Vztah 1:n s entitou Device – každý Owner může mít více zařízení
     public virtual ICollection<Device> Devices { get; set; } = new List<Device>();
     public virtual ICollection<Reservation> Reservations { get; set; } = new List<Reservation>();
-    public virtual ICollection<Owner> Owners { get; set; } = new List<Owner>();
+    public virtual ICollection<User> Users { get; set; } = new List<User>();
 }

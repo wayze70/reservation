@@ -11,13 +11,13 @@ namespace Reservation.Api.Services;
 public class AccountService : IAccountService
 {
     private readonly DataContext _dbContext;
-    private readonly IPasswordHasher<Owner> _passwordHasher;
+    private readonly IPasswordHasher<User> _passwordHasher;
 
 
     public AccountService(DataContext dbContext)
     {
         _dbContext = dbContext;
-        _passwordHasher = new PasswordHasher<Owner>();
+        _passwordHasher = new PasswordHasher<User>();
     }
     
     public async Task<List<AccountInfoResponse>> GetAccountsByEmailAsync(string email)
@@ -29,8 +29,8 @@ public class AccountService : IAccountService
             throw new CustomHttpException(HttpStatusCode.BadRequest, "Email nemá validní formát");
 
         var accounts = await _dbContext.Accounts
-            .Include(a => a.Owners)
-            .Where(a => a.Owners.Any(o => o.Email == email))
+            .Include(a => a.Users)
+            .Where(a => a.Users.Any(o => o.Email == email))
             .Select(a => new AccountInfoResponse
             {
                 Organization = a.Organization,
@@ -165,9 +165,9 @@ public class AccountService : IAccountService
         return account;
     }
     
-    private async Task<Owner> FindUserById(int ownerId)
+    private async Task<User> FindUserById(int ownerId)
     {
-        var owner = await _dbContext.Owners.FirstOrDefaultAsync(a => a.Id == ownerId);
+        var owner = await _dbContext.Users.FirstOrDefaultAsync(a => a.Id == ownerId);
         if (owner is null)
         {
             throw new CustomHttpException(HttpStatusCode.NotFound, "Účet nenalezen");

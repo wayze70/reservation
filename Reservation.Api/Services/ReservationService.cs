@@ -148,7 +148,7 @@ namespace Reservation.Api.Services
                     throw new CustomHttpException(HttpStatusCode.Conflict,
                         "Uživatel je již přihlášen na tuto rezervaci");
 
-                var newUser = new Models.User
+                var newUser = new Models.Customer
                 {
                     FirstName = request.FirstName,
                     LastName = request.LastName,

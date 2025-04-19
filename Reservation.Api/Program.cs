@@ -82,7 +82,7 @@ public class Program
         builder.Services.AddSingleton<IEmailService, EmailService>();
         builder.Services.AddHostedService<RefreshTokenCleanupWorker>();
         builder.Services.AddScoped<IEmployeeService, EmployeeService>();
-        builder.Services.AddScoped<IPasswordHasher<Owner>, PasswordHasher<Owner>>();
+        builder.Services.AddScoped<IPasswordHasher<User>, PasswordHasher<User>>();
 
         
         builder.Services.AddDbContext<DataContext>(options =>

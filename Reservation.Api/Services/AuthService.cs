@@ -16,15 +16,15 @@ public class AuthService : IAuthService
 {
     private readonly DataContext _dbContext;
     private readonly JwtTokenHelper _jwtTokenHelper;
-    private readonly IPasswordHasher<Owner> _passwordHasher;
+    private readonly IPasswordHasher<User> _passwordHasher;
     private readonly IEmailService _emailService;
 
     public AuthService(DataContext dbContext, JwtTokenHelper jwtTokenHelper, IEmailService emailService,
-        IPasswordHasher<Owner> passwordHasher)
+        IPasswordHasher<User> passwordHasher)
     {
         _dbContext = dbContext;
         _jwtTokenHelper = jwtTokenHelper;
-        _passwordHasher = new PasswordHasher<Owner>();
+        _passwordHasher = new PasswordHasher<User>();
         _emailService = emailService;
         _passwordHasher = passwordHasher;
     }
@@ -32,14 +32,14 @@ public class AuthService : IAuthService
     public async Task<AuthResponse> LoginAsync(string email, string password, string identifier, string deviceName)
     {
         var account = await _dbContext.Accounts
-                          .Include(a => a.Owners)
+                          .Include(a => a.Users)
                           .FirstOrDefaultAsync(a => a.Path == identifier) ??
                       throw new CustomHttpException(HttpStatusCode.NotFound,
                           "Účet s tímto identifikátorem nebyl nalezen");
 
 
         // Najdeme uživatele podle emailu (heslo ověříme až dále)
-        var user = account.Owners.FirstOrDefault(u => u.Email == email);
+        var user = account.Users.FirstOrDefault(u => u.Email == email);
         if (user is null)
         {
             throw new CustomHttpException(HttpStatusCode.BadRequest, "Nevalidní email nebo heslo");
@@ -92,13 +92,13 @@ public class AuthService : IAuthService
 
         // Spojení obou validací do jednoho DB dotazu
         var existingCheck = await _dbContext.Accounts
-            .Include(a => a.Owners)
+            .Include(a => a.Users)
             .FirstOrDefaultAsync(a => a.Path == identifier);
 
         if (existingCheck != null)
             throw new CustomHttpException(HttpStatusCode.Conflict, "Účet s tímto identifikátorem již existuje");
 
-        if (existingCheck?.Owners.Any(o => o.Email == email) == true)
+        if (existingCheck?.Users.Any(o => o.Email == email) == true)
             throw new CustomHttpException(HttpStatusCode.Conflict,
                 "Uživatel s tímto emailem již existuje u daného účtu");
 
@@ -115,17 +115,17 @@ public class AuthService : IAuthService
             _dbContext.Accounts.Add(account);
             await _dbContext.SaveChangesAsync();
 
-            var owner = new Owner
+            var owner = new User
             {
                 AccountId = account.Id,
                 FirstName = firstName,
                 LastName = lastName,
                 Email = email,
                 Role = Role.Admin,
-                PasswordHash = _passwordHasher.HashPassword(new Owner(), password)
+                PasswordHash = _passwordHasher.HashPassword(new User(), password)
             };
 
-            _dbContext.Owners.Add(owner);
+            _dbContext.Users.Add(owner);
             await _dbContext.SaveChangesAsync();
             await transaction.CommitAsync();
 
@@ -149,7 +149,7 @@ public class AuthService : IAuthService
 
         int ownerId = GetOwnerId(refreshToken);
 
-        var owner = await _dbContext.Owners
+        var owner = await _dbContext.Users
             .Include(o => o.Account)
             .ThenInclude(a => a.Devices)
             .FirstOrDefaultAsync(o =>
@@ -174,10 +174,10 @@ public class AuthService : IAuthService
 
         var device = await _dbContext.Devices
             .Include(d => d.Account)
-            .ThenInclude(a => a.Owners)
+            .ThenInclude(a => a.Users)
             .FirstOrDefaultAsync(d =>
                 d.RefreshToken == refreshToken &&
-                d.Account.Owners.Any(o => o.Id == ownerId));
+                d.Account.Users.Any(o => o.Id == ownerId));
 
         if (device is null)
             throw new CustomHttpException(HttpStatusCode.BadRequest,
@@ -209,11 +209,11 @@ public class AuthService : IAuthService
         int accountId = GetAccountId(refreshToken);
 
         var account = await _dbContext.Accounts
-            .Include(a => a.Owners)
+            .Include(a => a.Users)
             .Include(a => a.Devices)
             .FirstOrDefaultAsync(a => a.Id == accountId);
 
-        if (account == null || !account.Owners.Any(o => o.Id == ownerId))
+        if (account == null || !account.Users.Any(o => o.Id == ownerId))
             throw new CustomHttpException(HttpStatusCode.BadRequest, "Neplatný účet nebo vlastník");
 
         if (!account.Devices.Any(d => d.RefreshToken == refreshToken))
@@ -231,9 +231,9 @@ public class AuthService : IAuthService
             CustomHttpException(HttpStatusCode.BadRequest, "Account id v refresh token není platný"));
     }
 
-    private Owner GetOwner(string refreshToken)
+    private User GetOwner(string refreshToken)
     {
-        return _dbContext.Owners
+        return _dbContext.Users
                    .FirstOrDefault(o => o.Id == GetOwnerId(refreshToken)) ??
                throw new CustomHttpException(HttpStatusCode.BadRequest, "Neplatný refresh token nebo vlastník");
     }

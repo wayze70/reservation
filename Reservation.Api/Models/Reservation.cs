@@ -43,5 +43,5 @@ public class Reservation
     [ForeignKey("AccountId")]
     public virtual Account Account { get; set; } = default!;
     
-    public virtual List<User> SignedUsers { get; set; } = new List<User>();
+    public virtual List<Customer> SignedUsers { get; set; } = new List<Customer>();
 }

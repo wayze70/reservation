@@ -1,38 +1,39 @@
+using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using Reservation.Shared.Authorization;
 
-namespace Reservation.Api.Models;
-
-public class User
+namespace Reservation.Api.Models
 {
-    [Key]
-    public int Id { get; set; }
-    
-    [Required]
-    [StringLength(50)]
-    public string FirstName { get; set; }
-    
-    [Required]
-    [StringLength(50)]
-    public string LastName { get; set; }
-    
-    [Required]
-    [EmailAddress]
-    [StringLength(320)]
-    public string Email { get; set; }
-    
-    [StringLength(500)]
-    public string? Note { get; set; }
-    
-    // Unikátní kód pro zrušení rezervace – generuj např. jako GUID při vytváření záznamu Guid.NewGuid().ToString()
-    [Required]
-    [StringLength(100)]
-    public string CancellationCode { get; set; }
-    
-    [Required]
-    public int ReservationId { get; set; }
+    public class User
+    {
+        [Key]
+        public int Id { get; private set; }
 
-    [ForeignKey("ReservationId")]
-    [InverseProperty("SignedUsers")]
-    public Reservation Reservation { get; set; } = default!;
+        [Required]
+        [StringLength(50)]
+        public string FirstName { get; set; }
+        
+        [Required]
+        [StringLength(50)]
+        public string LastName { get; set; }
+        
+        [Required]
+        [EmailAddress]
+        [StringLength(320)]
+        public string Email { get; set; }
+        
+        [Required]
+        [StringLength(100)]
+        public string PasswordHash { get; set; }
+        
+        [Required]
+        public Role Role { get; set; }
+        
+        [Required]
+        public int AccountId { get; set; }
+        
+        [ForeignKey("AccountId")]
+        public virtual Account Account { get; set; }
+    }
 }
