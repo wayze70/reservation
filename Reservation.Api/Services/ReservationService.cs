@@ -75,7 +75,7 @@ namespace Reservation.Api.Services
 
             var records = await _dbContext.Reservations
                 .Where(r => r.AccountId == accountId)
-                .Include(r => r.SignedUsers)
+                .Include(r => r.Customers)
                 .ToListAsync();
 
             return records.Count == 0 ? new List<ReservationResponse>() : records.Select(MapToDto).ToList();
@@ -95,7 +95,7 @@ namespace Reservation.Api.Services
                         ?? throw new CustomHttpException(HttpStatusCode.NotFound, "Cesta nebyla nalezena");
 
             var reservation = await _dbContext.Reservations
-                .Include(r => r.SignedUsers)
+                .Include(r => r.Customers)
                 .FirstOrDefaultAsync(r => r.Id == accountId && r.AccountId == owner.Id);
 
             if (reservation == null)
@@ -110,7 +110,7 @@ namespace Reservation.Api.Services
         {
             var owner = await _dbContext.Accounts
                             .Include(o => o.Reservations)
-                            .ThenInclude(r => r.SignedUsers)
+                            .ThenInclude(r => r.Customers)
                             .FirstOrDefaultAsync(o => o.Id == accountId)
                         ?? throw new CustomHttpException(HttpStatusCode.NotFound, "Vlastník nebyl nalezen");
 
@@ -132,19 +132,19 @@ namespace Reservation.Api.Services
             try
             {
                 var reservation = await _dbContext.Reservations
-                    .Include(r => r.SignedUsers)
+                    .Include(r => r.Customers)
                     .FirstOrDefaultAsync(r => r.Id == reservationId);
 
                 if (reservation == null)
                     throw new CustomHttpException(HttpStatusCode.NotFound, "Rezervace nebyla nalezena");
 
-                if (reservation.SignedUsers.Count >= reservation.Capacity)
+                if (reservation.Customers.Count >= reservation.Capacity)
                     throw new CustomHttpException(HttpStatusCode.BadRequest, "Rezervace je již plná");
 
                 if (!reservation.IsAvailable)
                     throw new CustomHttpException(HttpStatusCode.Locked, "K rezervaci se není možné přihlásit");
 
-                if (reservation.SignedUsers.Any(u => u.Email.Equals(request.Email, StringComparison.OrdinalIgnoreCase)))
+                if (reservation.Customers.Any(u => u.Email.Equals(request.Email, StringComparison.OrdinalIgnoreCase)))
                     throw new CustomHttpException(HttpStatusCode.Conflict,
                         "Uživatel je již přihlášen na tuto rezervaci");
 
@@ -157,7 +157,7 @@ namespace Reservation.Api.Services
                     ReservationId = reservationId
                 };
 
-                reservation.SignedUsers.Add(newUser);
+                reservation.Customers.Add(newUser);
                 await _dbContext.SaveChangesAsync();
                 await transaction.CommitAsync();
 
@@ -187,7 +187,7 @@ namespace Reservation.Api.Services
                 cultureInfo)
         {
             var reservation = await _dbContext.Reservations
-                .Include(r => r.SignedUsers)
+                .Include(r => r.Customers)
                 .FirstOrDefaultAsync(r => r.Id == reservationId);
 
             if (reservation == null)
@@ -199,12 +199,12 @@ namespace Reservation.Api.Services
                 throw new CustomHttpException(HttpStatusCode.Locked, "Rezervace již nelze zrušit");
             }
 
-            var user = reservation.SignedUsers.FirstOrDefault(u => u.CancellationCode == cancellationCode);
+            var user = reservation.Customers.FirstOrDefault(u => u.CancellationCode == cancellationCode);
             if (user == null)
                 throw new CustomHttpException(HttpStatusCode.BadRequest,
                     "Uživatel není již přihlášen na tuto rezervaci");
 
-            reservation.SignedUsers.Remove(user);
+            reservation.Customers.Remove(user);
             await _dbContext.SaveChangesAsync();
             
             await _emailService.SendReservationCancellationByUserEmailAsync(user.Email, user.FirstName, user.LastName,
@@ -217,7 +217,7 @@ namespace Reservation.Api.Services
             int reservationId)
         {
             var reservation = await _dbContext.Reservations
-                .Include(r => r.SignedUsers)
+                .Include(r => r.Customers)
                 .FirstOrDefaultAsync(r => r.Id == reservationId);
 
 
@@ -260,17 +260,17 @@ namespace Reservation.Api.Services
         public async Task<bool> RemoveUserFromReservationAsync(int reservationId, string userEmail)
         {
             var reservation = await _dbContext.Reservations
-                .Include(r => r.SignedUsers)
+                .Include(r => r.Customers)
                 .FirstOrDefaultAsync(r => r.Id == reservationId);
 
             if (reservation == null)
                 throw new CustomHttpException(HttpStatusCode.NotFound, "Rezervace nebyla nalezena");
 
-            var user = reservation.SignedUsers.FirstOrDefault(u => u.Email == userEmail);
+            var user = reservation.Customers.FirstOrDefault(u => u.Email == userEmail);
             if (user == null)
                 throw new CustomHttpException(HttpStatusCode.NotFound, "Uživatel nebyl nalezen");
 
-            reservation.SignedUsers.Remove(user);
+            reservation.Customers.Remove(user);
             await _dbContext.SaveChangesAsync();
 
             return true;
@@ -287,7 +287,7 @@ namespace Reservation.Api.Services
             {
                 Id = reservation.Id,
                 Capacity = reservation.Capacity,
-                CurrentCapacity = reservation.SignedUsers.Count,
+                CurrentCapacity = reservation.Customers.Count,
                 Title = reservation.Title,
                 Description = reservation.Description,
                 Start = reservation.StartTime,
@@ -295,7 +295,7 @@ namespace Reservation.Api.Services
                 IsAvailable = reservation.IsAvailable,
                 CancellationOffset = reservation.CancellationOffset,
                 CustomTimeZoneId = reservation.CustomTimeZoneId,
-                Users = reservation.SignedUsers.Select(u => new UserResponse
+                Users = reservation.Customers.Select(u => new UserResponse
                 {
                     FirstName = u.FirstName,
                     LastName = u.LastName,
@@ -312,7 +312,7 @@ namespace Reservation.Api.Services
             {
                 Id = reservation.Id,
                 Capacity = reservation.Capacity,
-                CurrentCapacity = reservation.SignedUsers?.Count ?? 0,
+                CurrentCapacity = reservation.Customers?.Count ?? 0,
                 Title = reservation.Title,
                 Description = reservation.Description,
                 Start = reservation.StartTime,

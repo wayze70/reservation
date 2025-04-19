@@ -36,7 +36,7 @@ public class EmployeeController : ControllerBase
     {
         int userId = HttpContext.GetUserIdFromBearer();
         int accountId = HttpContext.GetAccountIdFromBearer();
-        var employee = await _employeeService.GetEmployeeByUserIdAsync(userId, accountId);
+        var employee = await _employeeService.GetEmployeeAsync(userId, accountId);
         return Ok(employee);
     }
 

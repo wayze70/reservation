@@ -123,14 +123,14 @@ public class AccountService : IAccountService
         };
     }
 
-    public async Task<bool> UpdatePasswordAsync(UpdatePasswordRequest request, int ownerId)
+    public async Task<bool> UpdatePasswordAsync(UpdatePasswordRequest request, int userId)
     {
         if (request.NewPassword.Length < 6)
         {
             throw new CustomHttpException(HttpStatusCode.BadRequest, "Heslo musí mít alespoň 6 znaků");
         }
 
-        var owner = await FindUserById(ownerId);
+        var owner = await FindUserById(userId);
 
         var verificationResult = _passwordHasher.VerifyHashedPassword(owner, owner.PasswordHash, request.OldPassword);
         if (verificationResult != PasswordVerificationResult.Success &&

@@ -27,20 +27,9 @@ public class EmployeeService : IEmployeeService
         return employees.Select(ToUserResponse).ToList();
     }
 
-    public async Task<EmployeeResponse> GetEmployeeByUserIdAsync(int userId, int accountId)
+    public async Task<EmployeeResponse> GetEmployeeAsync(int userId, int accountId)
     {
-        var employee = await _context.Users
-            .FirstOrDefaultAsync(e => e.Id == userId && e.AccountId == accountId);
-
-        if (employee == null)
-            throw new CustomHttpException(HttpStatusCode.NotFound, "Zaměstnanec nebyl nalezen");
-
-        return ToUserResponse(employee);
-    }
-
-    public async Task<EmployeeResponse> GetEmployeeAsync(int id, int accountId)
-    {
-        var employee = await GetEmployeeEntity(id, accountId);
+        var employee = await GetEmployeeEntity(userId, accountId);
         return ToUserResponse(employee);
     }
 
@@ -62,9 +51,9 @@ public class EmployeeService : IEmployeeService
         return ToUserResponse(employee);
     }
     
-    public async Task<EmployeeResponse> UpdateEmployeeAsync(int id, EmployeeUpdateWithoutRoleRequest request, int accountId)
+    public async Task<EmployeeResponse> UpdateEmployeeAsync(int userId, EmployeeUpdateWithoutRoleRequest request, int accountId)
     {
-        var employee = await GetEmployeeEntity(id, accountId);
+        var employee = await GetEmployeeEntity(userId, accountId);
 
         employee.FirstName = request.FirstName;
         employee.LastName = request.LastName;
@@ -75,9 +64,9 @@ public class EmployeeService : IEmployeeService
         return ToUserResponse(employee);
     }
 
-    public async Task<EmployeeResponse> UpdateEmployeeAsync(int id, EmployeeUpdateRequest request, int accountId)
+    public async Task<EmployeeResponse> UpdateEmployeeAsync(int userId, EmployeeUpdateRequest request, int accountId)
     {
-        var employee = await GetEmployeeEntity(id, accountId);
+        var employee = await GetEmployeeEntity(userId, accountId);
 
         employee.FirstName = request.FirstName;
         employee.LastName = request.LastName;
@@ -89,9 +78,9 @@ public class EmployeeService : IEmployeeService
         return ToUserResponse(employee);
     }
 
-    public async Task DeleteEmployeeAsync(int id, int accountId)
+    public async Task DeleteEmployeeAsync(int userId, int accountId)
     {
-        var employee = await GetEmployeeEntity(id, accountId);
+        var employee = await GetEmployeeEntity(userId, accountId);
         _context.Users.Remove(employee);
         await _context.SaveChangesAsync();
     }

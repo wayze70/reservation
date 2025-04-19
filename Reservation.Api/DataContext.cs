@@ -20,30 +20,30 @@ public class DataContext : DbContext
     
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        // Account -> Owner relationship
+        // Account -> Users
         modelBuilder.Entity<Account>()
             .HasMany(a => a.Users)
             .WithOne(o => o.Account)
             .HasForeignKey(o => o.AccountId)
             .OnDelete(DeleteBehavior.Cascade);
 
-        // Account -> Device relationship
+        // Account -> Devices
         modelBuilder.Entity<Account>()
             .HasMany(a => a.Devices)
             .WithOne(d => d.Account)
             .HasForeignKey(d => d.AccountId)
             .OnDelete(DeleteBehavior.Cascade);
 
-        // Account -> Reservation relationship
+        // Account -> Reservations
         modelBuilder.Entity<Account>()
             .HasMany(a => a.Reservations)
             .WithOne(r => r.Account)
             .HasForeignKey(r => r.AccountId)
             .OnDelete(DeleteBehavior.Cascade);
 
-        // Reservation -> SignedUsers relationship
+        // Reservation -> Customers
         modelBuilder.Entity<Models.Reservation>()
-            .HasMany(r => r.SignedUsers)
+            .HasMany(r => r.Customers)
             .WithOne(u => u.Reservation)
             .HasForeignKey(u => u.ReservationId)
             .OnDelete(DeleteBehavior.Cascade);
@@ -58,7 +58,6 @@ public class DataContext : DbContext
 
         foreach (var account in deletedAccounts)
         {
-            // Load related data before deletion
             await Entry(account)
                 .Collection(a => a.Users)
                 .LoadAsync(cancellationToken);
@@ -70,7 +69,7 @@ public class DataContext : DbContext
             foreach (var reservation in account.Reservations)
             {
                 await Entry(reservation)
-                    .Collection(r => r.SignedUsers)
+                    .Collection(r => r.Customers)
                     .LoadAsync(cancellationToken);
             }
         }
@@ -79,7 +78,7 @@ public class DataContext : DbContext
 
         foreach (var account in deletedAccounts)
         {
-            // Notify owners
+            // Notify users
             foreach (var owner in account.Users)
             {
                 await _emailService.SendDeleteAccountEmailAsync(
@@ -87,11 +86,11 @@ public class DataContext : DbContext
                     owner.FirstName,
                     owner.LastName);
             }
-
-            // Notify users signed up for reservations
+ 
+            // Notify customers
             foreach (var reservation in account.Reservations)
             {
-                foreach (var user in reservation.SignedUsers)
+                foreach (var user in reservation.Customers)
                 {
                     await _emailService.SendReservationCancellationByOwnerDeletingAccountEmailAsync(
                         user.Email,

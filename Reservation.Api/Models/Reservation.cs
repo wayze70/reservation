@@ -43,5 +43,6 @@ public class Reservation
     [ForeignKey("AccountId")]
     public virtual Account Account { get; set; } = default!;
     
-    public virtual List<Customer> SignedUsers { get; set; } = new List<Customer>();
+    [InverseProperty("Reservation")]
+    public virtual List<Customer> Customers { get; set; } = new List<Customer>();
 }
