@@ -11,5 +11,6 @@ public interface IEmployeeService
     Task<EmployeeResponse> GetEmployeeAsync(int id, int accountId);
     Task<EmployeeResponse> CreateEmployeeAsync(EmployeeCreateRequest request, int accountId);
     Task<EmployeeResponse> UpdateEmployeeAsync(int id, EmployeeUpdateRequest request, int accountId);
+    Task<EmployeeResponse> UpdateEmployeeAsync(int id, EmployeeUpdateWithoutRoleRequest request, int accountId);
     Task DeleteEmployeeAsync(int id, int accountId);
 }

@@ -61,6 +61,19 @@ public class EmployeeService : IEmployeeService
 
         return ToUserResponse(employee);
     }
+    
+    public async Task<EmployeeResponse> UpdateEmployeeAsync(int id, EmployeeUpdateWithoutRoleRequest request, int accountId)
+    {
+        var employee = await GetEmployeeEntity(id, accountId);
+
+        employee.FirstName = request.FirstName;
+        employee.LastName = request.LastName;
+        employee.Email = request.Email;
+
+        await _context.SaveChangesAsync();
+
+        return ToUserResponse(employee);
+    }
 
     public async Task<EmployeeResponse> UpdateEmployeeAsync(int id, EmployeeUpdateRequest request, int accountId)
     {

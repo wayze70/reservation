@@ -1,0 +1,129 @@
+@using Microsoft.AspNetCore.Authorization
+@using Reservation.Shared.Authorization
+@using Reservation.Shared.Common
+@inject NavigationManager NavigationManager
+@inject ISnackbar Snackbar
+@inject IAccountService AccountService
+
+@attribute [Authorize(Roles = nameof(Role.Admin))]
+
+
+<MudExpansionPanel Text="Identifikátor">
+    @if (string.IsNullOrWhiteSpace(CurrentPath))
+    {
+        <MudText>
+            Zadejte unikátní identifikátor, který bude součástí URL vaší rezervace.
+            Může to být například vaše jméno, název firmy nebo jiný stručný název, podle kterého si
+            rezervaci snadno zapamatujete.
+        </MudText>
+    }
+    else
+    {
+        <MudText>
+            Aktuální adresa vaší rezervace:
+        </MudText>
+        <MudText>
+            <MudLink Href="@Constants.Routes.Reservation(CurrentPath)"
+                     Style="word-wrap: break-word; word-break: break-all;">
+                @(NavigationManager.BaseUri)@Constants.Routes.Reservation(CurrentPath).Remove(0, 1)
+            </MudLink>
+        </MudText>
+    }
+
+    <MudStack Spacing="2" Class="mt-4">
+        <MudTextField T="string" Disabled="@(CurrentPath is null)" Value="Path" ValueChanged="OnPathChange"
+                      Label="Identifikátor" DebounceInterval="500"/>
+
+        <MudStack Row="false" AlignItems="AlignItems.Center" Spacing="1">
+            @if ((IsPathTaken && CurrentPath != Path) || !IsPathValid)
+            {
+                <MudIcon Icon="@Icons.Material.Filled.Close" Color="Color.Error" Size="Size.Small"/>
+            }
+            else
+            {
+                <MudIcon Icon="@Icons.Material.Filled.CheckCircleOutline" Color="Color.Success"
+                         Size="Size.Small"/>
+            }
+
+            @if (IsPathTaken && CurrentPath == Path)
+            {
+                <MudText Color="Color.Info">Toto je vaše aktuální adresa</MudText>
+            }
+            else if (IsPathTaken)
+            {
+                <MudText Color="Color.Error">Tato adresa je již obsazená</MudText>
+            }
+            else if (!IsPathValid)
+            {
+                <MudText Color="Color.Error">Adresa obsahuje nepovolené znaky</MudText>
+            }
+        </MudStack>
+
+        <MudButton OnClick="UpdatePath" Color="Color.Primary" Variant="Variant.Filled"
+                   ButtonType="ButtonType.Button" Style="width: fit-content !important;">
+            Uložit identifikátor
+        </MudButton>
+    </MudStack>
+</MudExpansionPanel>
+
+@code
+{
+    public string Path { get; set; } = string.Empty;
+    public string? CurrentPath { get; set; }
+    public bool IsPathFetching { get; set; }
+    public bool IsPathTaken { get; set; }
+    public bool IsPathValid { get; set; } = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadPath();
+    }
+
+    private async Task UpdatePath()
+    {
+        if (!Utils.IsPathValidate(Path))
+        {
+            IsPathValid = false;
+            return;
+        }
+
+        var response = await AccountService.UpdatePath(new PathRequest { Path = Path });
+        if (response is { IsSuccess: true, Data: not null })
+        {
+            CurrentPath = response.Data;
+            Snackbar.Add("URL cesta byla úspěšně aktualizována.", Severity.Success);
+        }
+    }
+
+    private async Task OnPathChange(string newPath)
+    {
+        Path = newPath;
+        if (string.IsNullOrWhiteSpace(Path))
+        {
+            IsPathValid = false;
+            return;
+        }
+
+        IsPathFetching = true;
+        if (Utils.IsPathValidate(Path))
+        {
+            IsPathValid = true;
+            IsPathTaken = (await AccountService.IsPathTaken(new PathRequest { Path = Path })).Data;
+        }
+        else
+        {
+            IsPathValid = false;
+        }
+
+        IsPathFetching = false;
+    }
+    
+    private async Task LoadPath()
+    {
+        CurrentPath = (await AccountService.GetPath()).Data;
+        if (CurrentPath is not null)
+        {
+            Path = CurrentPath;
+        }
+    }
+}

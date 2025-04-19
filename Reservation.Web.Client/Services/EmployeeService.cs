@@ -10,6 +10,8 @@ public interface IEmployeeService
     Task<ApiResponse<EmployeeResponse>> GetEmployee(int id);
     Task<ApiResponse<EmployeeResponse>> CreateEmployee(EmployeeCreateRequest request);
     Task<ApiResponse<EmployeeResponse>> UpdateEmployee(int id, EmployeeUpdateRequest request);
+    Task<ApiResponse<EmployeeResponse>> UpdateSigninEmployee(EmployeeUpdateWithoutRoleRequest request);
+
     Task<ApiResponse<bool>> DeleteEmployee(int id);
 }
 
@@ -46,6 +48,11 @@ public class EmployeeService : IEmployeeService
     public async Task<ApiResponse<EmployeeResponse>> UpdateEmployee(int id, EmployeeUpdateRequest request)
     {
         return await _httpClientService.PutAsync<EmployeeUpdateRequest, EmployeeResponse>($"{BaseUrl}/{id}", request);
+    }
+    
+    public async Task<ApiResponse<EmployeeResponse>> UpdateSigninEmployee(EmployeeUpdateWithoutRoleRequest request)
+    {
+        return await _httpClientService.PutAsync<EmployeeUpdateWithoutRoleRequest, EmployeeResponse>(BaseUrl, request);
     }
 
     public async Task<ApiResponse<bool>> DeleteEmployee(int id)

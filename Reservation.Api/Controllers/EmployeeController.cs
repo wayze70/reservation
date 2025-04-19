@@ -66,6 +66,16 @@ public class EmployeeController : ControllerBase
         var employee = await _employeeService.UpdateEmployeeAsync(id, request, accountId);
         return Ok(employee);
     }
+    
+    [HttpPut]
+    [Authorize]
+    public async Task<ActionResult<EmployeeResponse>> UpdateEmployee(EmployeeUpdateWithoutRoleRequest request)
+    {
+        int accountId = HttpContext.GetAccountIdFromBearer();
+        int userId = HttpContext.GetUserIdFromBearer();
+        var employee = await _employeeService.UpdateEmployeeAsync(userId, request, accountId);
+        return Ok(employee);
+    }
 
     [HttpDelete("{id:int}")]
     [Authorize(Roles = nameof(Role.Admin))]

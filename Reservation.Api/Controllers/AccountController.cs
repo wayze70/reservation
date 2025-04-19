@@ -63,7 +63,7 @@ public class AccountController : ControllerBase
     [HttpPut("update-password")]
     public async Task<ActionResult<bool>> UpdatePassword([FromBody] UpdatePasswordRequest request)
     {
-        return Ok(await _accountService.UpdatePasswordAsync(request, HttpContext.GetAccountIdFromBearer()));
+        return Ok(await _accountService.UpdatePasswordAsync(request, HttpContext.GetUserIdFromBearer()));
     }
 
     [AllowAnonymous]
@@ -77,6 +77,6 @@ public class AccountController : ControllerBase
     [Authorize(Roles = nameof(Role.Admin))]
     public async Task<ActionResult<bool>> DeleteAccount([FromBody] DeleteAccountRequest request)
     {
-        return Ok(await _accountService.DeleteAccountAsync(request, HttpContext.GetAccountIdFromBearer()));
+        return Ok(await _accountService.DeleteAccountAsync(request, HttpContext.GetAccountIdFromBearer(), HttpContext.GetUserIdFromBearer()));
     }
 }

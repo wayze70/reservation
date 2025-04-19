@@ -130,7 +130,7 @@ public class AccountService : IAccountService
             throw new CustomHttpException(HttpStatusCode.BadRequest, "Heslo musí mít alespoň 6 znaků");
         }
 
-        var owner = await FindOwnerById(ownerId);
+        var owner = await FindUserById(ownerId);
 
         var verificationResult = _passwordHasher.VerifyHashedPassword(owner, owner.PasswordHash, request.OldPassword);
         if (verificationResult != PasswordVerificationResult.Success &&
@@ -144,11 +144,12 @@ public class AccountService : IAccountService
         return true;
     }
 
-    public async Task<bool> DeleteAccountAsync(DeleteAccountRequest request, int accountId)
+    public async Task<bool> DeleteAccountAsync(DeleteAccountRequest request, int accountId, int userId)
     {
-        var owner = await FindAccountById(accountId);
-
-        _dbContext.Accounts.Remove(owner);
+        var account = await FindAccountById(accountId);
+        var user = await FindUserById(userId);
+        
+        _dbContext.Accounts.Remove(account);
         await _dbContext.SaveChangesAsync();
         return true;
     }
@@ -164,7 +165,7 @@ public class AccountService : IAccountService
         return account;
     }
     
-    private async Task<Owner> FindOwnerById(int ownerId)
+    private async Task<Owner> FindUserById(int ownerId)
     {
         var owner = await _dbContext.Owners.FirstOrDefaultAsync(a => a.Id == ownerId);
         if (owner is null)

@@ -2,6 +2,7 @@ using System.Globalization;
 using System.Net;
 using System.Net.Http.Headers;
 using Microsoft.VisualBasic.CompilerServices;
+using Reservation.Shared.Authorization;
 
 namespace Reservation.Api.CustomException;
 

@@ -47,5 +47,19 @@ public class EmployeeUpdateRequest
     [EmailAddress]
     public string Email { get; set; }
 
+    [Required]
     public Role Role { get; set; }
+}
+
+public class EmployeeUpdateWithoutRoleRequest
+{
+    [Required]
+    public string FirstName { get; set; }
+
+    [Required]
+    public string LastName { get; set; }
+
+    [Required]
+    [EmailAddress]
+    public string Email { get; set; }
 }

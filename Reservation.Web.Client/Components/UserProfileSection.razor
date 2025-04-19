@@ -1,0 +1,61 @@
+@inject IEmployeeService EmployeeService
+@inject ISnackbar Snackbar
+
+<MudExpansionPanel Text="Osobní údaje o přihlášeném uživateli">
+    <EditForm Model="@Employee" OnValidSubmit="OnValidSubmit">
+        <MudGrid>
+            <MudItem xs="12" sm="6">
+                <MudTextField T="string" Label="Jméno" @bind-Value="Employee.FirstName" Required="true"/>
+            </MudItem>
+            <MudItem xs="12" sm="6">
+                <MudTextField T="string" Label="Příjmení" @bind-Value="Employee.LastName" Required="true"/>
+            </MudItem>
+            <MudItem xs="12" sm="12">
+                <MudTextField T="string" Label="Email" @bind-Value="Employee.Email" Required="true"/>
+            </MudItem>
+        </MudGrid>
+        <MudButton ButtonType="ButtonType.Submit" Color="Color.Primary" Variant="Variant.Filled" Class="mt-4">
+            Uložit osobní údaje
+        </MudButton>
+    </EditForm>
+</MudExpansionPanel>
+
+@code {
+    public EmployeeUpdateWithoutRoleRequest Employee { get; set; } = new();
+    private int EmployeeId { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadEmployeeData();
+    }
+    
+    private async Task OnValidSubmit()
+    {
+        var result = await EmployeeService.UpdateSigninEmployee(Employee);
+        if (result.IsSuccess)
+        {
+            Snackbar.Add("Údaje byly úspěšně aktualizovány.", Severity.Success);
+            await LoadEmployeeData();
+        }
+        else
+        {
+            Snackbar.Add("Nepodařilo se aktualizovat údaje. Zkontrolujte své údaje.", Severity.Error);
+        }
+    }
+
+    private async Task LoadEmployeeData()
+    {
+        var employeesResult = await EmployeeService.GetCurrentEmployee();
+        if (employeesResult is { IsSuccess: true, Data: not null })
+        {
+            Employee.FirstName = employeesResult.Data.FirstName;
+            Employee.LastName = employeesResult.Data.LastName;
+            Employee.Email = employeesResult.Data.Email;
+            EmployeeId = employeesResult.Data.Id;
+        }
+        else
+        {
+            Snackbar.Add("Nepodařilo se načíst údaje o zaměstnanci.", Severity.Error);
+        }
+    }
+}

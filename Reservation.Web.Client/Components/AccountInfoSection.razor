@@ -1,0 +1,59 @@
+@using Microsoft.AspNetCore.Authorization
+@using Reservation.Shared.Authorization
+@inject ISnackbar Snackbar
+@inject IAccountService AccountService
+
+@attribute [Authorize(Roles = nameof(Role.Admin))]
+
+<MudExpansionPanel Text="Informace o účtu">
+    <EditForm Model="@AccountInfo" OnValidSubmit="OnAccountInfoValidSubmit">
+        <MudTextField T="string" Label="Organizace" @bind-Value="AccountInfo.Organization" Required="true"/>
+        <MudTextField AutoGrow="true" T="string" Label="Popis" @bind-Value="AccountInfo.Description"/>
+        <MudButton ButtonType="ButtonType.Submit" Color="Color.Primary" Variant="Variant.Filled" Class="mt-4">
+            Uložit informace o účtu
+        </MudButton>
+    </EditForm>
+</MudExpansionPanel>
+
+@code {
+    AccountInfoResponse AccountInfo { get; set; } = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadAccountInfo();
+    }
+
+    private async Task OnAccountInfoValidSubmit()
+    {
+        var updateRequest = new UpdateAccountInfoRequest
+        {
+            Organization = AccountInfo.Organization,
+            Description = AccountInfo.Description,
+        };
+
+        var result = await AccountService.UpdateAccountInfo(updateRequest);
+
+        if (result.IsSuccess)
+        {
+            Snackbar.Add("Údaje o účtu byly úspěšně aktualizovány.", Severity.Success);
+            await LoadAccountInfo();
+        }
+        else
+        {
+            Snackbar.Add("Nepodařilo se aktualizovat údaje o účtu.", Severity.Error);
+        }
+    }
+
+    private async Task LoadAccountInfo()
+    {
+        var accountInfoResult = await AccountService.GetAccountInfo();
+        if (accountInfoResult is { IsSuccess: true, Data: not null })
+        {
+            AccountInfo = accountInfoResult.Data;
+        }
+        else
+        {
+            Snackbar.Add("Nepodařilo se načíst údaje o účtu.", Severity.Error);
+        }
+    }
+}

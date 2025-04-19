@@ -1,0 +1,35 @@
+@inject ISnackbar Snackbar
+@inject IAccountService AccountService
+@inject NavigationManager NavigationManager
+
+<MudExpansionPanel Text="Zrušení účtu" Class="mt-5">
+    <EditForm Model="@DeleteRequest" OnValidSubmit="OnDeleteAccountValidSubmit">
+        <MudTextField T="string" Label="Email" @bind-Value="DeleteRequest.Email"
+                      Required="true" InputType="InputType.Email"/>
+        <MudTextField T="string" Label="Heslo" @bind-Value="DeleteRequest.Password"
+                      Required="true" InputType="InputType.Password"/>
+        <MudButton ButtonType="ButtonType.Submit" Color="Color.Error"
+                   Variant="Variant.Filled" Class="mt-4">
+            Smazat účet
+        </MudButton>
+    </EditForm>
+</MudExpansionPanel>
+
+@code {
+    public DeleteAccountRequest DeleteRequest { get; set; } = new();
+
+    private async Task OnDeleteAccountValidSubmit()
+    {
+        var result = await AccountService.DeleteAccount(DeleteRequest);
+
+        if (result.IsSuccess)
+        {
+            Snackbar.Add("Účet byl úspěšně smazán.", Severity.Success);
+            NavigationManager.NavigateTo("/", true);
+        }
+        else
+        {
+            Snackbar.Add("Nepodařilo se smazat účet. Zkontrolujte své údaje.", Severity.Error);
+        }
+    }
+}
