@@ -19,41 +19,14 @@ public class CustomAuthenticationStateProvider :
     public override async Task<AuthenticationState> GetAuthenticationStateAsync()
     {
         string? token = await _localStorage.GetItemAsync<string>(Constants.AccessToken);
-
-        if (string.IsNullOrWhiteSpace(token))
-            return new AuthenticationState(new ClaimsPrincipal(new ClaimsIdentity()));
-
-        var claims = ParseClaimsFromJwt(token)?.ToList();
-        if (claims == null)
-            return new AuthenticationState(new ClaimsPrincipal(new ClaimsIdentity()));
-
-        // Create new identity with authentication type "jwt"
-        var identity = new ClaimsIdentity(claims, "jwt");
-
-        // Get role from claims and add it as a new Role claim
-        var roleClaim = claims.FirstOrDefault(c => c.Type == ReservationClaimNames.Custom.Role);
-
-        if (roleClaim != null && Enum.TryParse<Role>(roleClaim.Value, out var role))
-        {
-            identity.AddClaim(new Claim(ClaimTypes.Role, role.ToString()));
-        }
-        
-        return new AuthenticationState(new ClaimsPrincipal(identity));
+        return CreateAuthenticationState(token);
     }
     
-    public static IEnumerable<Claim>? ParseClaimsFromJwt(string token)
-    {
-        var tokenHandler = new JwtSecurityTokenHandler();
-        var securityToken = tokenHandler.ReadToken(token) as JwtSecurityToken;
-        return securityToken?.Claims;
-    }
-
     public async Task MarkUserAsAuthenticated(string token)
     {
         await _localStorage.SetItemAsync(Constants.AccessToken, token);
-        var identity = new ClaimsIdentity(ParseClaimsFromJwt(token), "jwt");
-        var user = new ClaimsPrincipal(identity);
-        NotifyAuthenticationStateChanged(Task.FromResult(new AuthenticationState(user)));
+        var authState = CreateAuthenticationState(token);
+        NotifyAuthenticationStateChanged(Task.FromResult(authState));
     }
 
     public async Task MarkUserAsLoggedOut()
@@ -63,5 +36,32 @@ public class CustomAuthenticationStateProvider :
         var identity = new ClaimsIdentity();
         var user = new ClaimsPrincipal(identity);
         NotifyAuthenticationStateChanged(Task.FromResult(new AuthenticationState(user)));
+    }
+    
+    public static IEnumerable<Claim>? ParseClaimsFromJwt(string token)
+    {
+        var tokenHandler = new JwtSecurityTokenHandler();
+        var securityToken = tokenHandler.ReadToken(token) as JwtSecurityToken;
+        return securityToken?.Claims;
+    }
+    
+    private static AuthenticationState CreateAuthenticationState(string? token)
+    {
+        if (string.IsNullOrWhiteSpace(token))
+            return new AuthenticationState(new ClaimsPrincipal(new ClaimsIdentity()));
+
+        var claims = ParseClaimsFromJwt(token)?.ToList();
+        if (claims == null)
+            return new AuthenticationState(new ClaimsPrincipal(new ClaimsIdentity()));
+
+        var identity = new ClaimsIdentity(claims, "jwt");
+    
+        var roleClaim = claims.FirstOrDefault(c => c.Type == ReservationClaimNames.Custom.Role);
+        if (roleClaim != null && Enum.TryParse<Role>(roleClaim.Value, out var role))
+        {
+            identity.AddClaim(new Claim(ClaimTypes.Role, role.ToString()));
+        }
+    
+        return new AuthenticationState(new ClaimsPrincipal(identity));
     }
 }
