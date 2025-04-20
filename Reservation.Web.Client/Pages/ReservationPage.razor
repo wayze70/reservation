@@ -24,13 +24,13 @@
                                AdditionalDateClassesFunc="GetAdditionalDateClasses"
                                IsDateDisabledFunc="DisableDateWithoutRecords"
                                Label="Vyberte datum"
-                               MinDate="DateTime.Now.AddDays(-1)"
+                               MinDate="DateTime.Today"
                                Style="overflow-y: hidden;"/>
                 <MudButton Variant="Variant.Filled"
                            Color="Color.Primary"
                            FullWidth="true"
-                           OnClick="TodayAsync">
-                    Přejít na dnešek
+                           OnClick="Nearest">
+                    Nejbližší rezervace
                 </MudButton>
             </MudStack>
         </MudPaper>
@@ -40,11 +40,17 @@
     <MudItem xs="12" sm="6" md="8">
         @if (Reservations is null)
         {
-            <MudText>Načítám rezervace...</MudText>
+            <MudText Typo="Typo.subtitle1" Align="Align.Center" Class="mt-2">Načítám rezervace…</MudText>
         }
         else if (Reservations.Count == 0)
         {
-            <MudText>Nebyly nalezeny žádné rezervace pro firmu: @Path</MudText>
+            <MudText Typo="Typo.subtitle1" Align="Align.Center" Class="mt-2">Nebyly nalezeny žádné rezervace.</MudText>
+        }
+        else if (!Reservations.Any(r =>
+                         !GlobalState.SelectedDate.HasValue || r.Start.ToLocalTime().Date == GlobalState.SelectedDate.Value.Date))
+        {
+            <MudText Typo="Typo.subtitle1" Align="Align.Center" Class="mt-2">Žádné rezervace pro vybrané datum.
+            </MudText>
         }
         else
         {
@@ -57,22 +63,27 @@
                         continue;
                     }
 
-                    var startDateTime = reservation.Start.ConvertToTimeZone(reservation.CustomTimeZoneId);
-                    if (GlobalState.SelectedDate.HasValue && GlobalState.SelectedDate.Value.Date != startDateTime.Date)
+                    @if (GlobalState.SelectedDate.HasValue &&
+                         GlobalState.SelectedDate.Value.Date != reservation.Start.ToLocalTime().Date)
                     {
                         continue;
                     }
+
 
                     <MudItem xs="12" sm="12" md="6" lg="4">
                         <MudCard Elevation="2">
                             <MudCardContent>
                                 <MudText Typo="Typo.h6">@reservation.Title</MudText>
-                                <MudText>Od: @startDateTime.ToShortTimeString()</MudText>
+                                <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="1" Class="me-1">
+                                    <MudIcon Icon="@Icons.Material.Filled.Schedule"/>
+                                    <MudText>
+                                        @reservation.Start.ToLocalTime().ToShortTimeString() – @reservation.End.ToLocalTime().ToShortTimeString()
+                                    </MudText>
+                                </MudStack>
                                 <MudText>
-                                    Do: @reservation.End.ConvertToTimeZone(reservation.CustomTimeZoneId).ToShortTimeString()
+                                    <MudIcon Icon="@Icons.Material.Rounded.EventSeat" Class="me-1"/>
+                                    @(reservation.Capacity - reservation.CurrentCapacity)
                                 </MudText>
-                                <MudText>Volná
-                                    místa: @(reservation.Capacity - reservation.CurrentCapacity)</MudText>
                             </MudCardContent>
                             <MudCardActions>
                                 <MudButton Variant="Variant.Outlined"
@@ -108,19 +119,22 @@
             Description = accountInfo.Data.Description;
         }
 
-        var response = await ReservationService.GetReservationsAsync(Path);
+        var response = await ReservationService.GetActiveReservationsAsync(Path);
         if (response.IsSuccess)
         {
+            // Zde necháme data v UTC pro porovnávání
             Reservations = (response.Data ?? [])
                 .OrderBy(r => r.Start)
                 .ToList();
-            GlobalState.SelectedDate = Reservations.FirstOrDefault()?.Start;
+            // Pro GlobalState použijeme lokální čas
+            GlobalState.SelectedDate = Reservations.FirstOrDefault()?.Start.ToLocalTime().Date;
         }
         else
         {
             Snackbar.Add("Nesprávná URL adresa rezervací.", Severity.Error);
         }
     }
+
 
     protected override void OnAfterRender(bool firstRender)
     {
@@ -132,7 +146,10 @@
 
     private string GetAdditionalDateClasses(DateTime date)
     {
-        if (Reservations != null && Reservations.Any(r => (r.Start.Date == date.Date && r.IsAvailable && r.Start.Date >= DateTime.Today)))
+        if (Reservations != null && Reservations.Any(r =>
+                r.Start.ToLocalTime().Date == date.Date &&
+                r.IsAvailable &&
+                r.Start >= DateTime.UtcNow)) // Porovnání s UTC časem
         {
             return "reservation-highlight";
         }
@@ -140,16 +157,21 @@
         return "reservation-empty";
     }
 
-    private Task TodayAsync()
+
+    private void Nearest()
     {
-        return _picker.GoToDate(DateTime.Today);
+        GlobalState.SelectedDate = Reservations?.FirstOrDefault()?.Start.ToLocalTime().Date;
     }
 
     // Funkce pro deaktivaci datumů, u kterých není žádná rezervace
     private bool DisableDateWithoutRecords(DateTime date)
     {
-        // Pokud Reservations je null nebo pro zadané datum neexistuje žádná rezervace, zakážeme toto datum.
-        return Reservations == null || Reservations.All(r => r.Start.Date != date.Date);
+        if (Reservations == null)
+            return true;
+
+        return Reservations.All(r =>
+            r.Start.ToLocalTime().Date != date.Date || // Není rezervace v tento den
+            r.Start <= DateTime.UtcNow); // Nebo již proběhla (kontrola v UTC)
     }
 
 }

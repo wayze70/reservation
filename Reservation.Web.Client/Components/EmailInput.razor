@@ -10,6 +10,10 @@
               InputType="InputType.Email"
               Pattern="@Utils.EmailRegexPattern"
               RequiredError="@RequiredError"
+              Variant="@Variant"
+              FullWidth="@FullWidth"
+              Adornment="@Adornment"
+              AdornmentIcon="@AdornmentIcon"
 />
 
 @code {
@@ -27,7 +31,19 @@
 
     [Parameter]
     public string RequiredError { get; set; } = "Email je povinný";
-
+    
+    [Parameter]
+    public Variant Variant { get; set; } = Variant.Outlined;
+    
+    [Parameter]
+    public bool FullWidth { get; set; } = true;
+    
+    [Parameter]
+    public Adornment Adornment { get; set; } = Adornment.Start;
+    
+    [Parameter]
+    public string AdornmentIcon { get; set; } = Icons.Material.Filled.Email;
+    
     private async Task OnValueChanged(string value)
     {
         if (Value != value)

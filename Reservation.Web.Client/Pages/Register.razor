@@ -19,10 +19,9 @@
         </MudText>
         <MudTextField T="string" Label="Jméno" @bind-Value="RegistrationUser.FirstName" Required="true"/>
         <MudTextField T="string" Label="Příjmení" @bind-Value="RegistrationUser.LastName" Required="true"/>
-        <EmailInput @bind-Value="RegistrationUser.Email"/>
+        <EmailInput @bind-Value="RegistrationUser.Email" Variant="Variant.Text" Adornment="Adornment.None"/>
         <MudTextField T="string" Label="Heslo" InputType="InputType.Password" @bind-Value="RegistrationUser.Password"
                       Required="true"/>
-        <br/>
         <MudStack Row="true" AlignItems="AlignItems.End">
             <MudTextField T="string" Label="Identifikátor" Value="RegistrationUser.Identifier"
                           ValueChanged="OnPathChange"
@@ -39,7 +38,7 @@
         <MudStack Row="false" AlignItems="AlignItems.Center" Spacing="1">
             @if (IsPathFetching)
             {
-                <MudIcon Icon="@Icons.Material.Filled.QuestionMark" Color="Color.Error" Size="Size.Small"/>
+                <MudIcon Icon="@Icons.Material.Filled.QuestionMark" Color="Color.Info" Size="Size.Small"/>
             }
             else if (IsPathTaken || !IsPathValid)
             {

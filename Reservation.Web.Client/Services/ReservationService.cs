@@ -18,7 +18,7 @@ public class ReservationService : IReservationService
         return await _httpClientService.PostAsync<List<ReservationCreateRequest>, List<ReservationResponse>>("/reservation", listRequest);
     }
 
-    public async Task<ApiResponse<List<ReservationResponse>>> GetReservationsAsync(string path)
+    public async Task<ApiResponse<List<ReservationResponse>>> GetActiveReservationsAsync(string path)
     {
         return await _httpClientService.GetAsync<List<ReservationResponse>>($"/reservation/public/{path}");
     }

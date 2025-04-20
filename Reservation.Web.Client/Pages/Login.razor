@@ -31,7 +31,7 @@
         <EditForm Model="emailModel" OnValidSubmit="CheckAccounts">
             <DataAnnotationsValidator/>
             <ValidationSummary/>
-            <EmailInput @bind-Value="emailModel.Email" />
+            <EmailInput @bind-Value="emailModel.Email" Variant="Variant.Text" Adornment="Adornment.None" />
             <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary" FullWidth="true"
                        Class="mt-4">
                 Pokračovat

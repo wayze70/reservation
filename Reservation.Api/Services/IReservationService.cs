@@ -11,7 +11,7 @@ namespace Reservation.Api.Services
 
         // Načítání rezervací
         Task<List<ReservationResponse>> GetReservationsByAccountAsync(int accountId);
-        Task<List<ReservationResponse>> GetReservationsByPathAsync(string path);
+        Task<List<ReservationResponse>> GetActiveReservationsByPathAsync(string path);
         Task<ReservationResponse> GetReservationByPathAndIdAsync(string path, int accountId);
         Task<ReservationResponseWithCustomers> GetReservationWithUsersAsync(int accountId, int reservationId);
 

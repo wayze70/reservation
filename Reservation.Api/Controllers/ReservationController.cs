@@ -78,9 +78,9 @@ public class ReservationController : ControllerBase
 
     [AllowAnonymous]
     [HttpGet("public/{path}")]
-    public async Task<ActionResult<List<ReservationResponse>>> GetReservationsByPath([FromRoute] string path)
+    public async Task<ActionResult<List<ReservationResponse>>> GetActiveReservationsByPath([FromRoute] string path)
     {
-        var result = await _reservationService.GetReservationsByPathAsync(path);
+        var result = await _reservationService.GetActiveReservationsByPathAsync(path);
         return Ok(result);
     }
 

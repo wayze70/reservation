@@ -24,7 +24,8 @@ namespace Reservation.Api.Services
                 throw new CustomHttpException(HttpStatusCode.BadRequest, "Žádná rezervace nebyla poskytnuta");
             }
 
-            var reservationEntity = (await _dbContext.Reservations.AddAsync(CreateReservationEntity(request, accountId)))
+            var reservationEntity =
+                (await _dbContext.Reservations.AddAsync(CreateReservationEntity(request, accountId)))
                 .Entity;
 
             await _dbContext.SaveChangesAsync();
@@ -78,15 +79,20 @@ namespace Reservation.Api.Services
                 .Include(r => r.Customers)
                 .ToListAsync();
 
-            return records.Count == 0 ? new List<ReservationResponse>() : records.Select(MapToDto).ToList();
+            return records.Count == 0 ? [] : records.Select(MapToDto).ToList();
         }
 
-        public async Task<List<ReservationResponse>> GetReservationsByPathAsync(string path)
+        public async Task<List<ReservationResponse>> GetActiveReservationsByPathAsync(string path)
         {
             var account = await _dbContext.Accounts.FirstOrDefaultAsync(o => o.Path == path)
-                        ?? throw new CustomHttpException(HttpStatusCode.NotFound, "Cesta nebyla nalezena");
+                          ?? throw new CustomHttpException(HttpStatusCode.NotFound, "Cesta nebyla nalezena");
 
-            return await GetReservationsByAccountAsync(account.Id);
+            var records = await _dbContext.Reservations
+                .Where(r => (r.AccountId == account.Id && r.IsAvailable && r.StartTime > DateTime.UtcNow))
+                .Include(r => r.Customers)
+                .ToListAsync();
+
+            return records.Count == 0 ? [] : records.Select(MapToDto).ToList();
         }
 
         public async Task<ReservationResponse> GetReservationByPathAndIdAsync(string path, int accountId)
@@ -106,7 +112,8 @@ namespace Reservation.Api.Services
             return MapToDto(reservation);
         }
 
-        public async Task<ReservationResponseWithCustomers> GetReservationWithUsersAsync(int accountId, int reservationId)
+        public async Task<ReservationResponseWithCustomers> GetReservationWithUsersAsync(int accountId,
+            int reservationId)
         {
             var owner = await _dbContext.Accounts
                             .Include(o => o.Reservations)
@@ -138,11 +145,8 @@ namespace Reservation.Api.Services
                 if (reservation == null)
                     throw new CustomHttpException(HttpStatusCode.NotFound, "Rezervace nebyla nalezena");
 
-                if (reservation.Customers.Count >= reservation.Capacity)
-                    throw new CustomHttpException(HttpStatusCode.BadRequest, "Rezervace je již plná");
-
-                if (!reservation.IsAvailable)
-                    throw new CustomHttpException(HttpStatusCode.Locked, "K rezervaci se není možné přihlásit");
+                if (reservation.Customers.Count >= reservation.Capacity || !reservation.IsAvailable)
+                    throw new CustomHttpException(HttpStatusCode.Locked, "K rezervaci se již není možné přihlásit");
 
                 if (reservation.Customers.Any(u => u.Email.Equals(request.Email, StringComparison.OrdinalIgnoreCase)))
                     throw new CustomHttpException(HttpStatusCode.Conflict,
@@ -184,7 +188,8 @@ namespace Reservation.Api.Services
             }
         }
 
-        public async Task<ReservationResponse> CancelReservationAsync(int reservationId, string cancellationCode, CultureInfo 
+        public async Task<ReservationResponse> CancelReservationAsync(int reservationId, string cancellationCode,
+            CultureInfo
                 cultureInfo)
         {
             var reservation = await _dbContext.Reservations
@@ -207,7 +212,7 @@ namespace Reservation.Api.Services
 
             reservation.Customers.Remove(user);
             await _dbContext.SaveChangesAsync();
-            
+
             await _emailService.SendReservationCancellationByUserEmailAsync(user.Email, user.FirstName, user.LastName,
                 reservation.Title, reservation.StartTime, cultureInfo);
 

@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Reservation.Api.CustomException;
 using Reservation.Api.Models;
+using Reservation.Shared.Common;
 using Reservation.Shared.Dtos;
 
 namespace Reservation.Api.Services;
@@ -35,11 +36,21 @@ public class EmployeeService : IEmployeeService
 
     public async Task<EmployeeResponse> CreateEmployeeAsync(EmployeeCreateRequest request, int accountId)
     {
+        if (!Utils.IsPasswordLongEnough(request.Password))
+        {
+            throw new CustomHttpException(HttpStatusCode.BadRequest, "Heslo musí mít alespoň 6 znaků");
+        }
+
+        if (!Utils.TryProcessEmail(request.Email, out string email))
+        {
+            throw new CustomHttpException(HttpStatusCode.BadRequest, "Neplatný formát emailu");
+        }
+        
         var employee = new User
         {
             FirstName = request.FirstName,
             LastName = request.LastName,
-            Email = request.Email,
+            Email = email,
             Role = request.Role,
             PasswordHash = _passwordHasher.HashPassword(new User(), request.Password),
             AccountId = accountId,

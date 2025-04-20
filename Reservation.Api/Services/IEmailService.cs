@@ -14,6 +14,6 @@ public interface IEmailService
         string reservationTitle, string organization);
 
     public Task SendReservationCancellationByOwnerEmailAsync(string recipientEmail, string firstName, string lastName,
-        string reservationTitle, DateTime reservationDate, CultureInfo cultureInfo);
-    public Task SendDeleteAccountEmailAsync(string recipientEmail, string firstName, string lastName);
+        string reservationTitle, DateTime reservationDate, TimeZoneInfo timeZoneInfo, CultureInfo cultureInfo);
+    public Task SendDeleteAccountEmailAsync(string recipientEmail, string firstName, string lastName, string path);
 }

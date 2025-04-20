@@ -9,61 +9,82 @@
 
 
 <MudExpansionPanel Text="Identifikátor">
+  <MudDivider />
+
+  <!-- Content -->
+  <MudCardContent Class="px-0">
     @if (string.IsNullOrWhiteSpace(CurrentPath))
     {
-        <MudText>
-            Zadejte unikátní identifikátor, který bude součástí URL vaší rezervace.
-            Může to být například vaše jméno, název firmy nebo jiný stručný název, podle kterého si
-            rezervaci snadno zapamatujete.
+      <MudAlert Severity="Severity.Info" Dense="true" Elevation="0" Class="mb-4">
+        <MudText Typo="Typo.body2">
+          Zadejte unikátní identifikátor, který bude součástí URL vaší rezervace.
         </MudText>
+      </MudAlert>
     }
     else
     {
-        <MudText>
-            Aktuální adresa vaší rezervace:
-        </MudText>
-        <MudText>
-            <MudLink Href="@Constants.Routes.Reservation(CurrentPath)"
-                     Style="word-wrap: break-word; word-break: break-all;">
-                @(NavigationManager.BaseUri)@Constants.Routes.Reservation(CurrentPath).Remove(0, 1)
-            </MudLink>
-        </MudText>
+      <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="1" Class="mb-2">
+        <MudText Typo="Typo.body2">Aktuální adresa rezervace</MudText>
+        <MudTooltip Text="Zkopírujte a sdílejte URL, např. na váš web" ShowOnHover="true">
+          <MudIcon Icon="@Icons.Material.Filled.Info" Color="Color.Primary" Size="Size.Small" />
+        </MudTooltip>
+      </MudStack>
+      <MudText Typo="Typo.body2" Class="mb-4" Style="word-wrap:break-word;">
+        <MudLink Href="@Constants.Routes.Reservation(CurrentPath)" Target="_blank">
+          @(NavigationManager.BaseUri.TrimEnd('/') + Constants.Routes.Reservation(CurrentPath))
+        </MudLink>
+      </MudText>
     }
 
-    <MudStack Spacing="2" Class="mt-4">
-        <MudTextField T="string" Disabled="@(CurrentPath is null)" Value="Path" ValueChanged="OnPathChange"
-                      Label="Identifikátor" DebounceInterval="500"/>
+    <MudStack>
+      <MudItem xs="12">
+        <MudTextField T="string"
+                      Label="Identifikátor"
+                      Value="Path"
+                      ValueChanged="OnPathChange"
+                      Variant="Variant.Outlined"
+                      FullWidth="true"
+                      Adornment="Adornment.Start"
+                      AdornmentIcon="@Icons.Material.Filled.Link"
+                      DebounceInterval="500" />
+      </MudItem>
 
-        <MudStack Row="false" AlignItems="AlignItems.Center" Spacing="1">
-            @if ((IsPathTaken && CurrentPath != Path) || !IsPathValid)
-            {
-                <MudIcon Icon="@Icons.Material.Filled.Close" Color="Color.Error" Size="Size.Small"/>
-            }
-            else
-            {
-                <MudIcon Icon="@Icons.Material.Filled.CheckCircleOutline" Color="Color.Success"
-                         Size="Size.Small"/>
-            }
+      <MudStack Row="false" AlignItems="AlignItems.Center" Spacing="1">
+        @if ((IsPathTaken && CurrentPath != Path) || !IsPathValid)
+        {
+          <MudIcon Icon="@Icons.Material.Filled.Close" Color="Color.Error" />
+        }
+        else
+        {
+          <MudIcon Icon="@Icons.Material.Filled.CheckCircleOutline" Color="Color.Success" />
+        }
 
-            @if (IsPathTaken && CurrentPath == Path)
-            {
-                <MudText Color="Color.Info">Toto je vaše aktuální adresa</MudText>
-            }
-            else if (IsPathTaken)
-            {
-                <MudText Color="Color.Error">Tato adresa je již obsazená</MudText>
-            }
-            else if (!IsPathValid)
-            {
-                <MudText Color="Color.Error">Adresa obsahuje nepovolené znaky</MudText>
-            }
-        </MudStack>
-
-        <MudButton OnClick="UpdatePath" Color="Color.Primary" Variant="Variant.Filled"
-                   ButtonType="ButtonType.Button" Style="width: fit-content !important;">
-            Uložit identifikátor
-        </MudButton>
+        @if (IsPathTaken && CurrentPath == Path)
+        {
+          <MudText Typo="Typo.body2" Color="Color.Info" Class="ms-2">Toto je vaše aktuální adresa</MudText>
+        }
+        else if (IsPathTaken)
+        {
+          <MudText Typo="Typo.body2" Color="Color.Error" Class="ms-2">Tato adresa je již obsazená</MudText>
+        }
+        else if (!IsPathValid)
+        {
+          <MudText Typo="Typo.body2" Color="Color.Error" Class="ms-2">Adresa obsahuje nepovolené znaky</MudText>
+        }
+      </MudStack>
     </MudStack>
+  </MudCardContent>
+
+  <!-- Actions -->
+  <MudDivider />
+  <MudCardActions>
+    <MudButton OnClick="UpdatePath"
+               Variant="Variant.Filled"
+               Color="Color.Primary"
+               StartIcon="@Icons.Material.Filled.Save">
+      Aktualizovat
+    </MudButton>
+  </MudCardActions>
 </MudExpansionPanel>
 
 @code
@@ -91,7 +112,7 @@
         if (response is { IsSuccess: true, Data: not null })
         {
             CurrentPath = response.Data;
-            Snackbar.Add("URL cesta byla úspěšně aktualizována.", Severity.Success);
+            Snackbar.Add("Identifikátor a adresa byla úspěšně aktualizována.", Severity.Success);
         }
     }
 
@@ -117,7 +138,7 @@
 
         IsPathFetching = false;
     }
-    
+
     private async Task LoadPath()
     {
         CurrentPath = (await AccountService.GetPath()).Data;

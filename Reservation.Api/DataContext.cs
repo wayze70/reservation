@@ -84,7 +84,8 @@ public class DataContext : DbContext
                 await _emailService.SendDeleteAccountEmailAsync(
                     owner.Email,
                     owner.FirstName,
-                    owner.LastName);
+                    owner.LastName,
+                    account.Path);
             }
  
             // Notify customers

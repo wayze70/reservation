@@ -23,14 +23,16 @@
                 <MudButton Variant="Variant.Filled"
                            Color="Color.Primary"
                            FullWidth="true"
+                           StartIcon="@Icons.Material.Filled.Add"
                            OnClick="@(() => NavigationManager.NavigateTo(Constants.Routes.AccountRoute.ReservationNew))">
-                    Vytvořit novou rezervaci
+                    Nová rezervace
                 </MudButton>
                 <MudButton Variant="Variant.Outlined"
                            Color="Color.Primary"
                            FullWidth="true"
+                           StartIcon="@Icons.Material.Filled.Today"
                            OnClick="TodayAsync">
-                    Přejít na dnešek
+                    Dnes
                 </MudButton>
             </MudStack>
         </MudPaper>
@@ -41,43 +43,55 @@
         <MudStack Spacing="2">
             @if (Reservations is null)
             {
-                <MudText>Načítám rezervace...</MudText>
+                <MudText Typo="Typo.subtitle1" Align="Align.Center" Class="mt-2">Načítám rezervace…</MudText>
             }
             else if (Reservations.Count == 0)
             {
-                <MudText>Nebyly nalezeny žádné rezervace.</MudText>
+                <MudText Typo="Typo.subtitle1" Align="Align.Center" Class="mt-2">Nebyly nalezeny žádné rezervace.</MudText>
+            }
+            else if (!Reservations.Any(r =>
+                             !GlobalState.SelectedDateAdmin.HasValue || r.Start.ToLocalTime().Date == GlobalState.SelectedDateAdmin.Value.Date))
+            {
+                <MudText Typo="Typo.subtitle1" Align="Align.Center" Class="mt-2">Žádné rezervace pro vybrané datum.
+                </MudText>
             }
             else
             {
-                <MudGrid>
+                <MudGrid GutterSize="3">
                     @foreach (var reservation in Reservations)
                     {
-                        // Převod startu rezervace do zvoleného časového pásma
-                        var startDateTime = reservation.Start.ConvertToTimeZone(reservation.CustomTimeZoneId);
-                        // Pokud vybrané datum (bez časové složky) neodpovídá, přeskočíme rezervaci
+                        var startDateTime = reservation.Start.ToLocalTime();
                         if (GlobalState.SelectedDateAdmin.HasValue && GlobalState.SelectedDateAdmin.Value.Date != startDateTime.Date)
-                        {
                             continue;
-                        }
 
                         <MudItem xs="12" sm="12" md="6" lg="4">
                             <MudCard Elevation="2">
                                 <MudCardContent>
                                     <MudText Typo="Typo.h6">@reservation.Title</MudText>
-                                    <MudText>Od: @startDateTime.ToShortTimeString()</MudText>
+                                    <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="1" Class="me-1">
+                                        <MudIcon Icon="@Icons.Material.Filled.Schedule" />
+                                        <MudText>
+                                            @startDateTime.ToShortTimeString() – @reservation.End.ToLocalTime().ToShortTimeString()
+                                        </MudText>
+                                    </MudStack>
                                     <MudText>
-                                        Do: @reservation.End.ConvertToTimeZone(reservation.CustomTimeZoneId).ToShortTimeString()
+                                        <MudIcon Icon="@Icons.Material.Filled.People" Class="me-1"/>
+                                        @reservation.CurrentCapacity / @reservation.Capacity
                                     </MudText>
-                                    <MudText>Kapacita: @reservation.CurrentCapacity / @reservation.Capacity</MudText>
                                     <MudText Color="@(reservation.IsAvailable ? Color.Success : Color.Error)">
+                                        <MudIcon Icon="@(reservation.IsAvailable
+                                                           ? Icons.Material.Filled.CheckCircle
+                                                           : Icons.Material.Filled.Block)"
+                                                 Class="me-1"/>
                                         @(reservation.IsAvailable ? "Dostupná" : "Nedostupná")
                                     </MudText>
                                 </MudCardContent>
-                                <MudCardActions>
+                                <MudCardActions Class="justify-end">
                                     <MudButton Variant="Variant.Outlined"
                                                Color="Color.Primary"
-                                               OnClick='() => NavigationManager.NavigateTo(Constants.Routes.AccountRoute.AccountReservationDetail(reservation.Id))'>
-                                        Více informací
+                                               Size="Size.Small"
+                                               OnClick="@(() => NavigationManager.NavigateTo(Constants.Routes.AccountRoute.AccountReservationDetail(reservation.Id)))">
+                                        Podrobnosti
                                     </MudButton>
                                 </MudCardActions>
                             </MudCard>
@@ -99,7 +113,7 @@
         if (response.IsSuccess)
         {
             Reservations = (response.Data ?? [])
-                .OrderBy(r => r.Start)
+                .OrderBy(r => r.Start.ToLocalTime())
                 .ToList();
         }
         else
@@ -118,7 +132,7 @@
 
     private string GetAdditionalDateClasses(DateTime date)
     {
-        if (Reservations != null && Reservations.Any(r => r.Start.Date == date.Date))
+        if (Reservations != null && Reservations.Any(r => r.Start.Date.ToLocalTime().Date == date.Date))
         {
             return "reservation-highlight";
         }

@@ -1,5 +1,6 @@
 @page "/rezervace/{Path}/{Id:int}"
 @using System.Globalization
+@using Reservation.Shared.Common
 @inject IReservationService ReservationService
 @inject NavigationManager NavigationManager
 @inject ISnackbar Snackbar
@@ -9,61 +10,126 @@
 
 @if (ReservationDetail is null)
 {
-    <MudText>Načítám rezervaci...</MudText>
+    <MudPaper Class="mx-auto mt-12 pa-8" Elevation="1" Style="max-width:600px;">
+        <MudText Typo="Typo.subtitle1" Align="Align.Center">Načítám rezervaci…</MudText>
+    </MudPaper>
 }
 else
 {
-    bool isSameTimeZone = (ReservationDetail.CustomTimeZoneId != GlobalState.CurrentTimeZone.Id);
+    bool isSameTimeZone = ReservationDetail.CustomTimeZoneId == GlobalState.CurrentTimeZone.Id;
+    string tzInfo = TimeZoneInfo.FindSystemTimeZoneById(ReservationDetail.CustomTimeZoneId).DisplayName;
 
-    <MudCard>
-        <MudCardActions>
-            <MudButton Variant="Variant.Outlined" Color="Color.Primary" OnClick="Back">
-                Zpět na rezervace
-            </MudButton>
-        </MudCardActions>
+
+    <MudCard Class="mx-auto mt-5" Style="max-width:800px;" Elevation="3">
+        <MudButton Class="m-2" Style="width: fit-content" Variant="Variant.Outlined" Color="Color.Primary"
+                   OnClick="Back" StartIcon="@Icons.Material.Filled.ArrowBack">
+            Zpět
+        </MudButton>
+
         <MudCardHeader>
-            <MudText Typo="Typo.h5">@ReservationDetail.Title</MudText>
+
+            <br/>
+            <MudText Typo="Typo.h4">@ReservationDetail.Title</MudText>
         </MudCardHeader>
+        <MudDivider/>
+
+        <!-- CONTENT -->
         <MudCardContent>
-            <MudText>Popis: @ReservationDetail.Description</MudText>
-            <MudText>
-                Od: @ReservationDetail.Start.ConvertToTimeZone(ReservationDetail.CustomTimeZoneId).ToString("g")
+            <MudText Typo="Typo.subtitle2" Color="Color.Secondary" Class="mb-6">
+                @ReservationDetail.Description
             </MudText>
-            @if (isSameTimeZone)
-            {
-                <MudText>
-                    Ve vaší časové pásmu
-                    od: @ReservationDetail.Start.ConvertToTimeZone(GlobalState.CurrentTimeZone).ToString("g")
-                </MudText>
-            }
-            <MudText>
-                Do: @ReservationDetail.End.ConvertToTimeZone(ReservationDetail.CustomTimeZoneId).ToString("g")</MudText>
-            @if (isSameTimeZone)
-            {
-                <MudText>
-                    Ve vaší časové pásmu
-                    od: @ReservationDetail.End.ConvertToTimeZone(GlobalState.CurrentTimeZone).ToString("g")
-                </MudText>
-            }
-            <MudText>Počet volných míst: @(ReservationDetail.Capacity - ReservationDetail.CurrentCapacity)</MudText>
-            <MudText Color="@(ReservationDetail.IsAvailable ? Color.Success : Color.Error)">
-                @(ReservationDetail.IsAvailable ? "Dostupná" : "Nedostupná")
-            </MudText>
-            @if (!ReservationDetail.CancellationOffset.Equals(TimeSpan.Zero))
-            {
-                <MudDivider Class="my-2"/>
-                <MudText>Možné
-                    zrušit: @ReservationDetail.CancellationOffset.ToString(@"h\:mm", CultureInfo.CurrentCulture) před
-                    začátkem
-                </MudText>
-            }
+
+            <MudGrid GutterSize="3">
+                @* START *@
+                <MudItem xs="12" sm="6">
+                    <MudPaper Outlined Class="pa-3">
+                        <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="1">
+                            <MudIcon Icon="@Icons.Material.Filled.Schedule"/>
+                            <MudText Typo="Typo.body2"><strong>Od</strong></MudText>
+                        </MudStack>
+                        <MudText Typo="Typo.h6">
+                            @ReservationDetail.Start.ConvertToTimeZone(ReservationDetail.CustomTimeZoneId).ToString("g")
+                        </MudText>
+                        @if (!isSameTimeZone)
+                        {
+                            <MudText Typo="Typo.caption" Color="Color.Secondary">
+                                (vaše pásmo: @ReservationDetail.Start.ToLocalTime().ToString("g"))
+                            </MudText>
+                        }
+                    </MudPaper>
+                </MudItem>
+
+                @* END *@
+                <MudItem xs="12" sm="6">
+                    <MudPaper Outlined Class="pa-3">
+                        <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="1">
+                            <MudIcon Icon="@Icons.Material.Filled.Schedule"/>
+                            <MudText Typo="Typo.body2"><strong>Do</strong></MudText>
+                        </MudStack>
+                        <MudText Typo="Typo.h6">
+                            @ReservationDetail.End.ConvertToTimeZone(ReservationDetail.CustomTimeZoneId).ToString("g")
+                        </MudText>
+                        @if (!isSameTimeZone)
+                        {
+                            <MudText Typo="Typo.caption" Color="Color.Secondary">
+                                (vaše pásmo: @ReservationDetail.End.ToLocalTime().ToString("g"))
+                            </MudText>
+                        }
+                    </MudPaper>
+                </MudItem>
+
+                @* TIMEZONE ALERT *@
+                @if (!isSameTimeZone)
+                {
+                    <MudItem xs="12">
+                        <MudAlert Severity="Severity.Info" Dense="true" Elevation="0" Class="my-2">
+                            Rezervace je v pásmu: <strong>@tzInfo</strong>
+                        </MudAlert>
+                    </MudItem>
+                }
+
+                @* CAPACITY & STATUS *@
+                <MudItem xs="12" sm="6">
+                    <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="1">
+                        <MudIcon Icon="@Icons.Material.Rounded.EventSeat"/>
+                        <MudText Typo="Typo.body1">
+                            <strong>Volná místa:</strong>
+                        </MudText>
+                        <MudText Typo="Typo.h6" Class="ms-1">
+                            @(ReservationDetail.Capacity - ReservationDetail.CurrentCapacity)
+                        </MudText>
+                    </MudStack>
+                </MudItem>
+
+                @* CANCELLATION *@
+                @if (ReservationDetail.CancellationOffset != TimeSpan.Zero)
+                {
+                    <MudItem xs="12">
+                        <MudDivider Class="my-3"/>
+                        <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="1">
+                            <MudIcon Icon="@Icons.Material.Filled.Cancel"/>
+                            <MudText Typo="Typo.caption" Color="Color.Secondary">
+                                Zrušení možné 
+                                <strong>
+                                    @($"{ReservationDetail.CancellationOffset.Days} d. a {ReservationDetail.CancellationOffset:h\\:mm}")
+                                </strong>
+                                před začátkem
+                            </MudText>
+                        </MudStack>
+                    </MudItem>
+                }
+            </MudGrid>
         </MudCardContent>
-        <MudCardActions>
-            <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="SignUp">
-                Přihlásit se na rezervaci
+
+        <!-- ACTIONS -->
+        <MudDivider/>
+        <MudCardActions Class="justify-end" Style="gap: 7px;">
+            <MudButton Variant="Variant.Outlined" Color="Color.Secondary" OnClick="Back">Zpět</MudButton>
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="SignUp"
+                       Disabled="!ReservationDetail.IsAvailable">
+                Přihlásit se
             </MudButton>
         </MudCardActions>
-
     </MudCard>
 }
 
@@ -79,25 +145,13 @@ else
 
     protected override async Task OnInitializedAsync()
     {
-        var response = await ReservationService.GetReservationAsync(Path, Id);
-        if (response is { IsSuccess: true, Data: not null })
-        {
-            ReservationDetail = response.Data;
-        }
+        var resp = await ReservationService.GetReservationAsync(Path, Id);
+        if (resp.IsSuccess && resp.Data != null)
+            ReservationDetail = resp.Data;
         else
-        {
             Snackbar.Add("Nepodařilo se načíst detail rezervace.", Severity.Error);
-        }
     }
 
-    private void Back()
-    {
-        NavigationManager.NavigateTo(Constants.Routes.Reservation(Path));
-    }
-
-    private void SignUp()
-    {
-        NavigationManager.NavigateTo(Constants.Routes.ReservationSignUp(Path, Id));
-    }
-
+    private void Back() => NavigationManager.NavigateTo(Constants.Routes.Reservation(Path));
+    private void SignUp() => NavigationManager.NavigateTo(Constants.Routes.ReservationSignUp(Path, Id));
 }

@@ -8,8 +8,8 @@ public class GlobalState
     public event Action? OnStateChanged;
     
     private TimeZoneInfo _currentTimeZone = TimeZoneInfo.Local;
-    private DateTime? _selectedDate = DateTime.Now;
-    private DateTime? _selectedDateAdmin = DateTime.Now;
+    private DateTime? _selectedDate = DateTime.Today;
+    private DateTime? _selectedDateAdmin = DateTime.Today;
     private string _title = string.Empty;
     private string _description = string.Empty;
     private string _identifier = string.Empty;
