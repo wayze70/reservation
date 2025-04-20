@@ -4,8 +4,7 @@
 
 <MudExpansionPanel Text="Zrušení účtu" Class="mt-5">
     <EditForm Model="@DeleteRequest" OnValidSubmit="OnDeleteAccountValidSubmit">
-        <MudTextField T="string" Label="Email" @bind-Value="DeleteRequest.Email"
-                      Required="true" InputType="InputType.Email"/>
+        <EmailInput @bind-Value="DeleteRequest.Email" />
         <MudTextField T="string" Label="Heslo" @bind-Value="DeleteRequest.Password"
                       Required="true" InputType="InputType.Password"/>
         <MudButton ButtonType="ButtonType.Submit" Color="Color.Error"

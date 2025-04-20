@@ -122,7 +122,7 @@
     int CancellationOffsetDays = 0;
     TimeSpan? CancellationOffsetTime = TimeSpan.Zero;
 
-    ReservationResponseWithUser? ReservationDetail { get; set; }
+    ReservationResponseWithCustomers? ReservationDetail { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
@@ -197,18 +197,18 @@
         }
     }
 
-    private async Task RemoveUser(UserResponse user)
+    private async Task RemoveUser(CustomerResponse customer)
     {
         // Odhlášení (odstranění) uživatele z rezervace
-        var response = await ReservationService.RemoveUserFromReservationAsync(new RemoveUserFromReservationRequest()
+        var response = await ReservationService.RemoveUserFromReservationAsync(new RemoveCustomerFromReservationRequest()
         {
-            UserEmail = user.Email,
+            UserEmail = customer.Email,
             ReservationId = reservationId
         });
         if (response.IsSuccess)
         {
-            Snackbar.Add($"Uživatel {user.Email} byl úspěšně odhlášen.", Severity.Success);
-            ReservationDetail.Users.Remove(user);
+            Snackbar.Add($"Uživatel {customer.Email} byl úspěšně odhlášen.", Severity.Success);
+            ReservationDetail.Users.Remove(customer);
         }
         else
         {

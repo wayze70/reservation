@@ -11,6 +11,8 @@ public class GlobalState
     private DateTime? _selectedDate = DateTime.Now;
     private DateTime? _selectedDateAdmin = DateTime.Now;
     private string _title = string.Empty;
+    private string _description = string.Empty;
+    private string _identifier = string.Empty;
 
     public TimeZoneInfo CurrentTimeZone
     {
@@ -48,6 +50,26 @@ public class GlobalState
         set
         {
             _title = value;
+            NotifyStateChanged();
+        }
+    }
+    
+    public string Description
+    {
+        get => _description;
+        set
+        {
+            _description = value;
+            NotifyStateChanged();
+        }
+    }
+    
+    public string Identifier
+    {
+        get => _identifier;
+        set
+        {
+            _identifier = value;
             NotifyStateChanged();
         }
     }

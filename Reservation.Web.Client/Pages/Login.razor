@@ -1,18 +1,16 @@
 @page "/prihlaseni"
-@using System.ComponentModel.DataAnnotations
 @using System.Net
-@using Microsoft.AspNetCore.Components.Authorization
+@using Reservation.Shared.Common
 @using Reservation.Web.Client.Components
 @inject IAuthService AuthService
 @inject IAccountService AccountService
 @inject NavigationManager NavigationManager
 @inject ISnackbar Snackbar
-@inject AuthenticationStateProvider AuthStateProvider
 
 <PageTitle>Přihlášení</PageTitle>
 
 <MudPaper Class="mx-auto my-10 pa-6" MaxWidth="@((_step == 1 && accounts?.Count > 1) ? null : "400px")">
-    
+
     @if (IsFetching)
     {
         <Loading/>
@@ -33,17 +31,16 @@
         <EditForm Model="emailModel" OnValidSubmit="CheckAccounts">
             <DataAnnotationsValidator/>
             <ValidationSummary/>
-
-            <MudTextField T="string" Label="Email" @bind-Value="emailModel.Email" Required="true"/>
+            <EmailInput @bind-Value="emailModel.Email" />
             <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary" FullWidth="true"
                        Class="mt-4">
                 Pokračovat
             </MudButton>
         </EditForm>
         <MudText Align="Align.Center" Class="mt-4">
-            Nemáte účet? <MudLink Href="@Constants.Routes.Register">Zaregistrujte se</MudLink>
+            Nemáte účet?
+            <MudLink Href="@Constants.Routes.Register">Zaregistrujte se</MudLink>
         </MudText>
-
     }
     else if (_step == 1 && accounts?.Count > 1)
     {
@@ -94,18 +91,13 @@
 </MudPaper>
 
 @code {
-    class EmailModel
-    {
-        [Required]
-        public string Email { get; set; } = string.Empty;
-    }
-    
     private int _step = 0;
     bool IsFetching { get; set; } = false;
-    private EmailModel emailModel = new();
+    private AccountsByEmailRequest emailModel = new();
     private LoginRequest loginModel = new() { Email = string.Empty, Identifier = string.Empty };
     private List<AccountInfoResponse>? accounts;
     private AccountInfoResponse? selectedAccount;
+
     private string currentIdentifier => selectedAccount?.Identifier
                                         ?? accounts?[0].Identifier
                                         ?? string.Empty;
@@ -120,9 +112,17 @@
         try
         {
             IsFetching = true;
+            if (!Utils.TryProcessEmail(emailModel.Email, out string email))
+            {
+                Snackbar.Add("Email není platný formát", Severity.Error);
+                return;
+            }
+            
+            emailModel.Email = email;
+            
             var response = await AccountService.GetAccountsByEmail(new AccountsByEmailRequest() { Email = emailModel.Email });
             IsFetching = false;
-            
+
             if (!response.IsSuccess || response.Data is null || response.Data.Count == 0)
             {
                 Snackbar.Add("Pro tento e‑mail nejsou žádné účty.", Severity.Error);
@@ -159,7 +159,7 @@
 
     private async Task SubmitLogin()
     {
-        try 
+        try
         {
             IsFetching = true;
             var response = await AuthService.LoginAsync(loginModel);
@@ -180,7 +180,7 @@
             Snackbar.Add("Chyba při přihlašování", Severity.Error);
         }
     }
-    
+
     private void ResetStep()
     {
         _step -= 1;
@@ -196,4 +196,5 @@
             loginModel.Identifier = string.Empty;
         }
     }
+
 }

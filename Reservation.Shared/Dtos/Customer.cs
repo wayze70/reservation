@@ -1,6 +1,6 @@
 namespace Reservation.Shared.Dtos;
 
-public class UserResponse
+public class CustomerResponse
 {
     public string FirstName { get; set; } = string.Empty;
     public string LastName { get; set; } = string.Empty;

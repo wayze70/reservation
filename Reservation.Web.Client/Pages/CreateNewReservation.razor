@@ -51,7 +51,8 @@
                 <MudText>Čas pro zrušení rezervace</MudText>
                 <MudTooltip
                     Text="Určete kolik dní a hodin před začátkem rezervace má uživatel možnost ji zrušit."
-                    ShowOnHover="true">
+                    ShowOnHover="true"
+                    ShowOnClick="true">
                     <MudIcon Icon="@Icons.Material.Filled.Info" Color="Color.Primary" Size="Size.Small"/>
                 </MudTooltip>
             </MudStack>
@@ -60,8 +61,6 @@
                 <MudNumericField T="int" Min="0" Label="Dny" @bind-Value="CancellationOffsetDays"/>
                 <MudTimePicker Label="Hodiny" @bind-Time="CancellationOffsetTime"/>
             </MudStack>
-
-
             <MudSelect T="string" Label="Časové pásmo" @bind-Value="NewReservation.CustomTimeZoneId"
                        Required="true">
                 @foreach (var timezone in Constants.TimeZones)
@@ -71,7 +70,6 @@
                     </MudSelectItem>
                 }
             </MudSelect>
-
             <MudButton Variant="Variant.Filled" Color="Color.Primary" ButtonType="ButtonType.Submit"
                        Disabled="@IsSubmitting">
                 @if (IsSubmitting)

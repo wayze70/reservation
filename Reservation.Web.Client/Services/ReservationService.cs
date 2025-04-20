@@ -39,9 +39,9 @@ public class ReservationService : IReservationService
             ($"/reservation/signup/{reservationId}", request);
     }
 
-    public async Task<ApiResponse<ReservationResponseWithUser>> GetReservationWithUserAsync(int reservationId)
+    public async Task<ApiResponse<ReservationResponseWithCustomers>> GetReservationWithUserAsync(int reservationId)
     {
-        return await _httpClientService.GetAsync<ReservationResponseWithUser>($"/reservation/{reservationId}");
+        return await _httpClientService.GetAsync<ReservationResponseWithCustomers>($"/reservation/{reservationId}");
     }
     
     public async Task<ApiResponse<ReservationResponse>> UpdateReservationAsync(ReservationCreateRequest request, int reservationId)
@@ -54,9 +54,9 @@ public class ReservationService : IReservationService
         return await _httpClientService.DeleteAsync<bool>($"/reservation/{reservationId}");
     }
 
-    public async Task<ApiResponse<bool>> RemoveUserFromReservationAsync(RemoveUserFromReservationRequest request)
+    public async Task<ApiResponse<bool>> RemoveUserFromReservationAsync(RemoveCustomerFromReservationRequest request)
     {
-        return await _httpClientService.PostAsync<RemoveUserFromReservationRequest, bool>($"/reservation/remove-user", request);
+        return await _httpClientService.PostAsync<RemoveCustomerFromReservationRequest, bool>($"/reservation/remove-user", request);
     }
 
     public async Task<ApiResponse<ReservationResponse>> CancelReservationAsync(int reservationId, string cancellationCode)

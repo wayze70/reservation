@@ -13,7 +13,7 @@ namespace Reservation.Api.Services
         Task<List<ReservationResponse>> GetReservationsByAccountAsync(int accountId);
         Task<List<ReservationResponse>> GetReservationsByPathAsync(string path);
         Task<ReservationResponse> GetReservationByPathAndIdAsync(string path, int accountId);
-        Task<ReservationResponseWithUser> GetReservationWithUsersAsync(int accountId, int reservationId);
+        Task<ReservationResponseWithCustomers> GetReservationWithUsersAsync(int accountId, int reservationId);
 
         // Úpravy a správa rezervací
         Task<ReservationResponse> UpdateReservationAsync(ReservationCreateRequest request, int reservationId);

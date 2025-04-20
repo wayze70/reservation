@@ -106,7 +106,7 @@ namespace Reservation.Api.Services
             return MapToDto(reservation);
         }
 
-        public async Task<ReservationResponseWithUser> GetReservationWithUsersAsync(int accountId, int reservationId)
+        public async Task<ReservationResponseWithCustomers> GetReservationWithUsersAsync(int accountId, int reservationId)
         {
             var owner = await _dbContext.Accounts
                             .Include(o => o.Reservations)
@@ -154,7 +154,8 @@ namespace Reservation.Api.Services
                     LastName = request.LastName,
                     Email = request.Email,
                     CancellationCode = Guid.NewGuid().ToString(),
-                    ReservationId = reservationId
+                    ReservationId = reservationId,
+                    Note = request.Note,
                 };
 
                 reservation.Customers.Add(newUser);
@@ -281,9 +282,9 @@ namespace Reservation.Api.Services
             return await _dbContext.Reservations.AnyAsync(r => r.AccountId == accountId && r.Id == reservationId);
         }
 
-        private static ReservationResponseWithUser MapToWithUsersDto(Models.Reservation reservation)
+        private static ReservationResponseWithCustomers MapToWithUsersDto(Models.Reservation reservation)
         {
-            return new ReservationResponseWithUser()
+            return new ReservationResponseWithCustomers()
             {
                 Id = reservation.Id,
                 Capacity = reservation.Capacity,
@@ -295,7 +296,7 @@ namespace Reservation.Api.Services
                 IsAvailable = reservation.IsAvailable,
                 CancellationOffset = reservation.CancellationOffset,
                 CustomTimeZoneId = reservation.CustomTimeZoneId,
-                Users = reservation.Customers.Select(u => new UserResponse
+                Users = reservation.Customers.Select(u => new CustomerResponse
                 {
                     FirstName = u.FirstName,
                     LastName = u.LastName,

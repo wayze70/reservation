@@ -2,53 +2,120 @@
 @inject NavigationManager NavigationManager
 @inject ISnackbar Snackbar
 @using System.Net
+@using System.Security.AccessControl
+@using Reservation.Shared.Common
+@using Reservation.Web.Client.Components
+@inject IAccountService AccountService
 
 @page "/registrace"
 
 <PageTitle>Registrace</PageTitle>
 
 <EditForm Model="@RegistrationUser" OnValidSubmit="@OnSubmit">
+
     <MudPaper Class="mx-auto my-10 pa-6" MaxWidth="500px">
         <MudText Typo="Typo.h5" Align="Align.Center" GutterBottom="true">
             Registrace
         </MudText>
-        <MudText Typo="Typo.h6" Align="Align.Center" GutterBottom="true">
-            Informace o uživatelském účtu
+        <MudTextField T="string" Label="Jméno" @bind-Value="RegistrationUser.FirstName" Required="true"/>
+        <MudTextField T="string" Label="Příjmení" @bind-Value="RegistrationUser.LastName" Required="true"/>
+        <EmailInput @bind-Value="RegistrationUser.Email"/>
+        <MudTextField T="string" Label="Heslo" InputType="InputType.Password" @bind-Value="RegistrationUser.Password"
+                      Required="true"/>
+        <br/>
+        <MudStack Row="true" AlignItems="AlignItems.End">
+            <MudTextField T="string" Label="Identifikátor" Value="RegistrationUser.Identifier"
+                          ValueChanged="OnPathChange"
+                          DebounceInterval="500" Required="true"/>
+            <MudTooltip
+                Text="Identifikátor je unikátní řetězec, který bude součástí URL vaší rezervace.
+            Může to být například vaše jméno, název firmy nebo jiný stručný název, podle kterého si
+            rezervaci snadno zapamatujete."
+                ShowOnHover="true"
+                ShowOnClick="true">
+                <MudIcon Icon="@Icons.Material.Filled.Info" Color="Color.Primary" Size="Size.Small"/>
+            </MudTooltip>
+        </MudStack>
+        <MudStack Row="false" AlignItems="AlignItems.Center" Spacing="1">
+            @if (IsPathFetching)
+            {
+                <MudIcon Icon="@Icons.Material.Filled.QuestionMark" Color="Color.Error" Size="Size.Small"/>
+            }
+            else if (IsPathTaken || !IsPathValid)
+            {
+                <MudIcon Icon="@Icons.Material.Filled.Close" Color="Color.Error" Size="Size.Small"/>
+            }
+            else
+            {
+                <MudIcon Icon="@Icons.Material.Filled.CheckCircleOutline" Color="Color.Success"
+                         Size="Size.Small"/>
+            }
+
+            @if (IsPathTaken)
+            {
+                <MudText Color="Color.Error">Tato adresa je již obsazená</MudText>
+            }
+            else if (!IsPathValid)
+            {
+                <MudText Color="Color.Error">Adresa obsahuje nepovolené znaky</MudText>
+            }
+        </MudStack>
+        <DataAnnotationsValidator/>
+        <MudButton Disabled="IsSubmitting" ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary"
+                   FullWidth="true"
+                   Class="mt-4">
+            @if (IsSubmitting)
+            {
+                <MudProgressCircular Size="Size.Small" Color="Color.Inherit"/>
+                <span style="margin-left: 8px;">Odesílání...</span>
+            }
+            else
+            {
+                @:Zaregistrovat se
+            }
+        </MudButton>
+        <MudText Align="Align.Center" Class="mt-4">
+            Už máte účet?
+            <MudLink Href="@Constants.Routes.Login">Přihlašte se</MudLink>
         </MudText>
-        <DataAnnotationsValidator />
-        <ValidationSummary />
-
-        <MudTextField T="string" Label="Jméno" @bind-Value="RegistrationUser.FirstName" Required="true" />
-        <MudTextField T="string" Label="Příjmení" @bind-Value="RegistrationUser.LastName" Required="true" />
-        <MudTextField T="string" Label="Email" InputType="InputType.Email" @bind-Value="RegistrationUser.Email" Required="true" />
-        <MudTextField T="string" Label="Heslo" InputType="InputType.Password" @bind-Value="RegistrationUser.Password" 
-                      Required="true" />
-
-    <MudText Typo="Typo.h6" Align="Align.Center" GutterBottom="true" Class="mt-5">
-        Informace o účtu
-    </MudText>
-
-    <MudTextField T="string" Label="Organizace" @bind-Value="RegistrationUser.Organization" Required="true" />
-    <MudTextField T="string" Label="Identifikátor" @bind-Value="RegistrationUser.Identifier" Required="true" />
-
-    <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary" FullWidth="true" Class="mt-4">
-        Zaregistrovat se
-    </MudButton>
-
-    <MudText Align="Align.Center" Class="mt-4">
-        Už máte účet? <MudLink Href="@Constants.Routes.Login">Přihlašte se</MudLink>
-    </MudText>
-</MudPaper>
+    </MudPaper>
 </EditForm>
 
-
-
 @code {
-    // Zde použijte správný model pro registraci, např. RegistrationRequest
     RegistrationRequest RegistrationUser { get; set; } = new();
+    bool IsPathTaken { get; set; }
+    bool IsPathValid { get; set; } = true;
+    bool IsPathFetching { get; set; } = false;
+    bool IsSubmitting { get; set; } = false;
 
     async Task OnSubmit()
     {
+        if (IsPathTaken)
+        {
+            Snackbar.Add("Tento identifikátor je zabrán", Severity.Error);
+        }
+
+        if (!IsPathValid)
+        {
+            Snackbar.Add("Identifikátor obsahuje nepovolené znaky", Severity.Error);
+        }
+
+        if (!Utils.IsPasswordLongEnough(RegistrationUser.Password))
+        {
+            Snackbar.Add("Heslo musí být alespoň 6 znaků dlouhé", Severity.Error);
+            return;
+        }
+
+        if (!Utils.TryProcessEmail(RegistrationUser.Email, out string email))
+        {
+            Snackbar.Add("Email nemá platný formát", Severity.Error);
+            return;
+        }
+
+        IsSubmitting = true;
+
+        RegistrationUser.Email = email;
+
         var response = await AuthService.RegisterAsync(RegistrationUser);
 
         switch (response)
@@ -67,5 +134,37 @@
                 Snackbar.Add("Registrace se nezdařila", Severity.Error);
                 break;
         }
+
+        IsSubmitting = false;
     }
+
+    private async Task OnPathChange(string newPath)
+    {
+        RegistrationUser.Identifier = newPath;
+        if (string.IsNullOrWhiteSpace(RegistrationUser.Identifier))
+        {
+            IsPathValid = false;
+            return;
+        }
+
+        IsPathFetching = true;
+
+        if (Utils.IsPathValidate(RegistrationUser.Identifier))
+        {
+            IsPathValid = true;
+            IsPathTaken = (await AccountService.IsPathTaken(new PathRequest { Path = RegistrationUser.Identifier })).Data;
+        }
+        else
+        {
+            IsPathValid = false;
+        }
+
+        IsPathFetching = false;
+    }
+
+    private bool CanBeSubmit()
+    {
+        return !IsPathFetching && !IsPathTaken && IsPathValid && !string.IsNullOrWhiteSpace(RegistrationUser.Identifier);
+    }
+
 }

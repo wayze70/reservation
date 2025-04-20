@@ -2,15 +2,16 @@
 
 using System.ComponentModel.DataAnnotations;
 using Reservation.Shared.Authorization;
+using Reservation.Shared.Common;
 
 namespace Reservation.Shared.Dtos;
 
 public class EmployeeResponse
 {
     public int Id { get; set; }
-    public string FirstName { get; set; }
-    public string LastName { get; set; }
-    public string Email { get; set; }
+    public string FirstName { get; set; } = string.Empty;
+    public string LastName { get; set; } = string.Empty;
+    public string Email { get; set; } = string.Empty;
     public Role Role { get; set; }
 }
 
@@ -18,17 +19,18 @@ public class EmployeeResponse
 public class EmployeeCreateRequest
 {
     [Required]
-    public string FirstName { get; set; }
+    public string FirstName { get; set; } = string.Empty;
 
     [Required]
-    public string LastName { get; set; }
+    public string LastName { get; set; } = string.Empty;
 
     [Required]
     [EmailAddress]
-    public string Email { get; set; }
+    [RegularExpression(Utils.EmailRegexPattern)]
+    public string Email { get; set; } = string.Empty;
     
     [Required]
-    public string Password { get; set; }
+    public string Password { get; set; } = string.Empty;
     
     [Required]
     public Role Role { get; set; }
@@ -38,14 +40,15 @@ public class EmployeeCreateRequest
 public class EmployeeUpdateRequest
 {
     [Required]
-    public string FirstName { get; set; }
+    public string FirstName { get; set; } = string.Empty;
 
     [Required]
-    public string LastName { get; set; }
+    public string LastName { get; set; } = string.Empty;
 
     [Required]
     [EmailAddress]
-    public string Email { get; set; }
+    [RegularExpression(Utils.EmailRegexPattern)]
+    public string Email { get; set; } = string.Empty;
 
     [Required]
     public Role Role { get; set; }
@@ -54,12 +57,13 @@ public class EmployeeUpdateRequest
 public class EmployeeUpdateWithoutRoleRequest
 {
     [Required]
-    public string FirstName { get; set; }
+    public string FirstName { get; set; } = string.Empty;
 
     [Required]
-    public string LastName { get; set; }
+    public string LastName { get; set; } = string.Empty;
 
     [Required]
     [EmailAddress]
-    public string Email { get; set; }
+    [RegularExpression(Utils.EmailRegexPattern)]
+    public string Email { get; set; } = string.Empty;
 }

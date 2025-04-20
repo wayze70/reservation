@@ -24,6 +24,7 @@ public class AccountController : ControllerBase
     public async Task<ActionResult<List<AccountInfoResponse>>> GetAccountsByEmail([FromBody] AccountsByEmailRequest
         request)
     {
+
         return Ok(await _accountService.GetAccountsByEmailAsync(request.Email));
     }
 
@@ -41,6 +42,7 @@ public class AccountController : ControllerBase
         return Ok(await _accountService.SetPathAsync(request, HttpContext.GetAccountIdFromBearer()));
     }
 
+    [AllowAnonymous]
     [HttpPost("path/taken")]
     public async Task<ActionResult<bool>> IsPathTaken([FromBody] PathRequest request)
     {

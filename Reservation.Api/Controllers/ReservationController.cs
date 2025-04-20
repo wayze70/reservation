@@ -27,17 +27,14 @@ public class ReservationController : ControllerBase
         return Ok(await _reservationService.CreateReservationsAsync(request, HttpContext.GetAccountIdFromBearer()));
     }
 
-    // 2. Získání detailu rezervace (včetně uživatelů) pro vlastníka
     [HttpGet("{reservationId:int}")]
-    public async Task<ActionResult<ReservationResponseWithUser>> GetReservationDetailForOwner(
+    public async Task<ActionResult<ReservationResponseWithCustomers>> GetReservationDetailForOwner(
         [FromRoute] int reservationId)
     {
         var result = await _reservationService.GetReservationWithUsersAsync(HttpContext.GetAccountIdFromBearer(), reservationId);
         return Ok(result);
     }
 
-    // 3. Získání rezervací pro vlastníka
-    // Abychom odlišili tento endpoint od veřejných, přidáváme do routy prefix "owner"
     [HttpGet("owner")]
     public async Task<ActionResult<List<ReservationResponse>>> GetReservationsForOwner()
     {
@@ -45,7 +42,6 @@ public class ReservationController : ControllerBase
         return Ok(result);
     }
 
-    // 4. Aktualizace rezervace
     [HttpPut("{reservationId:int}")]
     [Authorize(Roles = $"{nameof(Role.Admin)}, {nameof(Role.Reservationist)}")]
     public async Task<ActionResult<ReservationResponse>> UpdateReservation(
@@ -55,7 +51,6 @@ public class ReservationController : ControllerBase
         return Ok(result);
     }
 
-    // 5. Smazání rezervace
     [HttpDelete("{reservationId:int}")]
     [Authorize(Roles = $"{nameof(Role.Admin)}, {nameof(Role.Reservationist)}")]
     public async Task<ActionResult<bool>> DeleteReservation([FromRoute] int reservationId)
@@ -67,7 +62,7 @@ public class ReservationController : ControllerBase
     [HttpPost("remove-user")]
     [Authorize(Roles = $"{nameof(Role.Admin)}, {nameof(Role.Reservationist)}")]
     public async Task<ActionResult<bool>> RemoveUserFromReservation(
-        [FromBody] RemoveUserFromReservationRequest request)
+        [FromBody] RemoveCustomerFromReservationRequest request)
     {
         bool isOwner =
             await _reservationService.AccountOwnsReservationAsync(HttpContext.GetAccountIdFromBearer(), request.ReservationId);
@@ -81,8 +76,6 @@ public class ReservationController : ControllerBase
         return Ok(result);
     }
 
-    // 7. Získání rezervací podle cesty (public)
-    // Přidáváme prefix "public", aby nedošlo ke kolizi s endpointy pro vlastníka
     [AllowAnonymous]
     [HttpGet("public/{path}")]
     public async Task<ActionResult<List<ReservationResponse>>> GetReservationsByPath([FromRoute] string path)
@@ -91,7 +84,6 @@ public class ReservationController : ControllerBase
         return Ok(result);
     }
 
-    // 8. Získání rezervace podle cesty a ID (public)
     [AllowAnonymous]
     [HttpGet("public/{path}/{id:int}")]
     public async Task<ActionResult<ReservationResponse>> GetReservationByPathAndId([FromRoute] string path,
@@ -101,7 +93,6 @@ public class ReservationController : ControllerBase
         return Ok(result);
     }
 
-    // 9. Přihlášení se na rezervaci (public)
     [AllowAnonymous]
     [HttpPost("signup/{reservationId:int}")]
     public async Task<ActionResult<ReservationResponse>> SignUpForReservation(
@@ -112,7 +103,6 @@ public class ReservationController : ControllerBase
         return Ok(result);
     }
 
-    // 10. Zrušení rezervace (public)
     [AllowAnonymous]
     [HttpPost("cancel/{reservationId:int}")]
     public async Task<ActionResult<ReservationResponse>> CancelReservation(

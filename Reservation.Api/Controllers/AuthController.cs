@@ -27,9 +27,6 @@ public class AuthController : ControllerBase
     [HttpPost("login")]
     public async Task<ActionResult<AuthResponse>> Login([FromBody] LoginRequest request)
     {
-        if (!ModelState.IsValid)
-            return BadRequest(ModelState);
-
         string userAgent = Request.Headers.UserAgent.ToString();
         if (string.IsNullOrWhiteSpace(userAgent))
         {
@@ -45,16 +42,13 @@ public class AuthController : ControllerBase
     [HttpPost("register")]
     public async Task<ActionResult<AuthResponse>> Register([FromBody] RegistrationRequest request)
     {
-        if (!ModelState.IsValid)
-            return BadRequest(ModelState);
-
         string userAgent = Request.Headers.UserAgent.ToString();
         if (string.IsNullOrWhiteSpace(userAgent))
         {
             userAgent = UnknownDevice;
         }
 
-        var authResponse = await _authService.RegisterAsync(request.FirstName, request.LastName, request.Organization, request.Identifier, request.Email,
+        var authResponse = await _authService.RegisterAsync(request.FirstName, request.LastName, request.Identifier, request.Email,
             request.Password, userAgent);
 
         return Ok(authResponse);

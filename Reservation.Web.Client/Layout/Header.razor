@@ -1,16 +1,21 @@
 @implements IDisposable
 @inject NavigationManager NavigationManager
 @inject GlobalState GlobalState
+@inject IAccountService AccountService
 
 <header class="bg-dark p-3">
     <div class="container d-flex justify-content-between text-white">
         @if (IsReservationRoute)
         {
-            <h1 class="my-auto"><a class="text-white" href="@Constants.Routes.Home">@GlobalState.Title</a></h1>
+            <h1 class="my-auto">
+                <a class="text-white" href="@GetIdentifierFromPath()">@GlobalState.Title</a>
+            </h1>
         }
         else
         {
-            <h1 class="my-auto"><a class="text-white" href="@Constants.Routes.Home">@Constants.AppName</a></h1>
+            <h1 class="my-auto">
+                <a class="text-white" href="@Constants.Routes.Home">@Constants.AppName</a>
+            </h1>
             <Navigation/>
         }
     </div>
@@ -18,15 +23,30 @@
 
 @code
 {
-    string Uri => NavigationManager.ToBaseRelativePath(NavigationManager.Uri);
+    private string Uri => NavigationManager.ToBaseRelativePath(NavigationManager.Uri);
 
-    bool IsReservationRoute => (Uri.StartsWith("rezervace", StringComparison.OrdinalIgnoreCase) ||
-                                Uri.StartsWith("zruseni-rezervace", StringComparison.OrdinalIgnoreCase));
+    private bool IsReservationRoute => (Uri.StartsWith("rezervace", StringComparison.OrdinalIgnoreCase) ||
+                                      Uri.StartsWith("zruseni-rezervace", StringComparison.OrdinalIgnoreCase));
+
+    private string Path { get; set; } = string.Empty;
+
+    private string GetIdentifierFromPath()
+    {
+        var segments = Uri.Split('/');
+        return Uri.StartsWith("rezervace/", StringComparison.OrdinalIgnoreCase) && segments.Length > 1 
+            ? Constants.Routes.Reservation(segments[1].ToLower()) 
+            : Constants.Routes.Home;
+    }
 
     protected override void OnInitialized()
     {
         NavigationManager.LocationChanged += OnLocationChanged;
         GlobalState.OnStateChanged += StateHasChanged;
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await UpdatePathAndTitle();
     }
 
     public void Dispose()
@@ -37,6 +57,44 @@
 
     private void OnLocationChanged(object? sender, LocationChangedEventArgs e)
     {
-        InvokeAsync(StateHasChanged);
+        _ = InvokeAsync(async () =>
+        {
+            await UpdatePathAndTitle();
+            StateHasChanged();
+        });
+    }
+
+    private async Task UpdatePathAndTitle()
+    {
+        try
+        {
+            Path = string.Empty;
+            if (Uri.StartsWith("rezervace/", StringComparison.OrdinalIgnoreCase))
+            {
+                var segments = Uri.Split('/');
+                if (segments.Length > 1)
+                {
+                    Path = segments[1].ToLower();
+                    var accountInfo = await AccountService.GetAccountDescription(Path);
+                    if (accountInfo is { IsSuccess: true, Data: not null })
+                    {
+                        GlobalState.Title = accountInfo.Data.Organization;
+                        GlobalState.Description = accountInfo.Data.Description;
+                        return;
+                    }
+                }
+            }
+            
+            if (!IsReservationRoute)
+            {
+                GlobalState.Title = Constants.AppName;
+                GlobalState.Description = string.Empty;
+            }
+        }
+        catch (Exception)
+        {
+            GlobalState.Title = Constants.AppName;
+            GlobalState.Description = string.Empty;
+        }
     }
 }

@@ -1,0 +1,39 @@
+@using System.ComponentModel.DataAnnotations
+@using Reservation.Shared.Common
+@namespace Reservation.Web.Client.Components
+
+<MudTextField T="string" 
+              Label="@Label"
+              Value="@Value"
+              ValueChanged="@OnValueChanged"
+              Required="@Required"
+              InputType="InputType.Email"
+              Pattern="@Utils.EmailRegexPattern"
+              RequiredError="@RequiredError"
+/>
+
+@code {
+    [Parameter]
+    public string Label { get; set; } = "Email";
+
+    [Parameter]
+    public string Value { get; set; } = string.Empty;
+
+    [Parameter]
+    public EventCallback<string> ValueChanged { get; set; }
+
+    [Parameter]
+    public bool Required { get; set; } = true;
+
+    [Parameter]
+    public string RequiredError { get; set; } = "Email je povinný";
+
+    private async Task OnValueChanged(string value)
+    {
+        if (Value != value)
+        {
+            Value = value;
+            await ValueChanged.InvokeAsync(value);
+        }
+    }
+}

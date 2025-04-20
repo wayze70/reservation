@@ -1,102 +1,108 @@
 @page "/ucet/zamestnanci"
+@using System.Net
 @using Microsoft.AspNetCore.Authorization
 @using Reservation.Shared.Authorization
-@using Reservation.Shared.Dtos
+@using Reservation.Web.Client.Components
 @inject IEmployeeService EmployeeService
 @inject NavigationManager NavigationManager
 @inject ISnackbar Snackbar
+@inject IDialogService DialogService
 
 <PageTitle>Správa pracovníků</PageTitle>
 @attribute [Authorize(Roles = nameof(Role.Admin))]
 
-  <MudStack Class="mb-4" Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
-    <MudText Typo="Typo.h5">
-      Seznam pracovníků
-    </MudText>
-    <MudButton Variant="Variant.Outlined" Color="Color.Primary" OnClick="@CreateNewEmployee">
-      Vytvořit nového pracovníka
-    </MudButton>
-  </MudStack>
+<MudStack Class="mb-4" Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
+  <MudText Typo="Typo.h5">
+    Seznam pracovníků
+  </MudText>
+  <MudButton Variant="Variant.Outlined" Color="Color.Primary" OnClick="@CreateNewEmployee">
+    Vytvořit nového pracovníka
+  </MudButton>
+</MudStack>
 
-  @if (Employees is null)
-  {
-    <MudText>Načítám pracovníky...</MudText>
-  }
-  else if (Employees.Count == 0)
-  {
-    <MudText>Nejsou žádní pracovníci.</MudText>
-  }
-  else
-  {
-    <MudTable Items="Employees">
-      <HeaderContent>
-        <MudTh>Jméno</MudTh>
-        <MudTh>Příjmení</MudTh>
-        <MudTh>Email</MudTh>
-        <MudTh>Pozice</MudTh>
-        <MudTh>Akce</MudTh>
-      </HeaderContent>
-      <RowTemplate>
-        @if (editingEmployeeId == @context.Id)
-        {
-          <!-- Řádek v režimu editace -->
-          <MudTd DataLabel="Jméno">
-            <MudTextField T="string" Label="Jméno" @bind-Value="editEmployee.FirstName" Required="true" />
-          </MudTd>
-          <MudTd DataLabel="Příjmení">
-            <MudTextField T="string" Label="Příjmení" @bind-Value="editEmployee.LastName" Required="true" />
-          </MudTd>
-          <MudTd DataLabel="Email">
-            <MudTextField T="string" Label="Email" InputType="InputType.Email" @bind-Value="editEmployee.Email" Required="true" />
-          </MudTd>
-          <MudTd DataLabel="Pozice">
-            <MudSelect T="Role" Label="Pozice" @bind-Value="editEmployee.Role" Required="true">
-              @foreach (var role in Constants.RoleInfo.GetAll())
-              {
-                <MudSelectItem Value="@role.Key">@role.Value.DisplayName</MudSelectItem>
-              }
-            </MudSelect>
-          </MudTd>
-          <MudTd DataLabel="Akce">
-            <MudButton Variant="Variant.Filled" Color="Color.Primary" Size="Size.Small" OnClick="@(() => 
-          SaveEmployee(@context.Id))">
-              Uložit
-            </MudButton>
-            <MudButton Variant="Variant.Outlined" Color="Color.Secondary" Size="Size.Small" OnClick="@CancelEdit">
-              Zrušit
-            </MudButton>
-          </MudTd>
-        }
-        else
-        {
-          <!-- Řádek v režimu zobrazení -->
-          <MudTd DataLabel="Jméno">@context.FirstName</MudTd>
-          <MudTd DataLabel="Příjmení">@context.LastName</MudTd>
-          <MudTd DataLabel="Email">@context.Email</MudTd>
-          <MudTd DataLabel="Pozice">
-            @(Constants.RoleInfo.GetAll().TryGetValue(context.Role, out var roleInfo)
-              ? roleInfo.DisplayName
-              : context.Role.ToString())
-          </MudTd>
-          <MudTd DataLabel="Akce">
-            <MudButton Variant="Variant.Outlined" Color="Color.Primary" Size="Size.Small" OnClick="@(() => EditEmployee(@context))">
-              Upravit
-            </MudButton>
-            <MudButton Variant="Variant.Outlined" Color="Color.Error" Size="Size.Small" OnClick="@(() => RemoveEmployee(@context))">
-              Smazat
-            </MudButton>
-          </MudTd>
-        }
-      </RowTemplate>
-    </MudTable>
-  }
+@if (Employees is null)
+{
+  <MudText>Načítám pracovníky...</MudText>
+}
+else if (Employees.Count == 0)
+{
+  <MudText>Nejsou žádní pracovníci.</MudText>
+}
+else
+{
+  <MudTable Items="Employees">
+    <HeaderContent>
+      <MudTh>Jméno</MudTh>
+      <MudTh>Příjmení</MudTh>
+      <MudTh>Email</MudTh>
+      <MudTh>Pozice</MudTh>
+      <MudTh>Akce</MudTh>
+    </HeaderContent>
+    <RowTemplate>
+      @if (editingEmployeeId == @context.Id)
+      {
+        <!-- Řádek v režimu editace -->
+        <MudTd DataLabel="Jméno">
+          <MudTextField T="string" Label="Jméno" @bind-Value="editEmployee.FirstName" Required="true"/>
+        </MudTd>
+        <MudTd DataLabel="Příjmení">
+          <MudTextField T="string" Label="Příjmení" @bind-Value="editEmployee.LastName" Required="true"/>
+        </MudTd>
+        <MudTd DataLabel="Email">
+          <EmailInput @bind-Value="editEmployee.Email"/>
+        </MudTd>
+        <MudTd DataLabel="Pozice">
+          <MudSelect T="Role" Label="Pozice" @bind-Value="editEmployee.Role" Required="true">
+            @foreach (var role in Constants.RoleInfo.GetAll())
+            {
+              <MudSelectItem Value="@role.Key">@role.Value.DisplayName</MudSelectItem>
+            }
+          </MudSelect>
+        </MudTd>
+        <MudTd DataLabel="Akce">
+          <MudButton Variant="Variant.Filled" Color="Color.Primary" Size="Size.Small" OnClick="@(() =>
+                                                                                                 SaveEmployee(@context.Id))">
+            Uložit
+          </MudButton>
+          <MudButton Variant="Variant.Outlined" Color="Color.Secondary" Size="Size.Small" OnClick="@CancelEdit">
+            Zrušit
+          </MudButton>
+        </MudTd>
+      }
+      else
+      {
+        <!-- Řádek v režimu zobrazení -->
+        <MudTd DataLabel="Jméno">@context.FirstName</MudTd>
+        <MudTd DataLabel="Příjmení">@context.LastName</MudTd>
+        <MudTd DataLabel="Email">@context.Email</MudTd>
+        <MudTd DataLabel="Pozice">
+          @(Constants.RoleInfo.GetAll().TryGetValue(context.Role, out var roleInfo)
+            ? roleInfo.DisplayName
+            : context.Role.ToString())
+        </MudTd>
+        <MudTd DataLabel="Akce">
+          <MudButton Variant="Variant.Outlined" Color="Color.Primary" Size="Size.Small"
+                     OnClick="@(() => EditEmployee(@context))">
+            Upravit
+          </MudButton>
+          <MudButton Variant="Variant.Outlined" Color="Color.Error" Size="Size.Small"
+                     OnClick="@(() => RemoveEmployee(@context))">
+            Smazat
+          </MudButton>
+        </MudTd>
+      }
+    </RowTemplate>
+  </MudTable>
+}
 
 @code {
+
   // Seznam zaměstnanců
   private List<EmployeeResponse> Employees;
 
   // ID zaměstnance, který se aktuálně edituje (null pokud není nikdo v režimu editace)
   private int? editingEmployeeId = null;
+
   // Model pro úpravu - využíváme DTO určené pro aktualizaci
   private EmployeeUpdateRequest editEmployee = new EmployeeUpdateRequest();
 
@@ -105,9 +111,6 @@
     await LoadEmployees();
   }
 
-  /// <summary>
-  /// Načte seznam všech zaměstnanců.
-  /// </summary>
   private async Task LoadEmployees()
   {
     var response = await EmployeeService.GetEmployees();
@@ -121,11 +124,6 @@
     }
   }
 
-  /// <summary>
-  /// Připraví formulář pro úpravu daného zaměstnance.
-  /// Vytvoříme kopii dat, abychom neovlivnili zobrazení, dokud se neuloží změny.
-  /// </summary>
-  /// <param name="employee">Zaměstnanec k editaci</param>
   private void EditEmployee(EmployeeResponse employee)
   {
     editingEmployeeId = employee.Id;
@@ -138,17 +136,12 @@
     };
   }
 
-  /// <summary>
-  /// Uloží změny provedené u zaměstnance.
-  /// </summary>
-  /// <param name="employeeId">ID zaměstnance, který se právě edituje</param>
   private async Task SaveEmployee(int employeeId)
   {
     var response = await EmployeeService.UpdateEmployee(employeeId, editEmployee);
     if (response.IsSuccess)
     {
       Snackbar.Add("Zaměstnanec byl úspěšně aktualizován.", Severity.Success);
-      // Aktualizujeme lokální seznam pro okamžitou reakci uživatele
       var employeeToUpdate = Employees.FirstOrDefault(e => e.Id == employeeId);
       if (employeeToUpdate is not null)
       {
@@ -157,6 +150,7 @@
         employeeToUpdate.Email = editEmployee.Email;
         employeeToUpdate.Role = editEmployee.Role;
       }
+
       editingEmployeeId = null;
     }
     else
@@ -165,21 +159,26 @@
     }
   }
 
-  /// <summary>
-  /// Zruší editační režim.
-  /// </summary>
   private void CancelEdit()
   {
     editingEmployeeId = null;
     editEmployee = new EmployeeUpdateRequest();
   }
 
-  /// <summary>
-  /// Odstraní záznam o zaměstnanci.
-  /// </summary>
-  /// <param name="employee">Zaměstnanec k odstranění</param>
   private async Task RemoveEmployee(EmployeeResponse employee)
   {
+    // 1) Zeptáme se uživatele
+    bool? result = await DialogService.ShowMessageBox(
+      "Potvrzení smazání",
+      $"Opravdu chcete smazat pracovníka {employee.FirstName} {employee.LastName}?",
+      yesText: "Ano",
+      noText: "Ne");
+
+    // 2) Pokud uživatel zvolí Ne nebo zavře okno, nic neděláme
+    if (result != true)
+      return;
+
+    // 3) Jinak pokračujeme se smazáním
     var response = await EmployeeService.DeleteEmployee(employee.Id);
     if (response.IsSuccess)
     {
@@ -188,13 +187,16 @@
     }
     else
     {
+      if (response.StatusCode == HttpStatusCode.Locked)
+      {
+        Snackbar.Add("Nemůžete smazat sami sebe.", Severity.Error);
+        return;
+      }
       Snackbar.Add("Nepodařilo se smazat zaměstnance.", Severity.Error);
     }
   }
 
-  /// <summary>
-  /// Připraví formulář pro vložení nového zaměstnance – může přesměrovat na speciální stránku.
-  /// </summary>
+
   private void CreateNewEmployee()
   {
     NavigationManager.NavigateTo("/ucet/zamestnanci/vytvorit");

@@ -7,17 +7,19 @@
 <PageTitle>Přihlášení k rezervaci</PageTitle>
 
 <MudPaper Class="mx-auto my-10 pa-6" MaxWidth="MaxWidth.Small">
+    <MudButton Variant="Variant.Outlined" Color="Color.Primary" OnClick="Back">
+        Zpět na rezervaci
+    </MudButton>
     <MudText Typo="Typo.h5" Align="Align.Center" GutterBottom="true">
         Přihlášení k rezervaci
     </MudText>
     <EditForm Model="@SignUpRequest" OnValidSubmit="OnSubmit">
-        <DataAnnotationsValidator />
-        <ValidationSummary />
-
-        <MudTextField T="string" Label="Jméno" @bind-Value="SignUpRequest.FirstName" Required="true" />
-        <MudTextField T="string" Label="Příjmení" @bind-Value="SignUpRequest.LastName" Required="true" />
-        <MudTextField T="string" Label="Email" @bind-Value="SignUpRequest.Email" Required="true" />
-
+        <DataAnnotationsValidator/>
+        <ValidationSummary/>
+        <MudTextField T="string" Label="Jméno" @bind-Value="SignUpRequest.FirstName" Required="true"/>
+        <MudTextField T="string" Label="Příjmení" @bind-Value="SignUpRequest.LastName" Required="true"/>
+        <MudTextField T="string" Label="Email" @bind-Value="SignUpRequest.Email" Required="true"/>
+        <MudTextField T="string" Label="Poznámka" @bind-Value="SignUpRequest.Note"/>
         <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary" Class="mt-6" FullWidth="true">
             Rezervovat
         </MudButton>
@@ -57,5 +59,10 @@
         {
             Snackbar.Add($"Chyba při přihlašování", Severity.Error);
         }
+    }
+    
+    private void Back()
+    {
+        NavigationManager.NavigateTo(Constants.Routes.ReservationDetail(Path, ReservationId));
     }
 }

@@ -73,22 +73,23 @@ public class AuthService : IAuthService
         return new AuthResponse { AccessToken = accessToken, RefreshToken = refreshToken };
     }
 
-    public async Task<AuthResponse> RegisterAsync(string firstName, string lastName, string organization,
+    public async Task<AuthResponse> RegisterAsync(string firstName, string lastName,
         string identifier, string email, string password, string deviceName)
     {
-        if (string.IsNullOrWhiteSpace(identifier) || string.IsNullOrWhiteSpace(email) ||
-            string.IsNullOrWhiteSpace(password))
-            throw new CustomHttpException(HttpStatusCode.BadRequest, "Povinná pole nemohou být prázdná");
-
         identifier = identifier.Trim().ToLowerInvariant();
         email = email.Trim().ToLowerInvariant();
 
         // Všechny validace na začátku
-        if (password.Length < 6)
+        if (!Utils.IsPasswordLongEnough(password))
             throw new CustomHttpException(HttpStatusCode.BadRequest, "Heslo musí mít alespoň 6 znaků");
 
-        if (!Utils.IsValidEmail(email))
+        if (!Utils.TryProcessEmail(email, out email))
             throw new CustomHttpException(HttpStatusCode.BadRequest, "Email nemá validní formát");
+
+        if (!Utils.IsPathValidate(identifier))
+        {
+            throw new CustomHttpException(HttpStatusCode.BadRequest, "Identifikátor účtu není validní");
+        }
 
         // Spojení obou validací do jednoho DB dotazu
         var existingCheck = await _dbContext.Accounts
@@ -108,7 +109,6 @@ public class AuthService : IAuthService
         {
             var account = new Account
             {
-                Organization = organization,
                 Path = identifier
             };
 

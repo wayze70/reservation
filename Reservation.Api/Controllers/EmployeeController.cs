@@ -86,7 +86,7 @@ public class EmployeeController : ControllerBase
         
         if (id == requestEmployeeId)
         {
-            throw new CustomHttpException(HttpStatusCode.Locked, "Nemůžete smazat sami sebe.");
+            throw new CustomHttpException(HttpStatusCode.Locked, "Nemůžete smazat sami sebe");
         }
         
         await _employeeService.DeleteEmployeeAsync(id, accountId);

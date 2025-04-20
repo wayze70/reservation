@@ -25,7 +25,7 @@ public class AccountService : IAccountService
         if (string.IsNullOrWhiteSpace(email))
             throw new CustomHttpException(HttpStatusCode.BadRequest, "Email je prázdný");
 
-        if (!Utils.IsValidEmail(email))
+        if (!Utils.TryProcessEmail(email, out email))
             throw new CustomHttpException(HttpStatusCode.BadRequest, "Email nemá validní formát");
 
         var accounts = await _dbContext.Accounts
