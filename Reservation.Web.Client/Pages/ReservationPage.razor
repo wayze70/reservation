@@ -30,7 +30,7 @@
                            Color="Color.Primary"
                            FullWidth="true"
                            OnClick="Nearest">
-                    Nejbližší rezervace
+                    Nejbližší událost
                 </MudButton>
             </MudStack>
         </MudPaper>
@@ -40,16 +40,16 @@
     <MudItem xs="12" sm="6" md="8">
         @if (Reservations is null)
         {
-            <MudText Typo="Typo.subtitle1" Align="Align.Center" Class="mt-2">Načítám rezervace…</MudText>
+            <MudText Typo="Typo.subtitle1" Align="Align.Center" Class="mt-2">Načítám událost…</MudText>
         }
         else if (Reservations.Count == 0)
         {
-            <MudText Typo="Typo.subtitle1" Align="Align.Center" Class="mt-2">Nebyly nalezeny žádné rezervace.</MudText>
+            <MudText Typo="Typo.subtitle1" Align="Align.Center" Class="mt-2">Nebyly nalezeny žádné události.</MudText>
         }
         else if (!Reservations.Any(r =>
                          !GlobalState.SelectedDate.HasValue || r.Start.ToLocalTime().Date == GlobalState.SelectedDate.Value.Date))
         {
-            <MudText Typo="Typo.subtitle1" Align="Align.Center" Class="mt-2">Žádné rezervace pro vybrané datum.
+            <MudText Typo="Typo.subtitle1" Align="Align.Center" Class="mt-2">Žádné události pro vybrané datum.
             </MudText>
         }
         else
@@ -131,7 +131,7 @@
         }
         else
         {
-            Snackbar.Add("Nesprávná URL adresa rezervací.", Severity.Error);
+            Snackbar.Add("Nesprávná adresa událostí.", Severity.Error);
         }
     }
 
@@ -170,7 +170,7 @@
             return true;
 
         return Reservations.All(r =>
-            r.Start.ToLocalTime().Date != date.Date || // Není rezervace v tento den
+            r.Start.ToLocalTime().Date != date.Date || // Není událost v tento den
             r.Start <= DateTime.UtcNow); // Nebo již proběhla (kontrola v UTC)
     }
 

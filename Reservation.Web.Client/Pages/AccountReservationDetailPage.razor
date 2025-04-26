@@ -1,4 +1,4 @@
-@page "/ucet/rezervace/{reservationId:int}"
+@page "/ucet/udalost/{reservationId:int}"
 @using System.Globalization
 @using Microsoft.AspNetCore.Authorization
 @using Reservation.Shared.Common
@@ -7,12 +7,12 @@
 @inject ISnackbar Snackbar
 @inject IDialogService DialogService
 
-<PageTitle>Detail rezervace pro administrátora</PageTitle>
+<PageTitle>Detail událossti</PageTitle>
 @attribute [Authorize]
 
 @if (ReservationDetail is null)
 {
-    <MudText>Načítám detail rezervace...</MudText>
+    <MudText>Načítám detail události...</MudText>
 }
 else
 {
@@ -232,7 +232,7 @@ else
         }
         else
         {
-            Snackbar.Add("Nepodařilo se načíst detail rezervace.", Severity.Error);
+            Snackbar.Add("Nepodařilo se načíst detail události.", Severity.Error);
             NavigationManager.NavigateTo(Constants.Routes.AccountRoute.AccountReservation);
         }
     }
@@ -283,12 +283,12 @@ else
         var response = await ReservationService.DeleteReservationAsync(reservationId);
         if (response.IsSuccess)
         {
-            Snackbar.Add("Rezervace byla zrušena.", Severity.Success);
+            Snackbar.Add("Událost byla smazána.", Severity.Success);
             NavigationManager.NavigateTo(Constants.Routes.AccountRoute.AccountReservation);
         }
         else
         {
-            Snackbar.Add("Nepodařilo se zrušit rezervaci.", Severity.Error);
+            Snackbar.Add("Nepodařilo se smazat událost.", Severity.Error);
         }
     }
 

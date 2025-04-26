@@ -1,4 +1,7 @@
+using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Linq;
 using Reservation.Shared.Authorization;
 
 namespace Reservation.Web.Client.CustomExtensions;
@@ -24,9 +27,9 @@ public static class Constants
         public class AccountRoute
         {
             public const string Account = "/ucet";
-            public const string AccountReservation = "/ucet/rezervace";
-            public const string ReservationNew = "/ucet/nova-rezervace";
-            public static string AccountReservationDetail(int detail) => $"/ucet/rezervace/{detail}";
+            public const string AccountReservation = "/ucet/udalost";
+            public const string ReservationNew = "/ucet/nova-udalost";
+            public static string AccountReservationDetail(int detail) => $"/ucet/udalost/{detail}";
         }
     }
 
@@ -40,8 +43,8 @@ public static class Constants
     {
         private static readonly RoleInfo[] Roles =
         [
-            new(nameof(Role.Employee), "Zaměstnanec", "Může pouze číst rezervace"),
-            new(nameof(Role.Reservationist), "Správce rezervací", "Může vytvářet, upravovat a mazat rezervace"),
+            new(nameof(Role.Employee), "Zaměstnanec", "Může pouze číst události"),
+            new(nameof(Role.Reservationist), "Správce rezervací", "Může vytvářet, upravovat a mazat události i rezervace"),
             new(nameof(Role.Admin), "Administrátor", "Má přístup do celého systému"),
         ];
 

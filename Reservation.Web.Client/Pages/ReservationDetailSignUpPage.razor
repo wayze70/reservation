@@ -5,7 +5,7 @@
 @inject NavigationManager NavigationManager
 @inject ISnackbar Snackbar
 
-<PageTitle>Přihlášení k rezervaci</PageTitle>
+<PageTitle>Přihlášení k události</PageTitle>
 
 <MudCard Class="mx-auto mt-12" Style="max-width:480px;" Elevation="4">
     <MudButton Class="m-2" Style="width: fit-content" Variant="Variant.Outlined" Color="Color.Primary" OnClick="Back"
@@ -102,17 +102,17 @@
 
         if (response.IsSuccess)
         {
-            Snackbar.Add("Úspěšně jste se přihlásili k rezervaci", Severity.Success);
+            Snackbar.Add("Úspěšně jste se rezervovali k události", Severity.Success);
             // Přesměrování na detail rezervace nebo jinou stránku
             NavigationManager.NavigateTo(Constants.Routes.ReservationDetail(Path, ReservationId));
         }
         else if (response.StatusCode == HttpStatusCode.BadRequest)
         {
-            Snackbar.Add("Omlouváme se, ale rezervace je již plná", Severity.Warning);
+            Snackbar.Add("Omlouváme se, ale událost je již plná", Severity.Warning);
         }
         else if (response.StatusCode == HttpStatusCode.Conflict)
         {
-            Snackbar.Add("Uživatel je již přihlášen na této rezervaci", Severity.Warning);
+            Snackbar.Add("Uživatel je již přihlášen na této události", Severity.Warning);
         }
         else
         {

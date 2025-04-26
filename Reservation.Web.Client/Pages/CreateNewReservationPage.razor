@@ -2,7 +2,7 @@
 @inject ISnackbar Snackbar
 @inject NavigationManager NavigationManager
 
-@page "/ucet/nova-rezervace"
+@page "/ucet/nova-udalost"
 @using System.Globalization
 @using Microsoft.AspNetCore.Authorization
 @attribute [Authorize]
@@ -13,7 +13,7 @@
         Zpět
     </MudButton>
     <MudCardHeader>
-        <MudText Typo="Typo.h4">Vytvořit rezervaci</MudText>
+        <MudText Typo="Typo.h4">Vytvořit událost</MudText>
     </MudCardHeader>
 
     <MudDivider/>
@@ -142,7 +142,6 @@
                                      Max="59"
                                      Variant="Variant.Outlined"
                                      FullWidth="true"
-                                     Dense="true"
                                      Adornment="Adornment.End"
                                      AdornmentText="m"/>
                 </MudItem>
@@ -177,8 +176,8 @@
             else
             {
                 @(SelectedDates.Count > 1
-                    ? $"Vytvořit rezervace ({SelectedDates.Count})"
-                    : "Vytvořit rezervaci")
+                    ? $"Vytvořit události ({SelectedDates.Count})"
+                    : "Vytvořit událost")
             }
         </MudButton>
     </MudCardActions>
@@ -229,7 +228,7 @@
 
             if (StartTime is null || EndTime is null)
             {
-                Snackbar.Add("Vyberte čas začátku a konce rezervace.", Severity.Warning);
+                Snackbar.Add("Vyberte čas začátku a konce události.", Severity.Warning);
                 return;
             }
 
@@ -268,11 +267,11 @@
 
             if (response.IsSuccess)
             {
-                Snackbar.Add("Rezervace byly úspěšně vytvořeny.", Severity.Success);
+                Snackbar.Add("Události byly úspěšně vytvořeny.", Severity.Success);
             }
             else
             {
-                Snackbar.Add("Nepodařilo se vytvořit rezervace.", Severity.Error);
+                Snackbar.Add("Nepodařilo se vytvořit události.", Severity.Error);
             }
         }
         finally

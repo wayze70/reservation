@@ -6,12 +6,12 @@
 @inject ISnackbar Snackbar
 @inject GlobalState GlobalState
 
-<PageTitle>Detail rezervace</PageTitle>
+<PageTitle>Detail události</PageTitle>
 
 @if (ReservationDetail is null)
 {
     <MudPaper Class="mx-auto mt-12 pa-8" Elevation="1" Style="max-width:600px;">
-        <MudText Typo="Typo.subtitle1" Align="Align.Center">Načítám rezervaci…</MudText>
+        <MudText Typo="Typo.subtitle1" Align="Align.Center">Načítám událost…</MudText>
     </MudPaper>
 }
 else
@@ -83,7 +83,7 @@ else
                 {
                     <MudItem xs="12">
                         <MudAlert Severity="Severity.Info" Dense="true" Elevation="0" Class="my-2">
-                            Rezervace je v pásmu: <strong>@tzInfo</strong>
+                            Událost je v pásmu: <strong>@tzInfo</strong>
                         </MudAlert>
                     </MudItem>
                 }
@@ -149,7 +149,7 @@ else
         if (resp.IsSuccess && resp.Data != null)
             ReservationDetail = resp.Data;
         else
-            Snackbar.Add("Nepodařilo se načíst detail rezervace.", Severity.Error);
+            Snackbar.Add("Nepodařilo se načíst detail události.", Severity.Error);
     }
 
     private void Back() => NavigationManager.NavigateTo(Constants.Routes.Reservation(Path));

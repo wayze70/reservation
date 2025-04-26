@@ -70,7 +70,7 @@ public class ReservationController : ControllerBase
             await _reservationService.AccountOwnsReservationAsync(HttpContext.GetAccountIdFromBearer(), request.ReservationId);
         if (!isOwner)
         {
-            throw new CustomHttpException(HttpStatusCode.Forbidden, "Nejste vlastníkem rezervace");
+            throw new CustomHttpException(HttpStatusCode.Forbidden, "Nejste vlastníkem události");
         }
 
         bool result =

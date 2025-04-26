@@ -21,7 +21,7 @@ namespace Reservation.Api.Services
         {
             if (request == null)
             {
-                throw new CustomHttpException(HttpStatusCode.BadRequest, "Žádná rezervace nebyla poskytnuta");
+                throw new CustomHttpException(HttpStatusCode.BadRequest, "Žádná událost nebyla poskytnuta");
             }
 
             var reservationEntity =
@@ -38,7 +38,7 @@ namespace Reservation.Api.Services
         {
             if (requests is null || requests.Count == 0)
             {
-                throw new CustomHttpException(HttpStatusCode.BadRequest, "Žádná rezervace nebyla poskytnuta");
+                throw new CustomHttpException(HttpStatusCode.BadRequest, "Žádná událost nebyla poskytnuta");
             }
 
             var reservationsDto = new List<ReservationResponse>();
@@ -63,7 +63,7 @@ namespace Reservation.Api.Services
             {
                 await transaction.RollbackAsync();
                 throw new CustomHttpException(HttpStatusCode.InternalServerError,
-                    "Chyba při vytváření rezervací. Žádná rezervace nebyla vytvořena. Zkuste to prosím znovu.");
+                    "Chyba při vytváření událostí. Žádná událost nebyla vytvořena. Zkuste to prosím znovu.");
             }
         }
 
@@ -106,7 +106,7 @@ namespace Reservation.Api.Services
 
             if (reservation == null)
             {
-                throw new CustomHttpException(HttpStatusCode.NotFound, "Rezervace nebyla nalezena");
+                throw new CustomHttpException(HttpStatusCode.NotFound, "Událost nebyla nalezena");
             }
 
             return MapToDto(reservation);
@@ -124,7 +124,7 @@ namespace Reservation.Api.Services
             var reservation = owner.Reservations.FirstOrDefault(r => r.Id == reservationId);
             if (reservation == null)
             {
-                throw new CustomHttpException(HttpStatusCode.BadRequest, "Rezervace nebyla nalezena");
+                throw new CustomHttpException(HttpStatusCode.BadRequest, "Událost nebyla nalezena");
             }
 
             return MapToWithUsersDto(reservation);
@@ -143,14 +143,14 @@ namespace Reservation.Api.Services
                     .FirstOrDefaultAsync(r => r.Id == reservationId);
 
                 if (reservation == null)
-                    throw new CustomHttpException(HttpStatusCode.NotFound, "Rezervace nebyla nalezena");
+                    throw new CustomHttpException(HttpStatusCode.NotFound, "Událost nebyla nalezena");
 
                 if (reservation.Customers.Count >= reservation.Capacity || !reservation.IsAvailable)
-                    throw new CustomHttpException(HttpStatusCode.Locked, "K rezervaci se již není možné přihlásit");
+                    throw new CustomHttpException(HttpStatusCode.Locked, "K události se již není možné přihlásit");
 
                 if (reservation.Customers.Any(u => u.Email.Equals(request.Email, StringComparison.OrdinalIgnoreCase)))
                     throw new CustomHttpException(HttpStatusCode.Conflict,
-                        "Uživatel je již přihlášen na tuto rezervaci");
+                        "Uživatel je již přihlášen na tuto událost");
 
                 var newUser = new Models.Customer
                 {
@@ -184,7 +184,7 @@ namespace Reservation.Api.Services
             {
                 await transaction.RollbackAsync();
                 throw new CustomHttpException(HttpStatusCode.InternalServerError,
-                    "Chyba při přihlašování k rezervaci. Zkuste to prosím znovu.");
+                    "Chyba při přihlašování k události. Zkuste to prosím znovu.");
             }
         }
 
@@ -197,7 +197,7 @@ namespace Reservation.Api.Services
                 .FirstOrDefaultAsync(r => r.Id == reservationId);
 
             if (reservation == null)
-                throw new CustomHttpException(HttpStatusCode.NotFound, "Rezervace nebyla nalezena");
+                throw new CustomHttpException(HttpStatusCode.NotFound, "Událost nebyla nalezena");
 
             // Pokud je aktuální čas později než (start rezervace - cancellation offset), není možné rezervaci zrušit
             if (DateTime.UtcNow > reservation.StartTime - reservation.CancellationOffset)
@@ -208,7 +208,7 @@ namespace Reservation.Api.Services
             var user = reservation.Customers.FirstOrDefault(u => u.CancellationCode == cancellationCode);
             if (user == null)
                 throw new CustomHttpException(HttpStatusCode.BadRequest,
-                    "Uživatel není již přihlášen na tuto rezervaci");
+                    "Uživatel není již přihlášen na tuto událost");
 
             reservation.Customers.Remove(user);
             await _dbContext.SaveChangesAsync();
@@ -228,7 +228,7 @@ namespace Reservation.Api.Services
 
 
             if (reservation == null)
-                throw new CustomHttpException(HttpStatusCode.NotFound, "Rezervace nebyla nalezena");
+                throw new CustomHttpException(HttpStatusCode.NotFound, "Událost nebyla nalezena");
 
             reservation.Capacity = request.Capacity;
             reservation.Title = request.Title;
@@ -255,7 +255,7 @@ namespace Reservation.Api.Services
 
             var reservation = owner.Reservations.FirstOrDefault(r => r.Id == reservationId);
             if (reservation == null)
-                throw new CustomHttpException(HttpStatusCode.NotFound, "Rezervace nebyla nalezena");
+                throw new CustomHttpException(HttpStatusCode.NotFound, "Událost nebyla nalezena");
 
             _dbContext.Reservations.Remove(reservation);
             await _dbContext.SaveChangesAsync();
@@ -271,7 +271,7 @@ namespace Reservation.Api.Services
                 .FirstOrDefaultAsync(r => r.Id == reservationId);
 
             if (reservation == null)
-                throw new CustomHttpException(HttpStatusCode.NotFound, "Rezervace nebyla nalezena");
+                throw new CustomHttpException(HttpStatusCode.NotFound, "Událost nebyla nalezena");
 
             var user = reservation.Customers.FirstOrDefault(u => u.Email == userEmail);
             if (user == null)

@@ -1,4 +1,4 @@
-@page "/ucet/rezervace"
+@page "/ucet/udalost"
 @using Microsoft.AspNetCore.Authorization
 @inject IReservationService ReservationService
 @inject NavigationManager NavigationManager
@@ -6,7 +6,7 @@
 @inject GlobalState GlobalState
 
 
-<PageTitle>Rezervace</PageTitle>
+<PageTitle>Události</PageTitle>
 @attribute [Authorize]
 
 <MudGrid>
@@ -25,7 +25,7 @@
                            FullWidth="true"
                            StartIcon="@Icons.Material.Filled.Add"
                            OnClick="@(() => NavigationManager.NavigateTo(Constants.Routes.AccountRoute.ReservationNew))">
-                    Nová rezervace
+                    Nová událost
                 </MudButton>
                 <MudButton Variant="Variant.Outlined"
                            Color="Color.Primary"
@@ -43,16 +43,16 @@
         <MudStack Spacing="2">
             @if (Reservations is null)
             {
-                <MudText Typo="Typo.subtitle1" Align="Align.Center" Class="mt-2">Načítám rezervace…</MudText>
+                <MudText Typo="Typo.subtitle1" Align="Align.Center" Class="mt-2">Načítám Události…</MudText>
             }
             else if (Reservations.Count == 0)
             {
-                <MudText Typo="Typo.subtitle1" Align="Align.Center" Class="mt-2">Nebyly nalezeny žádné rezervace.</MudText>
+                <MudText Typo="Typo.subtitle1" Align="Align.Center" Class="mt-2">Nebyly nalezeny žádné události.</MudText>
             }
             else if (!Reservations.Any(r =>
                              !GlobalState.SelectedDateAdmin.HasValue || r.Start.ToLocalTime().Date == GlobalState.SelectedDateAdmin.Value.Date))
             {
-                <MudText Typo="Typo.subtitle1" Align="Align.Center" Class="mt-2">Žádné rezervace pro vybrané datum.
+                <MudText Typo="Typo.subtitle1" Align="Align.Center" Class="mt-2">Žádné události pro vybrané datum.
                 </MudText>
             }
             else
@@ -118,7 +118,7 @@
         }
         else
         {
-            Snackbar.Add("Chyba při načítání rezervací.", Severity.Error);
+            Snackbar.Add("Chyba při načítání událostí.", Severity.Error);
         }
     }
 
@@ -144,5 +144,4 @@
     {
         return _picker.GoToDate(DateTime.Today);
     }
-
 }

@@ -59,7 +59,7 @@ namespace Reservation.Api.Services
             string unsubscribeLink,
             CultureInfo cultureInfo)
         {
-            string additionalContent = $@"<p>Pokud se chcete od této rezervace odhlásit, klikněte na následující odkaz:</p>
+            string additionalContent = $@"<p>Pokud se chcete od této události odhlásit, klikněte na následující odkaz:</p>
             <p style=""text-align: center;"">
                 <a href=""https://www.rezervario.cz/zruseni-rezervace/{reservationId}/{unsubscribeLink}"" 
                    style=""display: inline-block; padding: 10px 20px; color: #fff; background-color: #d9534f; 
