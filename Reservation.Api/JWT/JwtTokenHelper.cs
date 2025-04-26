@@ -35,7 +35,7 @@ public class JwtTokenHelper
             new Claim(ReservationClaimNames.Custom.Role, user.Role.ToString()),
         ];
 
-        return GenerateToken(claims, TimeSpan.FromMinutes(15)); // 15 minut
+        return GenerateToken(claims, TimeSpan.FromMinutes(10)); // 10 minut
     }
 
     public string GenerateRefreshToken(User user, int accountId, string deviceName)

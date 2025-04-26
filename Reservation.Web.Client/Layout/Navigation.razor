@@ -4,6 +4,8 @@
 @inject IAuthService AuthService
 @inject NavigationManager NavigationManager
 @inject AuthenticationStateProvider AuthStateProvider
+@inject GlobalState GlobalState
+@inject IAccountService AccountService
 
 <MudNavMenu Class="mud-nav-menu">
     <AuthorizeView Context="authState">
@@ -65,8 +67,40 @@
 </MudNavMenu>
 
 @code {
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+
+        if (string.IsNullOrEmpty(GlobalState.Identifier) &&
+            user.Identity?.IsAuthenticated == true &&
+            user.IsInRole(nameof(Role.Admin)))
+        {
+            await LoadPath();
+        }
+
+        GlobalState.IdentifierChanged += StateHasChanged;
+    }
+
+
     async Task Logout()
     {
         await AuthService.LogoutAsync();
     }
+    
+    private async Task LoadPath()
+    {
+        var response = await AccountService.GetPath();
+        if (response.IsSuccess)
+        {
+            GlobalState.Identifier = response.Data ?? string.Empty;
+        }
+    }
+
+    public void Dispose()
+    {
+        GlobalState.IdentifierChanged -= StateHasChanged;
+    }
+
 }

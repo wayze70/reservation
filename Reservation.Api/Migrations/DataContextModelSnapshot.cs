@@ -113,9 +113,14 @@ namespace Reservation.Api.Migrations
                         .HasMaxLength(1000)
                         .HasColumnType("character varying(1000)");
 
+                    b.Property<int>("UserId")
+                        .HasColumnType("integer");
+
                     b.HasKey("Id");
 
                     b.HasIndex("AccountId");
+
+                    b.HasIndex("UserId");
 
                     b.ToTable("Devices");
                 });
@@ -228,7 +233,15 @@ namespace Reservation.Api.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("Reservation.Api.Models.User", "User")
+                        .WithMany("Devices")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.Navigation("Account");
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("Reservation.Api.Models.Reservation", b =>
@@ -265,6 +278,11 @@ namespace Reservation.Api.Migrations
             modelBuilder.Entity("Reservation.Api.Models.Reservation", b =>
                 {
                     b.Navigation("Customers");
+                });
+
+            modelBuilder.Entity("Reservation.Api.Models.User", b =>
+                {
+                    b.Navigation("Devices");
                 });
 #pragma warning restore 612, 618
         }

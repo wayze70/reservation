@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Net;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -24,7 +25,8 @@ public class ReservationController : ControllerBase
     public async Task<ActionResult<List<ReservationResponse>>> CreateReservations(
         [FromBody] List<ReservationCreateRequest> request)
     {
-        return Ok(await _reservationService.CreateReservationsAsync(request, HttpContext.GetAccountIdFromBearer()));
+        return Ok(await _reservationService.CreateReservationsAsync(
+            request, HttpContext.GetAccountIdFromBearer()));
     }
 
     [HttpGet("{reservationId:int}")]
@@ -72,7 +74,7 @@ public class ReservationController : ControllerBase
         }
 
         bool result =
-            await _reservationService.RemoveUserFromReservationAsync(request.ReservationId, request.UserEmail);
+            await _reservationService.RemoveUserFromReservationAsync(request.ReservationId, request.UserEmail, HttpContext.GetUserPreferredCurrentCulture());
         return Ok(result);
     }
 

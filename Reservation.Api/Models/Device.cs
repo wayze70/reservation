@@ -17,6 +17,12 @@ public class Device
     [Required]
     [StringLength(1000)]
     public string RefreshToken { get; set; }
+    
+    [Required]
+    [ForeignKey("User")]
+    public int UserId { get; set; }
+    public virtual User User { get; set; }
+
 
     // Cizí klíč propojující zařízení s konkrétním majitelem
     [ForeignKey("Account")]

@@ -4,16 +4,24 @@
 @inject NavigationManager NavigationManager
 @inject ISnackbar Snackbar
 @inject IAccountService AccountService
+@inject GlobalState GlobalState
 
 @attribute [Authorize(Roles = nameof(Role.Admin))]
 
+<MudButton Href="@Constants.Routes.Reservation(GlobalState.Identifier)"
+           Variant="Variant.Outlined"
+           Color="Color.Primary"
+           StartIcon="@Icons.Material.Filled.Visibility"
+           Class="mb-2">
+  Přejít na pohled návštěvníka
+</MudButton>
 
 <MudExpansionPanel Text="Identifikátor">
-  <MudDivider />
+  <MudDivider/>
 
   <!-- Content -->
   <MudCardContent Class="px-0">
-    @if (string.IsNullOrWhiteSpace(CurrentPath))
+    @if (string.IsNullOrWhiteSpace(GlobalState.Identifier))
     {
       <MudAlert Severity="Severity.Info" Dense="true" Elevation="0" Class="mb-4">
         <MudText Typo="Typo.body2">
@@ -25,13 +33,15 @@
     {
       <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="1" Class="mb-2">
         <MudText Typo="Typo.body2">Aktuální adresa rezervace</MudText>
-        <MudTooltip Text="Zkopírujte a sdílejte URL, např. na váš web" ShowOnHover="true">
-          <MudIcon Icon="@Icons.Material.Filled.Info" Color="Color.Primary" Size="Size.Small" />
+        <MudTooltip
+          Text="Prostřednictví této adresy mohou vaši zákazníci přistupovat a vytvářet registarce. Zkopírujte a sdílejte adresu, např. na váš web"
+          ShowOnClick="true">
+          <MudIcon Icon="@Icons.Material.Filled.Info" Color="Color.Primary" Size="Size.Small"/>
         </MudTooltip>
       </MudStack>
       <MudText Typo="Typo.body2" Class="mb-4" Style="word-wrap:break-word;">
-        <MudLink Href="@Constants.Routes.Reservation(CurrentPath)" Target="_blank">
-          @(NavigationManager.BaseUri.TrimEnd('/') + Constants.Routes.Reservation(CurrentPath))
+        <MudLink Href="@Constants.Routes.Reservation(GlobalState.Identifier)" Target="_blank">
+          @(NavigationManager.BaseUri.TrimEnd('/') + Constants.Routes.Reservation(GlobalState.Identifier))
         </MudLink>
       </MudText>
     }
@@ -46,20 +56,20 @@
                       FullWidth="true"
                       Adornment="Adornment.Start"
                       AdornmentIcon="@Icons.Material.Filled.Link"
-                      DebounceInterval="500" />
+                      DebounceInterval="500"/>
       </MudItem>
 
       <MudStack Row="false" AlignItems="AlignItems.Center" Spacing="1">
-        @if ((IsPathTaken && CurrentPath != Path) || !IsPathValid)
+        @if ((IsPathTaken && GlobalState.Identifier != Path) || !IsPathValid)
         {
-          <MudIcon Icon="@Icons.Material.Filled.Close" Color="Color.Error" />
+          <MudIcon Icon="@Icons.Material.Filled.Close" Color="Color.Error"/>
         }
         else
         {
-          <MudIcon Icon="@Icons.Material.Filled.CheckCircleOutline" Color="Color.Success" />
+          <MudIcon Icon="@Icons.Material.Filled.CheckCircleOutline" Color="Color.Success"/>
         }
 
-        @if (IsPathTaken && CurrentPath == Path)
+        @if (IsPathTaken && GlobalState.Identifier == Path)
         {
           <MudText Typo="Typo.body2" Color="Color.Info" Class="ms-2">Toto je vaše aktuální adresa</MudText>
         }
@@ -76,7 +86,7 @@
   </MudCardContent>
 
   <!-- Actions -->
-  <MudDivider />
+  <MudDivider/>
   <MudCardActions>
     <MudButton OnClick="UpdatePath"
                Variant="Variant.Filled"
@@ -89,62 +99,61 @@
 
 @code
 {
-    public string Path { get; set; } = string.Empty;
-    public string? CurrentPath { get; set; }
-    public bool IsPathFetching { get; set; }
-    public bool IsPathTaken { get; set; }
-    public bool IsPathValid { get; set; } = true;
+  public string Path { get; set; } = string.Empty;
+  public bool IsPathFetching { get; set; }
+  public bool IsPathTaken { get; set; }
+  public bool IsPathValid { get; set; } = true;
 
-    protected override async Task OnInitializedAsync()
+  protected override async Task OnInitializedAsync()
+  {
+    await LoadPath();
+  }
+
+  private async Task UpdatePath()
+  {
+    if (!Utils.IsPathValidate(Path))
     {
-        await LoadPath();
+      IsPathValid = false;
+      return;
     }
 
-    private async Task UpdatePath()
+    var response = await AccountService.UpdatePath(new PathRequest { Path = Path });
+    if (response is { IsSuccess: true, Data: not null })
     {
-        if (!Utils.IsPathValidate(Path))
-        {
-            IsPathValid = false;
-            return;
-        }
+      GlobalState.Identifier = response.Data;
+      Snackbar.Add("Identifikátor a adresa byla úspěšně aktualizována.", Severity.Success);
+    }
+  }
 
-        var response = await AccountService.UpdatePath(new PathRequest { Path = Path });
-        if (response is { IsSuccess: true, Data: not null })
-        {
-            CurrentPath = response.Data;
-            Snackbar.Add("Identifikátor a adresa byla úspěšně aktualizována.", Severity.Success);
-        }
+  private async Task OnPathChange(string newPath)
+  {
+    Path = newPath;
+    if (string.IsNullOrWhiteSpace(Path))
+    {
+      IsPathValid = false;
+      return;
     }
 
-    private async Task OnPathChange(string newPath)
+    IsPathFetching = true;
+    if (Utils.IsPathValidate(Path))
     {
-        Path = newPath;
-        if (string.IsNullOrWhiteSpace(Path))
-        {
-            IsPathValid = false;
-            return;
-        }
-
-        IsPathFetching = true;
-        if (Utils.IsPathValidate(Path))
-        {
-            IsPathValid = true;
-            IsPathTaken = (await AccountService.IsPathTaken(new PathRequest { Path = Path })).Data;
-        }
-        else
-        {
-            IsPathValid = false;
-        }
-
-        IsPathFetching = false;
+      IsPathValid = true;
+      IsPathTaken = (await AccountService.IsPathTaken(new PathRequest { Path = Path })).Data;
+    }
+    else
+    {
+      IsPathValid = false;
     }
 
-    private async Task LoadPath()
+    IsPathFetching = false;
+  }
+
+  private async Task LoadPath()
+  {
+    GlobalState.Identifier = (await AccountService.GetPath()).Data;
+    if (GlobalState.Identifier is not null)
     {
-        CurrentPath = (await AccountService.GetPath()).Data;
-        if (CurrentPath is not null)
-        {
-            Path = CurrentPath;
-        }
+      Path = GlobalState.Identifier;
     }
+  }
 }

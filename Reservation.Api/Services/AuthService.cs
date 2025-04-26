@@ -32,11 +32,10 @@ public class AuthService : IAuthService
     public async Task<AuthResponse> LoginAsync(string email, string password, string identifier, string deviceName)
     {
         var account = await _dbContext.Accounts
-                          .Include(a => a.Users)
-                          .FirstOrDefaultAsync(a => a.Path == identifier) ??
-                      throw new CustomHttpException(HttpStatusCode.NotFound,
-                          "Účet s tímto identifikátorem nebyl nalezen");
-
+            .Include(a => a.Users)
+            .FirstOrDefaultAsync(a => a.Path == identifier) 
+            ?? throw new CustomHttpException(HttpStatusCode.NotFound, 
+            "Účet s tímto identifikátorem nebyl nalezen");
 
         // Najdeme uživatele podle emailu (heslo ověříme až dále)
         var user = account.Users.FirstOrDefault(u => u.Email == email);
@@ -63,7 +62,9 @@ public class AuthService : IAuthService
             DeviceName = deviceName,
             RefreshToken = refreshToken,
             AccountId = account.Id,
-            Account = account
+            Account = account,
+            UserId = user.Id,
+            User = user
         };
 
         // Přidáme nový záznam zařízení do databáze
@@ -79,7 +80,7 @@ public class AuthService : IAuthService
         identifier = identifier.Trim().ToLowerInvariant();
         email = email.Trim().ToLowerInvariant();
 
-        // Všechny validace na začátku
+        // Všechny validace на začátku
         if (!Utils.IsPasswordLongEnough(password))
             throw new CustomHttpException(HttpStatusCode.BadRequest, "Heslo musí mít alespoň 6 znaků");
 
@@ -103,7 +104,7 @@ public class AuthService : IAuthService
             throw new CustomHttpException(HttpStatusCode.Conflict,
                 "Uživatel s tímto emailem již existuje u daného účtu");
 
-        // Vytvoření účtu a vlastníka v jedné transakci
+        // Vytvoření účtu a vlastníка в jedné transakci
         await using var transaction = await _dbContext.Database.BeginTransactionAsync();
         try
         {
@@ -228,7 +229,7 @@ public class AuthService : IAuthService
     {
         return int.Parse(JwtTokenHelper
             .GetClaimValue(JwtTokenHelper.GetClaims(refreshToken), ReservationClaimNames.Custom.AccountId) ?? throw new
-            CustomHttpException(HttpStatusCode.BadRequest, "Account id v refresh token není platný"));
+            CustomHttpException(HttpStatusCode.BadRequest, "Account id в refresh token není platný"));
     }
 
     private User GetOwner(string refreshToken)
@@ -242,6 +243,6 @@ public class AuthService : IAuthService
     {
         return int.Parse(JwtTokenHelper
             .GetClaimValue(JwtTokenHelper.GetClaims(refreshToken), ReservationClaimNames.Sub) ?? throw new
-            CustomHttpException(HttpStatusCode.BadRequest, "User id v refresh token není platný"));
+            CustomHttpException(HttpStatusCode.BadRequest, "User id в refresh token není platný"));
     }
 }

@@ -49,7 +49,7 @@ else
           <MudTextField T="string" Label="Příjmení" @bind-Value="editEmployee.LastName" Required="true"/>
         </MudTd>
         <MudTd DataLabel="Email">
-          <EmailInput @bind-Value="editEmployee.Email"/>
+          <EmailInput Variant="Variant.Text" Adornment="Adornment.None" @bind-Value="editEmployee.Email"/>
         </MudTd>
         <MudTd DataLabel="Pozice">
           <MudSelect T="Role" Label="Pozice" @bind-Value="editEmployee.Role" Required="true">
@@ -152,6 +152,14 @@ else
       }
 
       editingEmployeeId = null;
+    }
+    else if (response.StatusCode == HttpStatusCode.Conflict)
+    {
+      Snackbar.Add("Zaměstnanec s tímto emailem již existuje.", Severity.Error);
+    }
+    else if (response.StatusCode == HttpStatusCode.Locked)
+    {
+      Snackbar.Add("Nelze změnit roli poslednímumu administrátorovi.", Severity.Error);
     }
     else
     {

@@ -28,27 +28,6 @@ namespace Reservation.Api.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Devices",
-                columns: table => new
-                {
-                    Id = table.Column<int>(type: "integer", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    DeviceName = table.Column<string>(type: "character varying(1000)", maxLength: 1000, nullable: false),
-                    RefreshToken = table.Column<string>(type: "character varying(1000)", maxLength: 1000, nullable: false),
-                    AccountId = table.Column<int>(type: "integer", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Devices", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_Devices_Accounts_AccountId",
-                        column: x => x.AccountId,
-                        principalTable: "Accounts",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "Reservations",
                 columns: table => new
                 {
@@ -123,6 +102,34 @@ namespace Reservation.Api.Migrations
                         onDelete: ReferentialAction.Cascade);
                 });
 
+            migrationBuilder.CreateTable(
+                name: "Devices",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    DeviceName = table.Column<string>(type: "character varying(1000)", maxLength: 1000, nullable: false),
+                    RefreshToken = table.Column<string>(type: "character varying(1000)", maxLength: 1000, nullable: false),
+                    UserId = table.Column<int>(type: "integer", nullable: false),
+                    AccountId = table.Column<int>(type: "integer", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Devices", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Devices_Accounts_AccountId",
+                        column: x => x.AccountId,
+                        principalTable: "Accounts",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_Devices_Users_UserId",
+                        column: x => x.UserId,
+                        principalTable: "Users",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
             migrationBuilder.CreateIndex(
                 name: "IX_Customers_ReservationId",
                 table: "Customers",
@@ -132,6 +139,11 @@ namespace Reservation.Api.Migrations
                 name: "IX_Devices_AccountId",
                 table: "Devices",
                 column: "AccountId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Devices_UserId",
+                table: "Devices",
+                column: "UserId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Reservations_AccountId",
@@ -154,10 +166,10 @@ namespace Reservation.Api.Migrations
                 name: "Devices");
 
             migrationBuilder.DropTable(
-                name: "Users");
+                name: "Reservations");
 
             migrationBuilder.DropTable(
-                name: "Reservations");
+                name: "Users");
 
             migrationBuilder.DropTable(
                 name: "Accounts");

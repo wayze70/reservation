@@ -100,12 +100,29 @@ else
                                          FullWidth="true"
                                          Adornment="Adornment.Start"
                                          AdornmentIcon="@Icons.Material.Filled.DateRange"/>
-                        <MudTimePicker Label="Hodiny"
-                                       @bind-Time="CancellationOffsetTime"
-                                       AmPm="@(!CultureInfo.CurrentCulture.Is24Hrs())"
-                                       Variant="Variant.Outlined"
-                                       Adornment="Adornment.Start"
-                                       AdornmentIcon="@Icons.Material.Filled.Timer"/>
+                        <MudItem xs="6" sm="3">
+                            <MudNumericField T="int"
+                                             Label="Hodiny"
+                                             @bind-Value="CancellationOffsetHours"
+                                             Min="0"
+                                             Max="23"
+                                             Variant="Variant.Outlined"
+                                             FullWidth="true"
+                                             Adornment="Adornment.End"
+                                             AdornmentText="h"/>
+                        </MudItem>
+                        <MudItem xs="6" sm="3">
+                            <MudNumericField T="int"
+                                             Label="Minuty"
+                                             @bind-Value="CancellationOffsetMinutes"
+                                             Min="0"
+                                             Max="59"
+                                             Variant="Variant.Outlined"
+                                             FullWidth="true"
+                                             Dense="true"
+                                             Adornment="Adornment.End"
+                                             AdornmentText="m"/>
+                        </MudItem>
                     </MudStack>
                 </MudItem>
 
@@ -129,7 +146,8 @@ else
 
                 <MudItem xs="12" sm="6">
                     <MudItem xs="12" sm="6" Class="d-flex align-center">
-                        <MudSwitch Label="@(ReservationDetail.IsAvailable ? "Dostupná" : "Nedostupná")" Color="Color.Primary"
+                        <MudSwitch Label="@(ReservationDetail.IsAvailable ? "Dostupná" : "Nedostupná")"
+                                   Color="Color.Primary"
                                    @bind-Value="ReservationDetail.IsAvailable"/>
                     </MudItem>
                 </MudItem>
@@ -171,7 +189,8 @@ else
                     <MudTd DataLabel="Email">@context.Email</MudTd>
                     <MudTd DataLabel="Poznámka">@context.Note</MudTd>
                     <MudTd>
-                        <MudButton Variant="Variant.Outlined" Color="Color.Error" Size="Size.Small" OnClick="@(() => RemoveUser(@context))">
+                        <MudButton Variant="Variant.Outlined" Color="Color.Error" Size="Size.Small"
+                                   OnClick="@(() => RemoveUser(@context))">
                             Odhlásit uživatele
                         </MudButton>
                     </MudTd>
@@ -190,8 +209,9 @@ else
     DateTime? DateEnd { get; set; }
     TimeSpan? StartTime { get; set; }
     TimeSpan? EndTime { get; set; }
-    int CancellationOffsetDays = 0;
-    TimeSpan? CancellationOffsetTime = TimeSpan.Zero;
+    int CancellationOffsetDays { get; set; } = 0;
+    int CancellationOffsetHours { get; set; }
+    int CancellationOffsetMinutes { get; set; }
 
     ReservationResponseWithCustomers ReservationDetail { get; set; } = new();
 
@@ -207,7 +227,8 @@ else
             StartTime = ReservationDetail.Start.ConvertToTimeZone(ReservationDetail.CustomTimeZoneId).TimeOfDay;
             EndTime = ReservationDetail.End.ConvertToTimeZone(ReservationDetail.CustomTimeZoneId).TimeOfDay;
             CancellationOffsetDays = ReservationDetail.CancellationOffset.Days;
-            CancellationOffsetTime = ReservationDetail.CancellationOffset - TimeSpan.FromDays(CancellationOffsetDays);
+            CancellationOffsetHours = ReservationDetail.CancellationOffset.Hours;
+            CancellationOffsetMinutes = ReservationDetail.CancellationOffset.Minutes;
         }
         else
         {
@@ -239,7 +260,9 @@ else
             Start = TimeZoneInfo.ConvertTimeToUtc(startLocal, customTimeZone),
             End = TimeZoneInfo.ConvertTimeToUtc(endLocal, customTimeZone),
             IsAvailable = ReservationDetail.IsAvailable,
-            CancellationOffset = TimeSpan.FromDays(CancellationOffsetDays) + (CancellationOffsetTime ?? TimeSpan.Zero),
+            CancellationOffset = TimeSpan.FromDays(CancellationOffsetDays)
+                                 + TimeSpan.FromHours(CancellationOffsetHours)
+                                 + TimeSpan.FromMinutes(CancellationOffsetMinutes),
             CustomTimeZoneId = ReservationDetail.CustomTimeZoneId
         };
 
@@ -268,7 +291,7 @@ else
             Snackbar.Add("Nepodařilo se zrušit rezervaci.", Severity.Error);
         }
     }
-    
+
     private async Task RemoveUser(CustomerResponse customer)
     {
         // 1) Zeptáme se uživatele
@@ -303,4 +326,5 @@ else
     {
         NavigationManager.NavigateTo(Constants.Routes.AccountRoute.AccountReservation);
     }
+
 }

@@ -10,7 +10,6 @@ public struct ReservationClaimNames
     public const string GivenName = JwtRegisteredClaimNames.GivenName;
     public const string FamilyName = JwtRegisteredClaimNames.FamilyName;
     
-    
     public struct Custom
     {
         public const string GeneratedNumber = "gen_num";

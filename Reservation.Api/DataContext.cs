@@ -18,6 +18,9 @@ public class DataContext : DbContext
     public DbSet<Device> Devices { get; set; }
     public DbSet<User> Users { get; set; }
     
+    public override int SaveChanges()
+        => SaveChangesAsync().GetAwaiter().GetResult();
+    
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         // Account -> Users
@@ -48,6 +51,8 @@ public class DataContext : DbContext
             .HasForeignKey(u => u.ReservationId)
             .OnDelete(DeleteBehavior.Cascade);
     }
+    
+    
     
     public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
     {

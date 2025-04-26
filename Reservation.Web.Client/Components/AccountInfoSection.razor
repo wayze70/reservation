@@ -5,10 +5,11 @@
 
 @attribute [Authorize(Roles = nameof(Role.Admin))]
 
-<MudExpansionPanel Text="Informace o účtu">
+<MudExpansionPanel Text="Informace o účtu"
+                   Expanded="@(!IsFetching && (string.IsNullOrWhiteSpace(AccountInfo.Organization) || string.IsNullOrWhiteSpace(AccountInfo.Description)))">
     <EditForm Model="@AccountInfo" OnValidSubmit="OnAccountInfoValidSubmit">
-        <MudTextField T="string" Label="Organizace" @bind-Value="AccountInfo.Organization" Required="true"/>
-        <MudTextField AutoGrow="true" T="string" Label="Popis" @bind-Value="AccountInfo.Description"/>
+        <MudTextField MaxLength="50" T="string" Label="Organizace" @bind-Value="AccountInfo.Organization"/>
+        <MudTextField MaxLength="1000" AutoGrow="true" T="string" Label="Popis" @bind-Value="AccountInfo.Description"/>
         <MudButton ButtonType="ButtonType.Submit" Color="Color.Primary" Variant="Variant.Filled" Class="mt-4">
             Uložit informace o účtu
         </MudButton>
@@ -17,6 +18,7 @@
 
 @code {
     AccountInfoResponse AccountInfo { get; set; } = new();
+    bool IsFetching { get; set; } = true;
 
     protected override async Task OnInitializedAsync()
     {
@@ -25,6 +27,7 @@
 
     private async Task OnAccountInfoValidSubmit()
     {
+        IsFetching = true;
         var updateRequest = new UpdateAccountInfoRequest
         {
             Organization = AccountInfo.Organization,
@@ -46,6 +49,8 @@
 
     private async Task LoadAccountInfo()
     {
+        IsFetching = true;
+
         var accountInfoResult = await AccountService.GetAccountInfo();
         if (accountInfoResult is { IsSuccess: true, Data: not null })
         {
@@ -55,5 +60,8 @@
         {
             Snackbar.Add("Nepodařilo se načíst údaje o účtu.", Severity.Error);
         }
+
+        IsFetching = false;
     }
+
 }

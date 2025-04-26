@@ -16,7 +16,7 @@ public static class HttpContextExtensions
         string token = httpContext.Request.Headers.Authorization.ToString().Replace("Bearer ", "");
         if (string.IsNullOrEmpty(token))
         {
-            throw new CustomHttpException(HttpStatusCode.Unauthorized, "Token not found");
+            throw new CustomHttpException(HttpStatusCode.Unauthorized, "Token nenalezen");
         }
         return token;
     }

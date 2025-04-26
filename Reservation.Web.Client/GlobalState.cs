@@ -6,13 +6,14 @@ namespace Reservation.Web.Client;
 public class GlobalState
 {
     public event Action? OnStateChanged;
+    public event Action? IdentifierChanged;
     
+    private string _identifier = string.Empty;
     private TimeZoneInfo _currentTimeZone = TimeZoneInfo.Local;
     private DateTime? _selectedDate = DateTime.Today;
     private DateTime? _selectedDateAdmin = DateTime.Today;
     private string _title = string.Empty;
     private string _description = string.Empty;
-    private string _identifier = string.Empty;
 
     public TimeZoneInfo CurrentTimeZone
     {
@@ -63,14 +64,17 @@ public class GlobalState
             NotifyStateChanged();
         }
     }
-    
+
     public string Identifier
     {
         get => _identifier;
         set
         {
-            _identifier = value;
-            NotifyStateChanged();
+            if (_identifier != value)
+            {
+                _identifier = value;
+                IdentifierChanged?.Invoke();
+            }
         }
     }
 

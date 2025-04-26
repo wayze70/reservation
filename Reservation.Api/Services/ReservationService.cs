@@ -263,10 +263,11 @@ namespace Reservation.Api.Services
             return true;
         }
 
-        public async Task<bool> RemoveUserFromReservationAsync(int reservationId, string userEmail)
+        public async Task<bool> RemoveUserFromReservationAsync(int reservationId, string userEmail,
+            CultureInfo cultureInfo)
         {
             var reservation = await _dbContext.Reservations
-                .Include(r => r.Customers)
+                .Include(r => r.Customers).Include(r => r.Account)
                 .FirstOrDefaultAsync(r => r.Id == reservationId);
 
             if (reservation == null)
@@ -278,6 +279,19 @@ namespace Reservation.Api.Services
 
             reservation.Customers.Remove(user);
             await _dbContext.SaveChangesAsync();
+
+            await _emailService.SendCustomerRemovedFromReservationEmailAsync(
+                user.Email,
+                user.FirstName,
+                user.LastName,
+                reservation.Title,
+                reservation.StartTime,
+                reservation.EndTime - reservation.StartTime,
+                TimeZoneInfo.FindSystemTimeZoneById(reservation.CustomTimeZoneId),
+                cultureInfo,
+                reservation.Account.Organization,
+                reservation.Account.Path
+            );
 
             return true;
         }

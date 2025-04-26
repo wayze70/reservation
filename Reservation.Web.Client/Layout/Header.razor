@@ -1,3 +1,5 @@
+@using Reservation.Shared.Authorization
+@using Microsoft.AspNetCore.Components.Authorization
 @implements IDisposable
 @inject NavigationManager NavigationManager
 @inject GlobalState GlobalState
@@ -10,6 +12,20 @@
             <h1 class="my-auto">
                 <a class="text-white" href="@GetIdentifierFromPath()">@GlobalState.Title</a>
             </h1>
+
+            <AuthorizeView Roles="@nameof(Role.Admin)">
+                <Authorized>
+                    <!-- tady přidáme ms-auto -->
+
+                    <MudButton Href="@Constants.Routes.AccountRoute.Account"
+                               Variant="Variant.Outlined"
+                               Color="Color.Primary"
+                               StartIcon="@Icons.Material.Filled.VisibilityOff">
+                        Zpět na správce
+                    </MudButton>
+                </Authorized>
+            </AuthorizeView>
+
         }
         else
         {
@@ -26,15 +42,15 @@
     private string Uri => NavigationManager.ToBaseRelativePath(NavigationManager.Uri);
 
     private bool IsReservationRoute => (Uri.StartsWith("rezervace", StringComparison.OrdinalIgnoreCase) ||
-                                      Uri.StartsWith("zruseni-rezervace", StringComparison.OrdinalIgnoreCase));
+                                        Uri.StartsWith("zruseni-rezervace", StringComparison.OrdinalIgnoreCase));
 
     private string Path { get; set; } = string.Empty;
 
     private string GetIdentifierFromPath()
     {
         var segments = Uri.Split('/');
-        return Uri.StartsWith("rezervace/", StringComparison.OrdinalIgnoreCase) && segments.Length > 1 
-            ? Constants.Routes.Reservation(segments[1].ToLower()) 
+        return Uri.StartsWith("rezervace/", StringComparison.OrdinalIgnoreCase) && segments.Length > 1
+            ? Constants.Routes.Reservation(segments[1].ToLower())
             : Constants.Routes.Home;
     }
 
@@ -84,7 +100,7 @@
                     }
                 }
             }
-            
+
             if (!IsReservationRoute)
             {
                 GlobalState.Title = Constants.AppName;

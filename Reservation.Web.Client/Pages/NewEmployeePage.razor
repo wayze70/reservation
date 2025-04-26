@@ -1,4 +1,5 @@
 @page "/ucet/zamestnanci/vytvorit"
+@using System.Net
 @using Microsoft.AspNetCore.Authorization
 @using Reservation.Shared.Authorization
 @using Reservation.Shared.Common
@@ -132,6 +133,10 @@
     {
       Snackbar.Add("Zaměstnanec byl úspěšně vytvořen.", Severity.Success);
       NavigationManager.NavigateTo("/ucet/zamestnanci");
+    }
+    else if (response.StatusCode == HttpStatusCode.Conflict)
+    {
+      Snackbar.Add("Zaměstnanec s tímto emailem již existuje.", Severity.Error);
     }
     else
     {

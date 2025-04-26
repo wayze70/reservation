@@ -23,7 +23,7 @@ namespace Reservation.Api.Services
         Task<ReservationResponse> SignUpForReservationAsync(int reservationId, ReservationSignUpRequest request, 
             CultureInfo cultureInfo);
         Task<ReservationResponse> CancelReservationAsync(int reservationId, string cancellationCode, CultureInfo cultureInfo);
-        Task<bool> RemoveUserFromReservationAsync(int reservationId, string userEmail);
+        Task<bool> RemoveUserFromReservationAsync(int reservationId, string userEmail, CultureInfo cultureInfo);
         Task<bool> AccountOwnsReservationAsync(int accountId, int reservationId);
     }
 }

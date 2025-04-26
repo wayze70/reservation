@@ -35,5 +35,7 @@ namespace Reservation.Api.Models
         
         [ForeignKey("AccountId")]
         public virtual Account Account { get; set; }
+        
+        public virtual ICollection<Device> Devices { get; set; } = new List<Device>();
     }
 }
