@@ -2,6 +2,7 @@ using System.Globalization;
 using System.Net;
 using Microsoft.EntityFrameworkCore;
 using Reservation.Api.CustomException;
+using Reservation.Api.Models;
 using Reservation.Shared.Dtos;
 
 namespace Reservation.Api.Services
@@ -25,8 +26,7 @@ namespace Reservation.Api.Services
             }
 
             var reservationEntity =
-                (await _dbContext.Reservations.AddAsync(CreateReservationEntity(request, accountId)))
-                .Entity;
+                (await _dbContext.Reservations.AddAsync(CreateReservationEntity(request, accountId))).Entity;
 
             await _dbContext.SaveChangesAsync();
 
@@ -133,7 +133,6 @@ namespace Reservation.Api.Services
         public async Task<ReservationResponse> SignUpForReservationAsync(int reservationId,
             ReservationSignUpRequest request, CultureInfo cultureInfo)
         {
-            // Zahájení transakce
             await using var transaction = await _dbContext.Database.BeginTransactionAsync();
 
             try
@@ -152,7 +151,7 @@ namespace Reservation.Api.Services
                     throw new CustomHttpException(HttpStatusCode.Conflict,
                         "Uživatel je již přihlášen na tuto událost");
 
-                var newUser = new Models.Customer
+                var newUser = new Customer
                 {
                     FirstName = request.FirstName,
                     LastName = request.LastName,
@@ -199,7 +198,6 @@ namespace Reservation.Api.Services
             if (reservation == null)
                 throw new CustomHttpException(HttpStatusCode.NotFound, "Událost nebyla nalezena");
 
-            // Pokud je aktuální čas později než (start rezervace - cancellation offset), není možné rezervaci zrušit
             if (DateTime.UtcNow > reservation.StartTime - reservation.CancellationOffset)
             {
                 throw new CustomHttpException(HttpStatusCode.Locked, "Rezervace již nelze zrušit");

@@ -1,5 +1,4 @@
 @page "/ucet/udalost/{reservationId:int}"
-@using System.Globalization
 @using Microsoft.AspNetCore.Authorization
 @using Reservation.Shared.Common
 @inject IReservationService ReservationService
@@ -16,7 +15,6 @@
 }
 else
 {
-    <!-- Editační formulář rezervace -->
     <MudPaper Class="pa-6 mb-6" Elevation="4">
         <MudButton Variant="Variant.Outlined" Color="Color.Primary" OnClick="Back"
                    StartIcon="@Icons.Material.Filled.ArrowBack">
@@ -279,7 +277,6 @@ else
 
     private async Task CancelReservation()
     {
-        // Zrušení rezervace
         var response = await ReservationService.DeleteReservationAsync(reservationId);
         if (response.IsSuccess)
         {
@@ -294,18 +291,15 @@ else
 
     private async Task RemoveUser(CustomerResponse customer)
     {
-        // 1) Zeptáme se uživatele
         bool? result = await DialogService.ShowMessageBox(
             "Potvrzení smazání",
             $"Opravdu chcete smazat pracovníka {customer.FirstName} {customer.LastName}?",
             yesText: "Ano",
             noText: "Ne");
 
-        // 2) Pokud uživatel zvolí Ne nebo zavře okno, nic neděláme
         if (result != true)
             return;
 
-        // Odhlášení (odstranění) uživatele z rezervace
         var response = await ReservationService.RemoveUserFromReservationAsync(new RemoveCustomerFromReservationRequest()
         {
             UserEmail = customer.Email,

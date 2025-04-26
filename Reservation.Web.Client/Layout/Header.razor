@@ -1,5 +1,5 @@
-@using Reservation.Shared.Authorization
 @using Microsoft.AspNetCore.Components.Authorization
+@using Reservation.Shared.Authorization
 @implements IDisposable
 @inject NavigationManager NavigationManager
 @inject GlobalState GlobalState
@@ -12,11 +12,8 @@
             <h1 class="my-auto">
                 <a class="text-white" href="@GetIdentifierFromPath()">@GlobalState.Title</a>
             </h1>
-
             <AuthorizeView Roles="@nameof(Role.Admin)">
                 <Authorized>
-                    <!-- tady přidáme ms-auto -->
-
                     <MudButton Href="@Constants.Routes.AccountRoute.Account"
                                Variant="Variant.Outlined"
                                Color="Color.Primary"
@@ -25,7 +22,6 @@
                     </MudButton>
                 </Authorized>
             </AuthorizeView>
-
         }
         else
         {

@@ -43,14 +43,12 @@ public class ExceptionHandlingMiddleware
         var innerExceptions = new List<string>();
         var currentException = ex.InnerException;
 
-        // Iterace přes všechny vnitřní výjimky
         while (currentException is not null)
         {
             innerExceptions.Add(currentException.Message);
             currentException = currentException.InnerException;
         }
 
-        // Vytvoření odpovědi s detailními informacemi
         var response = new
         {
             Message = ex.Message,

@@ -58,7 +58,7 @@ public class EmployeeService : IEmployeeService
             .FirstOrDefaultAsync(a => a.Id == accountId);
 
         if (account is null) throw new CustomHttpException(HttpStatusCode.BadRequest, "Účet nenalezen");
-            
+
         var employee = new User
         {
             FirstName = request.FirstName,
@@ -115,12 +115,12 @@ public class EmployeeService : IEmployeeService
         }
 
         var employee = await _context.Users
-            .Include(u => u.Account)  // Přidáno načtení Account
+            .Include(u => u.Account) // Přidáno načtení Account
             .FirstOrDefaultAsync(e => e.Id == userId && e.AccountId == accountId);
-        
+
         if (employee == null)
             throw new CustomHttpException(HttpStatusCode.NotFound, "Zaměstnanec nebyl nalezen");
-        
+
         if (employee.Role == Role.Admin && request.Role != Role.Admin)
         {
             int adminCount = await _context.Users
@@ -151,10 +151,7 @@ public class EmployeeService : IEmployeeService
 
         if (employee == null)
             throw new CustomHttpException(HttpStatusCode.NotFound, "Zaměstnanec nebyl nalezen");
-        
-        // Zkontrolujeme, jestli je uživatel admin
-        
-        // Nejdřív zkontrolujeme, jestli není poslední admin
+
         if (employee.Role == Role.Admin)
         {
             int adminCount = await _context.Users
@@ -168,16 +165,15 @@ public class EmployeeService : IEmployeeService
             }
         }
 
-        // Najdeme a odstraníme všechna zařízení daného uživatele
         var devices = await _context.Devices
             .Where(d => d.UserId == userId)
             .ToListAsync();
-    
+
         if (devices.Count != 0)
         {
             _context.Devices.RemoveRange(devices);
         }
-        
+
         _context.Users.Remove(employee);
         await _context.SaveChangesAsync();
         await _emailService.SendEmployeeDeletionEmailAsync(employee.Email, employee.FirstName, employee.LastName,

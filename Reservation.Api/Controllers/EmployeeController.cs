@@ -1,5 +1,3 @@
-// Controllers/EmployeeController.cs
-
 using System.Net;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -26,35 +24,28 @@ public class EmployeeController : ControllerBase
     [Authorize(Roles = nameof(Role.Admin))]
     public async Task<ActionResult<List<EmployeeResponse>>> GetEmployees()
     {
-        int accountId = HttpContext.GetAccountIdFromBearer();
-        var employees = await _employeeService.GetEmployeesAsync(accountId);
-        return Ok(employees);
+        return Ok(await _employeeService.GetEmployeesAsync(HttpContext.GetAccountIdFromBearer()));
     }
-    
+
     [HttpGet("current")]
     public async Task<ActionResult<EmployeeResponse>> GetCurrentEmployee()
     {
-        int userId = HttpContext.GetUserIdFromBearer();
-        int accountId = HttpContext.GetAccountIdFromBearer();
-        var employee = await _employeeService.GetEmployeeAsync(userId, accountId);
-        return Ok(employee);
+        return Ok(await _employeeService.GetEmployeeAsync(HttpContext.GetUserIdFromBearer(),
+            HttpContext.GetAccountIdFromBearer()));
     }
 
     [HttpGet("{id:int}")]
     [Authorize(Roles = nameof(Role.Admin))]
     public async Task<ActionResult<EmployeeResponse>> GetEmployee([FromRoute] int id)
     {
-        int accountId = HttpContext.GetAccountIdFromBearer();
-        var employee = await _employeeService.GetEmployeeAsync(id, accountId);
-        return Ok(employee);
+        return Ok(await _employeeService.GetEmployeeAsync(id, HttpContext.GetAccountIdFromBearer()));
     }
 
     [HttpPost]
     [Authorize(Roles = nameof(Role.Admin))]
-    public async Task<ActionResult<EmployeeResponse>> CreateEmployee(EmployeeCreateRequest request)
+    public async Task<ActionResult<EmployeeResponse>> CreateEmployee([FromBody] EmployeeCreateRequest request)
     {
-        int accountId = HttpContext.GetAccountIdFromBearer();
-        var employee = await _employeeService.CreateEmployeeAsync(request, accountId);
+        var employee = await _employeeService.CreateEmployeeAsync(request, HttpContext.GetAccountIdFromBearer());
         return CreatedAtAction(nameof(GetEmployee), new { id = employee.Id }, employee);
     }
 
@@ -62,34 +53,27 @@ public class EmployeeController : ControllerBase
     [Authorize(Roles = nameof(Role.Admin))]
     public async Task<ActionResult<EmployeeResponse>> UpdateEmployee([FromRoute] int id, EmployeeUpdateRequest request)
     {
-        int accountId = HttpContext.GetAccountIdFromBearer();
-        var employee = await _employeeService.UpdateEmployeeAsync(id, request, accountId);
-        return Ok(employee);
+        return Ok(await _employeeService.UpdateEmployeeAsync(id, request, HttpContext.GetAccountIdFromBearer()));
     }
-    
+
     [HttpPut]
     [Authorize]
-    public async Task<ActionResult<EmployeeResponse>> UpdateEmployee(EmployeeUpdateWithoutRoleRequest request)
+    public async Task<ActionResult<EmployeeResponse>> UpdateEmployee([FromBody] EmployeeUpdateWithoutRoleRequest request)
     {
-        int accountId = HttpContext.GetAccountIdFromBearer();
-        int userId = HttpContext.GetUserIdFromBearer();
-        var employee = await _employeeService.UpdateEmployeeAsync(userId, request, accountId);
-        return Ok(employee);
+        return Ok(await _employeeService.UpdateEmployeeAsync(HttpContext.GetUserIdFromBearer(), request,
+            HttpContext.GetAccountIdFromBearer()));
     }
 
     [HttpDelete("{id:int}")]
     [Authorize(Roles = nameof(Role.Admin))]
     public async Task<ActionResult> DeleteEmployee([FromRoute] int id)
     {
-        int accountId = HttpContext.GetAccountIdFromBearer();
-        int requestEmployeeId = HttpContext.GetUserIdFromBearer();
-        
-        if (id == requestEmployeeId)
+        if (id == HttpContext.GetUserIdFromBearer())
         {
             throw new CustomHttpException(HttpStatusCode.Locked, "Nemůžete smazat sami sebe");
         }
-        
-        await _employeeService.DeleteEmployeeAsync(id, accountId);
+
+        await _employeeService.DeleteEmployeeAsync(id, HttpContext.GetAccountIdFromBearer());
         return NoContent();
     }
 }

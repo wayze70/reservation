@@ -1,5 +1,3 @@
-using Microsoft.VisualBasic;
-
 namespace Reservation.Api.CustomException;
 
 public static class CultureUtilities

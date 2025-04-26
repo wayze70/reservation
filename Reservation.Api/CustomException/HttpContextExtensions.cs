@@ -1,8 +1,7 @@
 using System.Globalization;
 using System.Net;
 using System.Net.Http.Headers;
-using Microsoft.VisualBasic.CompilerServices;
-using Reservation.Shared.Authorization;
+using Utils = Reservation.Api.JWT.Utils;
 
 namespace Reservation.Api.CustomException;
 
@@ -23,12 +22,12 @@ public static class HttpContextExtensions
 
     public static int GetAccountIdFromBearer(this HttpContext httpContext)
     {
-        return JWT.Utils.GetAccountIdFromBearerToken(httpContext.Request.Headers.Authorization.ToString());
+        return Utils.GetAccountIdFromBearerToken(httpContext.Request.Headers.Authorization.ToString());
     }
 
     public static int GetUserIdFromBearer(this HttpContext httpContext)
     {
-        return JWT.Utils.GetUserIdFromBearerToken(httpContext.Request.Headers.Authorization.ToString());
+        return Utils.GetUserIdFromBearerToken(httpContext.Request.Headers.Authorization.ToString());
     }
     
     public static string[]? GetUserLanguages(this HttpContext httpContext)

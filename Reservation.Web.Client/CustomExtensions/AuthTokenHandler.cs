@@ -1,10 +1,7 @@
-using System.Net.Http;
 using System.Net.Http.Headers;
-using System.Threading;
-using System.Threading.Tasks;
 using Blazored.LocalStorage;
 
-namespace Reservation.Web.Client.Services;
+namespace Reservation.Web.Client.CustomExtensions;
 
 public class AuthTokenHandler : DelegatingHandler
 {
@@ -15,17 +12,16 @@ public class AuthTokenHandler : DelegatingHandler
         _localStorage = localStorage;
     }
 
-    protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+    protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request,
+        CancellationToken cancellationToken)
     {
-        // Načtení tokenu z local storage
-        string? token = await _localStorage.GetItemAsync<string>(CustomExtensions.Constants.AccessToken, cancellationToken);
+        string? token = await _localStorage.GetItemAsync<string>(Constants.AccessToken, cancellationToken);
+        
         if (!string.IsNullOrWhiteSpace(token))
         {
-            // Přidání tokenu do hlavičky Authorization
             request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
         }
 
-        // Pokračování v odesílání požadavku
         return await base.SendAsync(request, cancellationToken);
     }
 }

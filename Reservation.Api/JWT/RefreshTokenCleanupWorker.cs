@@ -21,15 +21,14 @@ public class RefreshTokenCleanupWorker : BackgroundService
             {
                 using var scope = _serviceProvider.CreateScope();
                 var authService = scope.ServiceProvider.GetRequiredService<IAuthService>();
-                
+
                 await authService.CleanupInvalidRefreshTokensAsync();
                 _logger.LogInformation("Cleanup of invalid refresh tokens completed at {Time}", DateTimeOffset.Now);
 
-                // Počkáme do dalšího dne 3:00
                 var now = DateTime.Now;
                 var nextRun = now.Date.AddDays(1).AddHours(3);
                 var delay = nextRun - now;
-                
+
                 await Task.Delay(delay, stoppingToken);
             }
             catch (Exception ex)

@@ -5,9 +5,6 @@ using Blazored.LocalStorage;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
 using Reservation.Shared.Dtos;
-using Reservation.Web.Client.Services;
-
-// předpokládaná umístění RefreshTokenRequest
 
 namespace Reservation.Web.Client.CustomExtensions
 {
@@ -18,7 +15,7 @@ namespace Reservation.Web.Client.CustomExtensions
         private readonly AuthenticationStateProvider _authenticationStateProvider;
         private readonly NavigationManager _navigationManager;
 
-        public TokenRefreshHandler(ILocalStorageService localStorage, 
+        public TokenRefreshHandler(ILocalStorageService localStorage,
             IHttpClientFactory httpClientFactory,
             AuthenticationStateProvider authenticationStateProvider,
             NavigationManager navigationManager)
@@ -29,36 +26,34 @@ namespace Reservation.Web.Client.CustomExtensions
             _navigationManager = navigationManager;
         }
 
-        protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+        protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request,
+            CancellationToken cancellationToken)
         {
-            // Odeslání původního požadavku
             var response = await base.SendAsync(request, cancellationToken);
 
             if (response.StatusCode == HttpStatusCode.Unauthorized)
             {
-                // Načtení refresh tokenu z local storage
-                string? refreshToken = await _localStorage.GetItemAsync<string>(Constants.RefreshToken, cancellationToken);
+                string? refreshToken =
+                    await _localStorage.GetItemAsync<string>(Constants.RefreshToken, cancellationToken);
+
                 if (!string.IsNullOrWhiteSpace(refreshToken))
                 {
-                    // Vytvoříme HttpClient bez připojených handlerů
                     var client = _httpClientFactory.CreateClient("NoHandlerClient");
-
-                    // Vytvoříme refresh požadavek
                     var refreshRequest = new RefreshTokenRequest { RefreshToken = refreshToken };
+                    var refreshResponse =
+                        await client.PostAsJsonAsync("auth/refresh", refreshRequest, cancellationToken);
 
-                    var refreshResponse = await client.PostAsJsonAsync("auth/refresh", refreshRequest, cancellationToken);
                     if (refreshResponse.IsSuccessStatusCode)
                     {
-                        string? newAccessToken = await refreshResponse.Content.ReadFromJsonAsync<string>(cancellationToken: cancellationToken);
+                        string? newAccessToken =
+                            await refreshResponse.Content.ReadFromJsonAsync<string>(
+                                cancellationToken: cancellationToken);
+
                         if (!string.IsNullOrEmpty(newAccessToken))
                         {
-                            // Uložíme nový access token do local storage
                             await _localStorage.SetItemAsync(Constants.AccessToken, newAccessToken, cancellationToken);
-
-                            // Klonujeme původní požadavek, nastavíme nový header a znovu odešleme
                             var newRequest = await CloneHttpRequestMessageAsync(request);
                             newRequest.Headers.Authorization = new AuthenticationHeaderValue("Bearer", newAccessToken);
-
                             response.Dispose();
                             return await base.SendAsync(newRequest, cancellationToken);
                         }
@@ -69,7 +64,9 @@ namespace Reservation.Web.Client.CustomExtensions
                         {
                             if (!string.IsNullOrWhiteSpace(refreshToken))
                             {
-                                await client.PostAsJsonAsync("auth/logout", new LogoutRequest { RefreshToken = refreshToken }, cancellationToken: cancellationToken);
+                                await client.PostAsJsonAsync("auth/logout",
+                                    new LogoutRequest { RefreshToken = refreshToken },
+                                    cancellationToken: cancellationToken);
                             }
                         }
                         finally
@@ -78,6 +75,7 @@ namespace Reservation.Web.Client.CustomExtensions
                             {
                                 await authStateProvider.MarkUserAsLoggedOut();
                             }
+
                             _navigationManager.NavigateTo(Constants.Routes.Login, true);
                         }
                     }
@@ -86,13 +84,11 @@ namespace Reservation.Web.Client.CustomExtensions
 
             return response;
         }
-        
-        // Metoda pro klonování HttpRequestMessage, protože původní požadavek již nelze znovu použít
+
         private async Task<HttpRequestMessage> CloneHttpRequestMessageAsync(HttpRequestMessage request)
         {
             var clone = new HttpRequestMessage(request.Method, request.RequestUri);
 
-            // Zkopírujeme hlavičky
             foreach (var header in request.Headers)
             {
                 clone.Headers.TryAddWithoutValidation(header.Key, header.Value);
@@ -102,11 +98,13 @@ namespace Reservation.Web.Client.CustomExtensions
             {
                 byte[] contentBytes = await request.Content.ReadAsByteArrayAsync();
                 clone.Content = new ByteArrayContent(contentBytes);
+
                 foreach (var header in request.Content.Headers)
                 {
                     clone.Content.Headers.TryAddWithoutValidation(header.Key, header.Value);
                 }
             }
+
             clone.Version = request.Version;
             return clone;
         }

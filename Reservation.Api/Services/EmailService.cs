@@ -1,8 +1,7 @@
+using System.Globalization;
 using MailKit.Net.Smtp;
 using MailKit.Security;
 using MimeKit;
-using System.Globalization;
-using Microsoft.VisualBasic;
 using Reservation.Shared.Authorization;
 using Reservation.Shared.Common;
 
@@ -10,13 +9,15 @@ namespace Reservation.Api.Services
 {
     public class EmailService : IEmailService
     {
-        private const string SenderEmail = "info@rezervario.cz";
-        private const string SenderName = "Rezervario";
         private readonly IConfiguration _configuration;
+        private readonly string _senderEmail;
+        private const string SenderName = "Rezervario";
 
         public EmailService(IConfiguration configuration)
         {
             _configuration = configuration;
+            _senderEmail = configuration["EmailSettings:SenderEmail"] 
+                           ?? throw new InvalidOperationException("Chybí konfigurace EmailSettings:SenderEmail");
         }
 
         public async Task SendRegistrationSuccessEmailAsync(string recipientEmail, string firstName, string lastName)
@@ -245,7 +246,7 @@ namespace Reservation.Api.Services
             string? additionalContent = null)
         {
             var message = new MimeMessage();
-            message.From.Add(new MailboxAddress(SenderName, SenderEmail));
+            message.From.Add(new MailboxAddress(SenderName, _senderEmail));
             message.To.Add(MailboxAddress.Parse(recipientEmail));
             message.Subject = subject;
 
@@ -295,9 +296,9 @@ namespace Reservation.Api.Services
         {
             var client = new SmtpClient();
             await client.ConnectAsync("smtp.websupport.cz", 465, SecureSocketOptions.SslOnConnect);
-            string smtpPassword = _configuration["SmtpPassword"] 
+            string smtpPassword = _configuration["EmailSettings:SmtpPassword"] 
                 ?? throw new InvalidOperationException("Chybí proměnná prostředí SmtpPassword");
-            await client.AuthenticateAsync(SenderEmail, smtpPassword);
+            await client.AuthenticateAsync(_senderEmail, smtpPassword);
             return client;
         }
     }

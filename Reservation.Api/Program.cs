@@ -21,15 +21,11 @@ public class Program
 
         builder.Services.AddControllers(options => { options.Filters.Add(new AuthorizeFilter()); });
 
-        // Add services to the container.
         builder.Services.AddAuthorization();
 
-        // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
-        // Přidání služeb pro Swagger
         builder.Services.AddEndpointsApiExplorer();
         builder.Services.AddSwaggerGen(options =>
         {
-            // Přidání autentizačního schématu pro Bearer token
             options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
             {
                 Name = "Authorization",
@@ -40,7 +36,6 @@ public class Program
                 Description = "Enter '<your-access-token>' in the box below."
             });
 
-            // Nastavení globálního požadavku na Bearer token
             options.AddSecurityRequirement(new OpenApiSecurityRequirement
             {
                 {
@@ -56,13 +51,12 @@ public class Program
                 }
             });
 
-            // options.CustomSchemaIds(type => type.FullName.Replace('+', '.'));
             options.MapType<TimeOnly>(() => new OpenApiSchema
             {
                 Type = "TimeOnly",
                 Example = new OpenApiString(DateTime.UtcNow.ToString("HH:mm:ss")),
             });
-            
+
             options.MapType<DateOnly>(() => new OpenApiSchema
             {
                 Type = "DateOnly",
@@ -84,12 +78,11 @@ public class Program
         builder.Services.AddScoped<IEmployeeService, EmployeeService>();
         builder.Services.AddScoped<IPasswordHasher<User>, PasswordHasher<User>>();
 
-        
+
         builder.Services.AddDbContext<DataContext>(options =>
             options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"),
                 o => o.SetPostgresVersion(14, 0)));
 
-        // Přidání autentizace pomocí JWT
         builder.Services.AddAuthentication(options =>
             {
                 options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -110,11 +103,15 @@ public class Program
                             Exception("JWT key is missing"))),
                 };
             });
-        
+
         builder.Services.AddCors(options => options.AddPolicy(
             "wasm",
-            policy => policy.WithOrigins([builder.Configuration["BackendUrl"] ?? throw new InvalidOperationException("Chybí proměnná prostředí BackendUrl"), 
-                    builder.Configuration["FrontendUrl"]  ?? throw new InvalidOperationException("Chybí proměnná prostředí FrontendUrl")])
+            policy => policy.WithOrigins([
+                    builder.Configuration["BackendUrl"] ??
+                    throw new InvalidOperationException("Chybí proměnná prostředí BackendUrl"),
+                    builder.Configuration["FrontendUrl"] ??
+                    throw new InvalidOperationException("Chybí proměnná prostředí FrontendUrl")
+                ])
                 .AllowAnyMethod()
                 .AllowAnyHeader()
                 .AllowCredentials()));
@@ -128,9 +125,9 @@ public class Program
             app.UseSwagger();
             app.UseSwaggerUI();
         }
-        
+
         app.UseCors("wasm");
-        
+
         app.UseHttpsRedirection();
 
         app.UseAuthentication();

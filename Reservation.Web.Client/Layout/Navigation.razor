@@ -2,7 +2,6 @@
 @using Microsoft.AspNetCore.Components.Authorization
 @using Reservation.Shared.Authorization
 @inject IAuthService AuthService
-@inject NavigationManager NavigationManager
 @inject AuthenticationStateProvider AuthStateProvider
 @inject GlobalState GlobalState
 @inject IAccountService AccountService
@@ -88,7 +87,7 @@
     {
         await AuthService.LogoutAsync();
     }
-    
+
     private async Task LoadPath()
     {
         var response = await AccountService.GetPath();

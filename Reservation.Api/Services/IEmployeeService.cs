@@ -1,5 +1,3 @@
-// Services/IEmployeeService.cs
-
 using Reservation.Shared.Dtos;
 
 namespace Reservation.Api.Services;

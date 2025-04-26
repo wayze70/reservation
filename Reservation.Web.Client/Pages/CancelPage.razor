@@ -21,16 +21,17 @@
 @code {
     [Parameter]
     public int Id { get; set; }
+
     [Parameter]
     public string CancellationCode { get; set; } = string.Empty;
-    
+
     private async Task ConfirmCancellation()
     {
         if (string.IsNullOrEmpty(CancellationCode))
         {
             Snackbar.Add("Zrušení rezervace selhalo. Zkontrolujte kód zrušení", Severity.Error);
         }
-        
+
         // Zkusíme zrušit rezervaci pomocí služby ReservationService.
         var result = await ReservationService.CancelReservationAsync(Id, CancellationCode);
 

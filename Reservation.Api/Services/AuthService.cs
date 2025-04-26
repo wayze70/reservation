@@ -1,7 +1,6 @@
-using System.Globalization;
 using System.Net;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using Reservation.Api.CustomException;
 using Reservation.Api.JWT;
 using Reservation.Api.Models;
@@ -28,23 +27,21 @@ public class AuthService : IAuthService
         _emailService = emailService;
         _passwordHasher = passwordHasher;
     }
-    
+
     public async Task<AuthResponse> LoginAsync(string email, string password, string identifier, string deviceName)
     {
         var account = await _dbContext.Accounts
-            .Include(a => a.Users)
-            .FirstOrDefaultAsync(a => a.Path == identifier) 
-            ?? throw new CustomHttpException(HttpStatusCode.NotFound, 
-            "Účet s tímto identifikátorem nebyl nalezen");
+                          .Include(a => a.Users)
+                          .FirstOrDefaultAsync(a => a.Path == identifier)
+                      ?? throw new CustomHttpException(HttpStatusCode.NotFound,
+                          "Účet s tímto identifikátorem nebyl nalezen");
 
-        // Najdeme uživatele podle emailu (heslo ověříme až dále)
         var user = account.Users.FirstOrDefault(u => u.Email == email);
         if (user is null)
         {
             throw new CustomHttpException(HttpStatusCode.BadRequest, "Nevalidní email nebo heslo");
         }
 
-        // Ověříme heslo pomocí hashování
         var verificationResult = _passwordHasher.VerifyHashedPassword(user, user.PasswordHash, password);
         if (verificationResult != PasswordVerificationResult.Success &&
             verificationResult != PasswordVerificationResult.SuccessRehashNeeded)
@@ -67,7 +64,6 @@ public class AuthService : IAuthService
             User = user
         };
 
-        // Přidáme nový záznam zařízení do databáze
         _dbContext.Devices.Add(device);
         await _dbContext.SaveChangesAsync();
 
@@ -80,7 +76,6 @@ public class AuthService : IAuthService
         identifier = identifier.Trim().ToLowerInvariant();
         email = email.Trim().ToLowerInvariant();
 
-        // Všechny validace на začátku
         if (!Utils.IsPasswordLongEnough(password))
             throw new CustomHttpException(HttpStatusCode.BadRequest, "Heslo musí mít alespoň 6 znaků");
 
@@ -92,7 +87,6 @@ public class AuthService : IAuthService
             throw new CustomHttpException(HttpStatusCode.BadRequest, "Identifikátor účtu není validní");
         }
 
-        // Spojení obou validací do jednoho DB dotazu
         var existingCheck = await _dbContext.Accounts
             .Include(a => a.Users)
             .FirstOrDefaultAsync(a => a.Path == identifier);
@@ -104,7 +98,6 @@ public class AuthService : IAuthService
             throw new CustomHttpException(HttpStatusCode.Conflict,
                 "Uživatel s tímto emailem již existuje u daného účtu");
 
-        // Vytvoření účtu a vlastníка в jedné transakci
         await using var transaction = await _dbContext.Database.BeginTransactionAsync();
         try
         {

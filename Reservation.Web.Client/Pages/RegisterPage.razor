@@ -2,7 +2,6 @@
 @inject NavigationManager NavigationManager
 @inject ISnackbar Snackbar
 @using System.Net
-@using System.Security.AccessControl
 @using Reservation.Shared.Common
 @using Reservation.Web.Client.Components
 @inject IAccountService AccountService
@@ -12,7 +11,6 @@
 <PageTitle>Registrace</PageTitle>
 
 <EditForm Model="@RegistrationUser" OnValidSubmit="@OnSubmit">
-
     <MudPaper Class="mx-auto my-10 pa-6" MaxWidth="500px">
         <MudText Typo="Typo.h5" Align="Align.Center" GutterBottom="true">
             Registrace
@@ -47,7 +45,6 @@
                 <MudIcon Icon="@Icons.Material.Filled.CheckCircleOutline" Color="Color.Success"
                          Size="Size.Small"/>
             }
-
             @if (IsPathTaken)
             {
                 <MudText Color="Color.Error">Tato adresa je již obsazená</MudText>
@@ -158,10 +155,4 @@
 
         IsPathFetching = false;
     }
-
-    private bool CanBeSubmit()
-    {
-        return !IsPathFetching && !IsPathTaken && IsPathValid && !string.IsNullOrWhiteSpace(RegistrationUser.Identifier);
-    }
-
 }

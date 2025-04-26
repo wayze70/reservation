@@ -4,7 +4,6 @@ namespace Reservation.Shared.Authorization;
 
 public struct ReservationClaimNames
 {
-    
     public const string Sub = JwtRegisteredClaimNames.Sub;
     public const string Email = JwtRegisteredClaimNames.Email;
     public const string GivenName = JwtRegisteredClaimNames.GivenName;

@@ -1,7 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Reservation.Api.CustomException;
-using Reservation.Api.JWT;
 using Reservation.Api.Services;
 using Reservation.Shared.Authorization;
 using Reservation.Shared.Dtos;

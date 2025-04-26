@@ -14,10 +14,10 @@ public class AccountService : IAccountService
     private readonly IPasswordHasher<User> _passwordHasher;
 
 
-    public AccountService(DataContext dbContext)
+    public AccountService(DataContext dbContext, IPasswordHasher<User> passwordHasher)
     {
         _dbContext = dbContext;
-        _passwordHasher = new PasswordHasher<User>();
+        _passwordHasher = passwordHasher;
     }
     
     public async Task<List<AccountInfoResponse>> GetAccountsByEmailAsync(string email)

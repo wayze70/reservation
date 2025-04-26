@@ -15,37 +15,27 @@
     <MudCardHeader>
         <MudText Typo="Typo.h4">Vytvořit událost</MudText>
     </MudCardHeader>
-
     <MudDivider/>
-
     <MudCardContent>
         <EditForm Model="@NewReservation" OnValidSubmit="@OnSubmit">
             <DataAnnotationsValidator/>
             <ValidationSummary/>
-
             <MudGrid GutterSize="3">
-                <!-- Nadpis -->
                 <MudItem xs="12" sm="6">
                     <MudTextField Label="Nadpis" @bind-Value="NewReservation.Title"
                                   Required="true" Variant="Variant.Outlined" FullWidth="true"/>
                 </MudItem>
-
-                <!-- Popis -->
                 <MudItem xs="12" sm="6">
                     <MudTextField Label="Popis" @bind-Value="NewReservation.Description"
                                   Variant="Variant.Outlined" FullWidth="true"/>
                 </MudItem>
 
-                <!-- Kapacita -->
                 <MudItem xs="12" sm="4">
                     <MudNumericField T="int" Label="Max. kapacita"
                                      @bind-Value="NewReservation.Capacity"
                                      Min="0" Required="true"
                                      Variant="Variant.Outlined" FullWidth="true"/>
                 </MudItem>
-
-
-                <!-- Datumový výběr -->
                 <MudItem xs="12">
                     <MudText Typo="Typo.subtitle2" Class="mb-1">
                         <MudIcon Icon="@Icons.Material.Filled.CalendarMonth" Class="me-1"/>
@@ -65,8 +55,6 @@
                         </MudText>
                     }
                 </MudItem>
-
-                <!-- Čas začátku / konce -->
                 <MudItem xs="12" sm="6">
                     <MudText Typo="Typo.subtitle2" Class="mb-1">
                         <MudIcon Icon="@Icons.Material.Filled.Schedule" Class="me-1"/>
@@ -87,8 +75,6 @@
                                    AmPm="@(!CultureInfo.CurrentCulture.Is24Hrs())"
                                    Required="true" Variant="Variant.Outlined"/>
                 </MudItem>
-
-                <!-- Časové pásmo -->
                 <MudItem xs="12" sm="6">
                     <MudSelect T="string" Label="Časové pásmo"
                                @bind-Value="NewReservation.CustomTimeZoneId"
@@ -101,8 +87,6 @@
                         }
                     </MudSelect>
                 </MudItem>
-
-                <!-- Zrušení rezervace -->
                 <MudDivider/>
                 <MudItem xs="12">
                     <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="1">
@@ -146,9 +130,6 @@
                                      AdornmentText="m"/>
                 </MudItem>
                 <MudDivider/>
-
-
-                <!-- Aktivní -->
                 <MudItem xs="12" sm="6" Class="d-flex align-center">
                     <MudSwitch Class="me-1" Label="@(NewReservation.IsAvailable ? "Dostupná" : "Nedostupné")" Color="Color.Primary"
                                @bind-Value="NewReservation.IsAvailable"/>
@@ -160,9 +141,7 @@
             </MudGrid>
         </EditForm>
     </MudCardContent>
-
     <MudDivider/>
-
     <MudCardActions Class="justify-end px-6 pb-4 gap-2">
         <MudButton Variant="Variant.Outlined" Color="Color.Secondary" OnClick="Back">Zpět</MudButton>
         <MudButton Variant="Variant.Filled" Color="Color.Primary"
@@ -204,7 +183,6 @@
     {
         var timeZone = TimeZoneInfo.Local;
         NewReservation.CustomTimeZoneId = Constants.TimeZones.First(x => x.Id == timeZone.Id).Id;
-        // Pokud máme existující CancellationOffsetTime, převedeme ho na hodiny a minuty
     }
 
     async Task OnSubmit()
@@ -215,7 +193,6 @@
         IsSubmitting = true;
         try
         {
-            // Nastavení časového limitu pro zrušení rezervace
             NewReservation.CancellationOffset = TimeSpan.FromDays(CancellationOffsetDays)
                                                 + TimeSpan.FromHours(CancellationOffsetHours)
                                                 + TimeSpan.FromMinutes(CancellationOffsetMinutes);
@@ -234,7 +211,6 @@
 
             var reservations = new List<ReservationCreateRequest>();
 
-            // Pokud je konečný čas dřívější než začátek, předpokládáme rezervaci, která pokračuje do dalšího dne.
             if (EndTime < StartTime)
             {
                 EndTime = EndTime.Value.Add(TimeSpan.FromDays(1));
@@ -280,7 +256,6 @@
         }
     }
 
-    // Při kliknutí na den se dané datum přidá/odebere z výběru
     private void ToggleDateSelection(DateTime? date)
     {
         if (!date.HasValue)

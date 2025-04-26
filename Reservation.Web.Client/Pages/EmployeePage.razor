@@ -41,7 +41,6 @@ else
     <RowTemplate>
       @if (editingEmployeeId == @context.Id)
       {
-        <!-- Řádek v režimu editace -->
         <MudTd DataLabel="Jméno">
           <MudTextField T="string" Label="Jméno" @bind-Value="editEmployee.FirstName" Required="true"/>
         </MudTd>
@@ -97,13 +96,10 @@ else
 
 @code {
 
-  // Seznam zaměstnanců
   private List<EmployeeResponse> Employees;
 
-  // ID zaměstnance, který se aktuálně edituje (null pokud není nikdo v režimu editace)
   private int? editingEmployeeId = null;
 
-  // Model pro úpravu - využíváme DTO určené pro aktualizaci
   private EmployeeUpdateRequest editEmployee = new EmployeeUpdateRequest();
 
   protected override async Task OnInitializedAsync()
@@ -175,18 +171,14 @@ else
 
   private async Task RemoveEmployee(EmployeeResponse employee)
   {
-    // 1) Zeptáme se uživatele
     bool? result = await DialogService.ShowMessageBox(
       "Potvrzení smazání",
       $"Opravdu chcete smazat pracovníka {employee.FirstName} {employee.LastName}?",
       yesText: "Ano",
       noText: "Ne");
 
-    // 2) Pokud uživatel zvolí Ne nebo zavře okno, nic neděláme
-    if (result != true)
-      return;
+    if (result != true) return;
 
-    // 3) Jinak pokračujeme se smazáním
     var response = await EmployeeService.DeleteEmployee(employee.Id);
     if (response.IsSuccess)
     {
@@ -200,13 +192,14 @@ else
         Snackbar.Add("Nemůžete smazat sami sebe.", Severity.Error);
         return;
       }
+
       Snackbar.Add("Nepodařilo se smazat zaměstnance.", Severity.Error);
     }
   }
-
 
   private void CreateNewEmployee()
   {
     NavigationManager.NavigateTo("/ucet/zamestnanci/vytvorit");
   }
+
 }

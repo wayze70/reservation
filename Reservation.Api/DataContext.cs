@@ -7,6 +7,7 @@ namespace Reservation.Api;
 public class DataContext : DbContext
 {
     private readonly IEmailService _emailService;
+
     public DataContext(DbContextOptions<DataContext> options, IEmailService emailService) : base(options)
     {
         _emailService = emailService;
@@ -17,10 +18,10 @@ public class DataContext : DbContext
     public DbSet<Customer> Customers { get; set; }
     public DbSet<Device> Devices { get; set; }
     public DbSet<User> Users { get; set; }
-    
+
     public override int SaveChanges()
         => SaveChangesAsync().GetAwaiter().GetResult();
-    
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         // Account -> Users
@@ -51,9 +52,8 @@ public class DataContext : DbContext
             .HasForeignKey(u => u.ReservationId)
             .OnDelete(DeleteBehavior.Cascade);
     }
-    
-    
-    
+
+
     public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
     {
         var deletedAccounts = ChangeTracker.Entries<Account>()
@@ -83,7 +83,6 @@ public class DataContext : DbContext
 
         foreach (var account in deletedAccounts)
         {
-            // Notify users
             foreach (var owner in account.Users)
             {
                 await _emailService.SendDeleteAccountEmailAsync(
@@ -92,8 +91,7 @@ public class DataContext : DbContext
                     owner.LastName,
                     account.Path);
             }
- 
-            // Notify customers
+
             foreach (var reservation in account.Reservations)
             {
                 foreach (var user in reservation.Customers)

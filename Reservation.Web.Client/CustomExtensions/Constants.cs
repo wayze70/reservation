@@ -1,7 +1,4 @@
-using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Linq;
 using Reservation.Shared.Authorization;
 
 namespace Reservation.Web.Client.CustomExtensions;
@@ -36,7 +33,6 @@ public static class Constants
     public const string AccessToken = "accessToken";
     public const string RefreshToken = "refreshToken";
     public const string Bearer = "Bearer";
-
     public static readonly ReadOnlyCollection<TimeZoneInfo> TimeZones = TimeZoneInfo.GetSystemTimeZones();
 
     public record RoleInfo(string Name, string DisplayName, string Description)
@@ -44,7 +40,8 @@ public static class Constants
         private static readonly RoleInfo[] Roles =
         [
             new(nameof(Role.Employee), "Zaměstnanec", "Může pouze číst události"),
-            new(nameof(Role.Reservationist), "Správce rezervací", "Může vytvářet, upravovat a mazat události i rezervace"),
+            new(nameof(Role.Reservationist), "Správce rezervací",
+                "Může vytvářet, upravovat a mazat události i rezervace"),
             new(nameof(Role.Admin), "Administrátor", "Má přístup do celého systému"),
         ];
 

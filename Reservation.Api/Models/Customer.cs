@@ -24,7 +24,6 @@ public class Customer
     [StringLength(500)]
     public string? Note { get; set; }
     
-    // Unikátní kód pro zrušení rezervace – generuj např. jako GUID při vytváření záznamu Guid.NewGuid().ToString()
     [Required]
     [StringLength(100)]
     public string CancellationCode { get; set; }

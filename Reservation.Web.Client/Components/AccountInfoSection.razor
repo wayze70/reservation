@@ -7,6 +7,11 @@
 
 <MudExpansionPanel Text="Informace o účtu"
                    Expanded="@(!IsFetching && (string.IsNullOrWhiteSpace(AccountInfo.Organization) || string.IsNullOrWhiteSpace(AccountInfo.Description)))">
+    <MudTooltip
+        Text="Zde můžete upravit informace o účtu. Tyto informace budou zobrazeny na stránce pro návštěvníky."
+        ShowOnClick="true">
+        <MudIcon Icon="@Icons.Material.Filled.Info" Color="Color.Primary" Size="Size.Small"/>
+    </MudTooltip>
     <EditForm Model="@AccountInfo" OnValidSubmit="OnAccountInfoValidSubmit">
         <MudTextField MaxLength="50" T="string" Label="Organizace" @bind-Value="AccountInfo.Organization"/>
         <MudTextField MaxLength="1000" AutoGrow="true" T="string" Label="Popis" @bind-Value="AccountInfo.Description"/>
@@ -63,5 +68,4 @@
 
         IsFetching = false;
     }
-
 }

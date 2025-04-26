@@ -1,4 +1,3 @@
-using System.Net;
 using System.Net.Http.Json;
 using Reservation.Web.Client.CustomExtensions;
 

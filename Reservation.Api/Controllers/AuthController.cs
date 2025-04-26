@@ -1,12 +1,9 @@
-using System.Globalization;
 using System.Net;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Reservation.Api.CustomException;
-using Reservation.Api.JWT;
 using Reservation.Api.Services;
 using Reservation.Shared.Authorization;
-using Reservation.Shared.Common;
 using Reservation.Shared.Dtos;
 
 namespace Reservation.Api.Controllers;
@@ -23,19 +20,18 @@ public class AuthController : ControllerBase
     {
         _authService = authService;
     }
-    
+
     [HttpPost("login")]
     public async Task<ActionResult<AuthResponse>> Login([FromBody] LoginRequest request)
     {
         string userAgent = Request.Headers.UserAgent.ToString();
+
         if (string.IsNullOrWhiteSpace(userAgent))
         {
             userAgent = UnknownDevice;
         }
-        
-        // Předáme také DeviceName do metody LoginAsync
-        var authResponse = await _authService.LoginAsync(request.Email, request.Password, request.Identifier, userAgent);
-        return Ok(authResponse);
+
+        return Ok(await _authService.LoginAsync(request.Email, request.Password, request.Identifier, userAgent));
     }
 
 
@@ -43,42 +39,42 @@ public class AuthController : ControllerBase
     public async Task<ActionResult<AuthResponse>> Register([FromBody] RegistrationRequest request)
     {
         string userAgent = Request.Headers.UserAgent.ToString();
+
         if (string.IsNullOrWhiteSpace(userAgent))
         {
             userAgent = UnknownDevice;
         }
 
-        var authResponse = await _authService.RegisterAsync(request.FirstName, request.LastName, request.Identifier, request.Email,
-            request.Password, userAgent);
-
-        return Ok(authResponse);
+        return Ok(await _authService.RegisterAsync(request.FirstName, request.LastName, request.Identifier,
+            request.Email, request.Password, userAgent));
     }
 
     [HttpPost("refresh")]
     public async Task<ActionResult<string>> Refresh([FromBody] RefreshTokenRequest request)
     {
-        string newAccessToken = await _authService.RefreshAsync(request.RefreshToken);
-        return Ok(newAccessToken);
+        return Ok(await _authService.RefreshAsync(request.RefreshToken));
     }
-    
+
     [HttpPost("logout")]
     public async Task<ActionResult<bool>> Logout([FromBody] LogoutRequest request)
     {
         if (string.IsNullOrWhiteSpace(request.RefreshToken))
+        {
             throw new CustomHttpException(HttpStatusCode.BadRequest, "Refresh token je prázdný");
+        }
 
-        bool response = await _authService.LogoutAsync(request.RefreshToken);
-        return Ok(response);
+        return Ok(await _authService.LogoutAsync(request.RefreshToken));
     }
-    
+
     [HttpPost("logout-all")]
     [Authorize(Roles = nameof(Role.Admin))]
     public async Task<ActionResult<bool>> LogoutAllDevices([FromBody] LogoutRequest request)
     {
         if (string.IsNullOrWhiteSpace(request.RefreshToken))
+        {
             throw new CustomHttpException(HttpStatusCode.BadRequest, "Refresh token je prázdný");
-        
-        bool response = await _authService.LogoutAllDevicesAsync(request.RefreshToken);
-        return Ok(response);
+        }
+
+        return Ok(await _authService.LogoutAllDevicesAsync(request.RefreshToken));
     }
 }

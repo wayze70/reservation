@@ -1,6 +1,3 @@
-using System.Globalization;
-using Reservation.Web.Client.CustomExtensions;
-
 namespace Reservation.Web.Client;
 
 public class GlobalState

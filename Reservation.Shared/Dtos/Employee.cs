@@ -1,5 +1,3 @@
-// DTOs/EmployeeResponse.cs
-
 using System.ComponentModel.DataAnnotations;
 using Reservation.Shared.Authorization;
 using Reservation.Shared.Common;

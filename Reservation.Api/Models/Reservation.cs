@@ -1,6 +1,5 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using Reservation.Shared.Dtos;
 
 namespace Reservation.Api.Models;
 
@@ -31,11 +30,9 @@ public class Reservation
     [Required]
     public bool IsAvailable { get; set; }
 
-    // Nové vlastnosti pro přihlašovací interval a možnost zrušení rezervace
     [Required]
     public TimeSpan CancellationOffset { get; set; } = new TimeSpan(0, 0, 0);
     
-    // od -12UTC po +14UTC
     [Required]
     [MaxLength(100)]
     public string CustomTimeZoneId { get; set; } = string.Empty;

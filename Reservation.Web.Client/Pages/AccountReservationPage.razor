@@ -5,12 +5,10 @@
 @inject ISnackbar Snackbar
 @inject GlobalState GlobalState
 
-
 <PageTitle>Události</PageTitle>
 @attribute [Authorize]
 
 <MudGrid>
-    <!-- Levý panel: Kalendář a tlačítko pro vytvoření rezervace -->
     <MudItem xs="12" sm="6" md="4">
         <MudPaper Class="pa-6" Elevation="4" Style="overflow-y: hidden;">
             <MudStack Spacing="2">
@@ -37,8 +35,6 @@
             </MudStack>
         </MudPaper>
     </MudItem>
-
-    <!-- Pravý panel: Seznam rezervací -->
     <MudItem xs="12" sm="6" md="8">
         <MudStack Spacing="2">
             @if (Reservations is null)
@@ -47,7 +43,8 @@
             }
             else if (Reservations.Count == 0)
             {
-                <MudText Typo="Typo.subtitle1" Align="Align.Center" Class="mt-2">Nebyly nalezeny žádné události.</MudText>
+                <MudText Typo="Typo.subtitle1" Align="Align.Center" Class="mt-2">Nebyly nalezeny žádné události.
+                </MudText>
             }
             else if (!Reservations.Any(r =>
                              !GlobalState.SelectedDateAdmin.HasValue || r.Start.ToLocalTime().Date == GlobalState.SelectedDateAdmin.Value.Date))
@@ -69,7 +66,7 @@
                                 <MudCardContent>
                                     <MudText Typo="Typo.h6">@reservation.Title</MudText>
                                     <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="1" Class="me-1">
-                                        <MudIcon Icon="@Icons.Material.Filled.Schedule" />
+                                        <MudIcon Icon="@Icons.Material.Filled.Schedule"/>
                                         <MudText>
                                             @startDateTime.ToShortTimeString() – @reservation.End.ToLocalTime().ToShortTimeString()
                                         </MudText>

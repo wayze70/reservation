@@ -7,10 +7,8 @@
 
 <PageTitle>@GlobalState.Title</PageTitle>
 
-<!-- Datumový filtr -->
 <MudGrid>
 
-    <!-- Levý panel: Datumový filtr -->
     <MudItem xs="12" sm="6" md="4">
         <MudPaper Class="pa-6" Elevation="4" Style="overflow-y: hidden;">
             <MudStack Spacing="2">
@@ -36,7 +34,6 @@
         </MudPaper>
     </MudItem>
 
-    <!-- Pravý panel: Seznam rezervací -->
     <MudItem xs="12" sm="6" md="8">
         @if (Reservations is null)
         {
@@ -57,7 +54,6 @@
             <MudGrid>
                 @foreach (var reservation in Reservations)
                 {
-                    // Pokud rezervace není dostupná nebo je plná, přeskočíme ji
                     if (!reservation.IsAvailable || reservation.CurrentCapacity >= reservation.Capacity)
                     {
                         continue;
@@ -68,7 +64,6 @@
                     {
                         continue;
                     }
-
 
                     <MudItem xs="12" sm="12" md="6" lg="4">
                         <MudCard Elevation="2">
@@ -163,7 +158,6 @@
         GlobalState.SelectedDate = Reservations?.FirstOrDefault()?.Start.ToLocalTime().Date;
     }
 
-    // Funkce pro deaktivaci datumů, u kterých není žádná rezervace
     private bool DisableDateWithoutRecords(DateTime date)
     {
         if (Reservations == null)

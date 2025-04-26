@@ -12,14 +12,10 @@
                StartIcon="@Icons.Material.Filled.ArrowBack">
         Zpět
     </MudButton>
-    <!-- HEADER -->
     <MudCardHeader>
         <MudText Typo="Typo.h5">Přihlášení k rezervaci</MudText>
-
     </MudCardHeader>
     <MudDivider/>
-
-    <!-- FORMULÁŘ -->
     <EditForm Model="@SignUpRequest" OnValidSubmit="OnSubmit">
         <DataAnnotationsValidator/>
         <MudCardContent>
@@ -35,7 +31,6 @@
                                   FullWidth="true"
                                   Adornment="Adornment.Start"/>
                 </MudItem>
-
                 <MudItem xs="12" sm="6">
                     <MudTextField T="string"
                                   Label="Příjmení"
@@ -45,7 +40,6 @@
                                   FullWidth="true"
                                   Adornment="Adornment.Start"/>
                 </MudItem>
-
                 <MudItem xs="12">
                     <EmailInput
                         @bind-Value="SignUpRequest.Email"
@@ -55,7 +49,6 @@
                         Adornment="Adornment.Start"
                         AdornmentIcon="@Icons.Material.Filled.Email"/>
                 </MudItem>
-
                 <MudItem xs="12">
                     <MudTextField T="string"
                                   Label="Poznámka"
@@ -69,8 +62,6 @@
                 </MudItem>
             </MudGrid>
         </MudCardContent>
-
-        <!-- ACTIONS -->
         <MudDivider/>
         <MudCardActions Class="justify-end">
             <MudButton ButtonType="ButtonType.Submit"
@@ -85,25 +76,21 @@
 
 @code {
 
-    // Parametr z URL, který určuje, ke které rezervaci se uživatel přihlašuje
     [Parameter]
     public int ReservationId { get; set; }
 
     [Parameter, EditorRequired]
     public string Path { get; set; } = string.Empty;
 
-    // Model pro přihlášení k rezervaci
     ReservationSignUpRequest SignUpRequest { get; set; } = new ReservationSignUpRequest();
 
     private async Task OnSubmit()
     {
-        // Předpokládáme, že metoda SignUpForReservationAsync vrací ApiResponse<string> s potvrzením nebo chybovou zprávou
         var response = await ReservationService.SignInToReservation(ReservationId, SignUpRequest);
 
         if (response.IsSuccess)
         {
             Snackbar.Add("Úspěšně jste se rezervovali k události", Severity.Success);
-            // Přesměrování na detail rezervace nebo jinou stránku
             NavigationManager.NavigateTo(Constants.Routes.ReservationDetail(Path, ReservationId));
         }
         else if (response.StatusCode == HttpStatusCode.BadRequest)
@@ -124,5 +111,4 @@
     {
         NavigationManager.NavigateTo(Constants.Routes.ReservationDetail(Path, ReservationId));
     }
-
 }
