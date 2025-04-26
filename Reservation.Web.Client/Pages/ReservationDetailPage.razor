@@ -1,5 +1,4 @@
 @page "/rezervace/{Path}/{Id:int}"
-@using System.Globalization
 @using Reservation.Shared.Common
 @inject IReservationService ReservationService
 @inject NavigationManager NavigationManager
@@ -39,8 +38,7 @@ else
                 @ReservationDetail.Description
             </MudText>
 
-            <MudGrid GutterSize="3">
-                @* START *@
+            <MudGrid>
                 <MudItem xs="12" sm="6">
                     <MudPaper Outlined Class="pa-3">
                         <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="1">
@@ -59,7 +57,6 @@ else
                     </MudPaper>
                 </MudItem>
 
-                @* END *@
                 <MudItem xs="12" sm="6">
                     <MudPaper Outlined Class="pa-3">
                         <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="1">
@@ -78,7 +75,6 @@ else
                     </MudPaper>
                 </MudItem>
 
-                @* TIMEZONE ALERT *@
                 @if (!isSameTimeZone)
                 {
                     <MudItem xs="12">
@@ -88,7 +84,6 @@ else
                     </MudItem>
                 }
 
-                @* CAPACITY & STATUS *@
                 <MudItem xs="12" sm="6">
                     <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="1">
                         <MudIcon Icon="@Icons.Material.Rounded.EventSeat"/>
@@ -101,7 +96,6 @@ else
                     </MudStack>
                 </MudItem>
 
-                @* CANCELLATION *@
                 @if (ReservationDetail.CancellationOffset != TimeSpan.Zero)
                 {
                     <MudItem xs="12">
@@ -109,7 +103,7 @@ else
                         <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="1">
                             <MudIcon Icon="@Icons.Material.Filled.Cancel"/>
                             <MudText Typo="Typo.caption" Color="Color.Secondary">
-                                Zrušení možné 
+                                Zrušení možné
                                 <strong>
                                     @($"{ReservationDetail.CancellationOffset.Days} d. a {ReservationDetail.CancellationOffset:h\\:mm}")
                                 </strong>

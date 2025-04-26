@@ -27,7 +27,7 @@ else
         <EditForm Model="@ReservationDetail" OnValidSubmit="@SaveChanges">
             <DataAnnotationsValidator/>
 
-            <MudGrid GutterSize="3">
+            <MudGrid>
                 <MudItem xs="12" sm="6">
                     <MudTextField T="string"
                                   Label="Nadpis"
@@ -117,7 +117,6 @@ else
                                              Max="59"
                                              Variant="Variant.Outlined"
                                              FullWidth="true"
-                                             Dense="true"
                                              Adornment="Adornment.End"
                                              AdornmentText="m"/>
                         </MudItem>

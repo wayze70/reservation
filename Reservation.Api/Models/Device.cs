@@ -10,11 +10,11 @@ public class Device
 
     [Required]
     [StringLength(1000)]
-    public string DeviceName { get; set; }
+    public string DeviceName { get; set; } = string.Empty;
 
     [Required]
     [StringLength(1000)]
-    public string RefreshToken { get; set; }
+    public string RefreshToken { get; set; } = string.Empty;
     
     [Required]
     [ForeignKey("User")]

@@ -20,7 +20,7 @@
         <EditForm Model="@NewReservation" OnValidSubmit="@OnSubmit">
             <DataAnnotationsValidator/>
             <ValidationSummary/>
-            <MudGrid GutterSize="3">
+            <MudGrid>
                 <MudItem xs="12" sm="6">
                     <MudTextField Label="Nadpis" @bind-Value="NewReservation.Title"
                                   Required="true" Variant="Variant.Outlined" FullWidth="true"/>
