@@ -1,4 +1,4 @@
-@page "/ucet/udalost/{reservationId:int}"
+@page "/ucet/udalost/{ReservationId:int}"
 @using Microsoft.AspNetCore.Authorization
 @using Reservation.Shared.Common
 @inject IReservationService ReservationService
@@ -160,7 +160,6 @@ else
         </EditForm>
     </MudPaper>
 
-    <!-- Seznam přihlášených uživatelů -->
     <MudPaper Class="pa-6" Elevation="4">
         <MudText Typo="Typo.h5" GutterBottom="true">
             Přihlášené uživatelé
@@ -200,21 +199,21 @@ else
 @code {
 
     [Parameter]
-    public int reservationId { get; set; }
+    public int ReservationId { get; set; }
 
     DateTime? Date { get; set; }
     DateTime? DateEnd { get; set; }
     TimeSpan? StartTime { get; set; }
     TimeSpan? EndTime { get; set; }
-    int CancellationOffsetDays { get; set; } = 0;
+    int CancellationOffsetDays { get; set; }
     int CancellationOffsetHours { get; set; }
     int CancellationOffsetMinutes { get; set; }
 
-    ReservationResponseWithCustomers ReservationDetail { get; set; } = new();
+    ReservationResponseWithCustomers? ReservationDetail { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
-        var response = await ReservationService.GetReservationWithUserAsync(reservationId);
+        var response = await ReservationService.GetReservationWithUserAsync(ReservationId);
         if (response is { IsSuccess: true, Data: not null })
         {
             ReservationDetail = response.Data;
@@ -236,6 +235,18 @@ else
 
     private async Task SaveChanges()
     {
+        if (ReservationDetail == null)
+        {
+            Snackbar.Add("Událost nebyla nalezena.", Severity.Error);
+            return;
+        }
+        
+        if (!Date.HasValue || !StartTime.HasValue || !EndTime.HasValue )
+        {
+            Snackbar.Add("Při odesilání došlo k chybě. Zkontrolujte datum.", Severity.Error);
+            return;
+        }
+        
         var customTimeZone = TimeZoneInfo.FindSystemTimeZoneById(ReservationDetail.CustomTimeZoneId);
 
         var startLocal = Date.Value.Date.Add(StartTime.Value);
@@ -263,7 +274,7 @@ else
             CustomTimeZoneId = ReservationDetail.CustomTimeZoneId
         };
 
-        var response = await ReservationService.UpdateReservationAsync(updatedReservation, reservationId);
+        var response = await ReservationService.UpdateReservationAsync(updatedReservation, ReservationId);
         if (response.IsSuccess)
         {
             Snackbar.Add("Změny byly úspěšně uloženy.", Severity.Success);
@@ -276,7 +287,7 @@ else
 
     private async Task CancelReservation()
     {
-        var response = await ReservationService.DeleteReservationAsync(reservationId);
+        var response = await ReservationService.DeleteReservationAsync(ReservationId);
         if (response.IsSuccess)
         {
             Snackbar.Add("Událost byla smazána.", Severity.Success);
@@ -290,6 +301,12 @@ else
 
     private async Task RemoveUser(CustomerResponse customer)
     {
+        if (ReservationDetail == null)
+        {
+            Snackbar.Add("Událost nebyla nalezena.", Severity.Error);
+            return;
+        }
+        
         bool? result = await DialogService.ShowMessageBox(
             "Potvrzení smazání",
             $"Opravdu chcete smazat pracovníka {customer.FirstName} {customer.LastName}?",
@@ -302,7 +319,7 @@ else
         var response = await ReservationService.RemoveUserFromReservationAsync(new RemoveCustomerFromReservationRequest()
         {
             UserEmail = customer.Email,
-            ReservationId = reservationId
+            ReservationId = ReservationId
         });
         if (response.IsSuccess)
         {

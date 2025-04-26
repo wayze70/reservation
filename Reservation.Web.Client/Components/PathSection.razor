@@ -99,10 +99,10 @@
 
 @code
 {
-  public string Path { get; set; } = string.Empty;
-  public bool IsPathFetching { get; set; }
-  public bool IsPathTaken { get; set; }
-  public bool IsPathValid { get; set; } = true;
+  string Path { get; set; } = string.Empty;
+  bool IsPathFetching { get; set; }
+  bool IsPathTaken { get; set; }
+  bool IsPathValid { get; set; } = true;
 
   protected override async Task OnInitializedAsync()
   {
@@ -150,10 +150,10 @@
 
   private async Task LoadPath()
   {
-    GlobalState.Identifier = (await AccountService.GetPath()).Data;
-    if (GlobalState.Identifier is not null)
+    var response = await AccountService.GetPath();
+    if (response.IsSuccess)
     {
-      Path = GlobalState.Identifier;
+      GlobalState.Identifier = response.Data ?? string.Empty;
     }
   }
 }

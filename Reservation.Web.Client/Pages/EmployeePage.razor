@@ -39,19 +39,19 @@ else
       <MudTh>Akce</MudTh>
     </HeaderContent>
     <RowTemplate>
-      @if (editingEmployeeId == @context.Id)
+      @if (_editingEmployeeId == @context.Id)
       {
         <MudTd DataLabel="Jméno">
-          <MudTextField T="string" Label="Jméno" @bind-Value="editEmployee.FirstName" Required="true"/>
+          <MudTextField T="string" Label="Jméno" @bind-Value="EditedEmployee.FirstName" Required="true"/>
         </MudTd>
         <MudTd DataLabel="Příjmení">
-          <MudTextField T="string" Label="Příjmení" @bind-Value="editEmployee.LastName" Required="true"/>
+          <MudTextField T="string" Label="Příjmení" @bind-Value="EditedEmployee.LastName" Required="true"/>
         </MudTd>
         <MudTd DataLabel="Email">
-          <EmailInput Variant="Variant.Text" Adornment="Adornment.None" @bind-Value="editEmployee.Email"/>
+          <EmailInput Variant="Variant.Text" Adornment="Adornment.None" @bind-Value="EditedEmployee.Email"/>
         </MudTd>
         <MudTd DataLabel="Pozice">
-          <MudSelect T="Role" Label="Pozice" @bind-Value="editEmployee.Role" Required="true">
+          <MudSelect T="Role" Label="Pozice" @bind-Value="EditedEmployee.Role" Required="true">
             @foreach (var role in Constants.RoleInfo.GetAll())
             {
               <MudSelectItem Value="@role.Key">@role.Value.DisplayName</MudSelectItem>
@@ -81,7 +81,7 @@ else
         </MudTd>
         <MudTd DataLabel="Akce">
           <MudButton Variant="Variant.Outlined" Color="Color.Primary" Size="Size.Small"
-                     OnClick="@(() => EditEmployee(@context))">
+                     OnClick="@(() => EditingEmployee(@context))">
             Upravit
           </MudButton>
           <MudButton Variant="Variant.Outlined" Color="Color.Error" Size="Size.Small"
@@ -96,11 +96,11 @@ else
 
 @code {
 
-  private List<EmployeeResponse> Employees;
+  List<EmployeeResponse>? Employees { get; set; }
 
-  private int? editingEmployeeId = null;
+  int? _editingEmployeeId = null;
 
-  private EmployeeUpdateRequest editEmployee = new EmployeeUpdateRequest();
+  EmployeeUpdateRequest EditedEmployee { get; set; } = new EmployeeUpdateRequest();
 
   protected override async Task OnInitializedAsync()
   {
@@ -120,10 +120,10 @@ else
     }
   }
 
-  private void EditEmployee(EmployeeResponse employee)
+  private void EditingEmployee(EmployeeResponse employee)
   {
-    editingEmployeeId = employee.Id;
-    editEmployee = new EmployeeUpdateRequest
+    _editingEmployeeId = employee.Id;
+    EditedEmployee = new EmployeeUpdateRequest
     {
       FirstName = employee.FirstName,
       LastName = employee.LastName,
@@ -134,20 +134,20 @@ else
 
   private async Task SaveEmployee(int employeeId)
   {
-    var response = await EmployeeService.UpdateEmployee(employeeId, editEmployee);
+    var response = await EmployeeService.UpdateEmployee(employeeId, EditedEmployee);
     if (response.IsSuccess)
     {
       Snackbar.Add("Zaměstnanec byl úspěšně aktualizován.", Severity.Success);
-      var employeeToUpdate = Employees.FirstOrDefault(e => e.Id == employeeId);
+      var employeeToUpdate = Employees?.FirstOrDefault(e => e.Id == employeeId);
       if (employeeToUpdate is not null)
       {
-        employeeToUpdate.FirstName = editEmployee.FirstName;
-        employeeToUpdate.LastName = editEmployee.LastName;
-        employeeToUpdate.Email = editEmployee.Email;
-        employeeToUpdate.Role = editEmployee.Role;
+        employeeToUpdate.FirstName = EditedEmployee.FirstName;
+        employeeToUpdate.LastName = EditedEmployee.LastName;
+        employeeToUpdate.Email = EditedEmployee.Email;
+        employeeToUpdate.Role = EditedEmployee.Role;
       }
 
-      editingEmployeeId = null;
+      _editingEmployeeId = null;
     }
     else if (response.StatusCode == HttpStatusCode.Conflict)
     {
@@ -165,8 +165,8 @@ else
 
   private void CancelEdit()
   {
-    editingEmployeeId = null;
-    editEmployee = new EmployeeUpdateRequest();
+    _editingEmployeeId = null;
+    EditedEmployee = new EmployeeUpdateRequest();
   }
 
   private async Task RemoveEmployee(EmployeeResponse employee)
