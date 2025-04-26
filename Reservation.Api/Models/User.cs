@@ -33,7 +33,7 @@ namespace Reservation.Api.Models
         public int AccountId { get; set; }
         
         [ForeignKey("AccountId")]
-        public virtual Account Account { get; set; }
+        public virtual Account Account { get; set; } = default!;
         
         public virtual ICollection<Device> Devices { get; set; } = new List<Device>();
     }

@@ -19,9 +19,9 @@ public class Device
     [Required]
     [ForeignKey("User")]
     public int UserId { get; set; }
-    public virtual User User { get; set; }
+    public virtual User User { get; set; }= default!;
 
     [ForeignKey("Account")]
     public int AccountId { get; set; }
-    public Account Account { get; set; }
+    public Account Account { get; set; }= default!;
 }

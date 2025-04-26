@@ -41,5 +41,5 @@ public class Reservation
     public virtual Account Account { get; set; } = default!;
     
     [InverseProperty("Reservation")]
-    public virtual List<Customer> Customers { get; set; } = new List<Customer>();
+    public virtual ICollection<Customer> Customers { get; set; } = new List<Customer>();
 }
