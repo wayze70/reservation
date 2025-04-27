@@ -85,7 +85,6 @@
     </MudStack>
   </MudCardContent>
 
-  <!-- Actions -->
   <MudDivider/>
   <MudCardActions>
     <MudButton OnClick="UpdatePath"
@@ -153,7 +152,7 @@
     var response = await AccountService.GetPath();
     if (response.IsSuccess)
     {
-      GlobalState.Identifier = response.Data ?? string.Empty;
+      GlobalState.Identifier = Path = response.Data ?? string.Empty;
     }
   }
 }
