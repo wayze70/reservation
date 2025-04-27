@@ -40,13 +40,15 @@ public class ReservationReminderWorker : BackgroundService
         using var scope = _scopeFactory.CreateScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<DataContext>();
         var emailService = scope.ServiceProvider.GetRequiredService<IEmailService>();
+        var now = DateTime.UtcNow;
+        var tomorrow = now.AddHours(24);
 
-        var tomorrow = DateTime.UtcNow.AddHours(24);
         var reservations = await dbContext.Reservations
             .Include(r => r.Customers)
-            .Where(r => r.StartTime > tomorrow.AddHours(24) &&
+            .Where(r => r.StartTime > now && 
                         r.StartTime < tomorrow)
             .ToListAsync(stoppingToken);
+
 
         foreach (var reservation in reservations)
         {

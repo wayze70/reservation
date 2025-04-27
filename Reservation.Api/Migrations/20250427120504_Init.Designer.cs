@@ -12,7 +12,7 @@ using Reservation.Api;
 namespace Reservation.Api.Migrations
 {
     [DbContext(typeof(DataContext))]
-    [Migration("20250427035735_Init")]
+    [Migration("20250427120504_Init")]
     partial class Init
     {
         /// <inheritdoc />
