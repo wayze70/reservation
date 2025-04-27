@@ -30,7 +30,10 @@ Pro správné spuštění projektu lokálně je potřeba:
   },
   "FrontendUrl": "https://localhost:port",
   "BackendUrl": "https://localhost:port",
-  "SmtpPassword": "yourSmtpPassword"
+  "EmailSettings": {
+    "SenderEmail": "example@domain.com",
+    "SmtpPassword": "yourSmtpPassword"
+  }
 }
 ```
 
