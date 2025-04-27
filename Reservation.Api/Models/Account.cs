@@ -18,7 +18,6 @@ public class Account
     [StringLength(50)]
     public string Path { get; set; } = string.Empty;
 
-    public virtual ICollection<Device> Devices { get; set; } = new List<Device>();
     public virtual ICollection<Reservation> Reservations { get; set; } = new List<Reservation>();
     public virtual ICollection<User> Users { get; set; } = new List<User>();
 }

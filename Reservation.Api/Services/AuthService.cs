@@ -58,8 +58,6 @@ public class AuthService : IAuthService
         {
             DeviceName = deviceName,
             RefreshToken = refreshToken,
-            AccountId = account.Id,
-            Account = account,
             UserId = user.Id,
             User = user
         };
@@ -142,13 +140,14 @@ public class AuthService : IAuthService
             throw new CustomHttpException(HttpStatusCode.BadRequest, "Nevalidní token");
 
         int ownerId = GetOwnerId(refreshToken);
-
+        
         var owner = await _dbContext.Users
             .Include(o => o.Account)
-            .ThenInclude(a => a.Devices)
+            .Include(o => o.Devices)
             .FirstOrDefaultAsync(o =>
                 o.Id == ownerId &&
-                o.Account.Devices.Any(d => d.RefreshToken == refreshToken));
+                o.Devices.Any(d => d.RefreshToken == refreshToken));
+
 
         if (owner is null)
             throw new CustomHttpException(HttpStatusCode.BadRequest, "Neplatný refresh token nebo vlastník");
@@ -167,11 +166,10 @@ public class AuthService : IAuthService
         int ownerId = GetOwnerId(refreshToken);
 
         var device = await _dbContext.Devices
-            .Include(d => d.Account)
-            .ThenInclude(a => a.Users)
+            .Include(d => d.User)
             .FirstOrDefaultAsync(d =>
                 d.RefreshToken == refreshToken &&
-                d.Account.Users.Any(o => o.Id == ownerId));
+                d.UserId == ownerId);
 
         if (device is null)
             throw new CustomHttpException(HttpStatusCode.BadRequest,
@@ -200,36 +198,20 @@ public class AuthService : IAuthService
             throw new CustomHttpException(HttpStatusCode.BadRequest, "Nevalidní token");
 
         int ownerId = GetOwnerId(refreshToken);
-        int accountId = GetAccountId(refreshToken);
 
-        var account = await _dbContext.Accounts
-            .Include(a => a.Users)
-            .Include(a => a.Devices)
-            .FirstOrDefaultAsync(a => a.Id == accountId);
+        var user = await _dbContext.Users
+            .Include(u => u.Devices)
+            .FirstOrDefaultAsync(u => u.Id == ownerId);
 
-        if (account == null || !account.Users.Any(o => o.Id == ownerId))
-            throw new CustomHttpException(HttpStatusCode.BadRequest, "Neplatný účet nebo vlastník");
+        if (user == null)
+            throw new CustomHttpException(HttpStatusCode.BadRequest, "Neplatný uživatel");
 
-        if (!account.Devices.Any(d => d.RefreshToken == refreshToken))
+        if (!user.Devices.Any(d => d.RefreshToken == refreshToken))
             throw new CustomHttpException(HttpStatusCode.BadRequest, "Neplatné zařízení");
 
-        _dbContext.Devices.RemoveRange(account.Devices);
+        _dbContext.Devices.RemoveRange(user.Devices);
         await _dbContext.SaveChangesAsync();
         return true;
-    }
-
-    private static int GetAccountId(string refreshToken)
-    {
-        return int.Parse(JwtTokenHelper
-            .GetClaimValue(JwtTokenHelper.GetClaims(refreshToken), ReservationClaimNames.Custom.AccountId) ?? throw new
-            CustomHttpException(HttpStatusCode.BadRequest, "Account id в refresh token není platný"));
-    }
-
-    private User GetOwner(string refreshToken)
-    {
-        return _dbContext.Users
-                   .FirstOrDefault(o => o.Id == GetOwnerId(refreshToken)) ??
-               throw new CustomHttpException(HttpStatusCode.BadRequest, "Neplatný refresh token nebo vlastník");
     }
 
     private static int GetOwnerId(string refreshToken)

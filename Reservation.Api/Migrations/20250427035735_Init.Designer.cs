@@ -12,7 +12,7 @@ using Reservation.Api;
 namespace Reservation.Api.Migrations
 {
     [DbContext(typeof(DataContext))]
-    [Migration("20250427021020_Init")]
+    [Migration("20250427035735_Init")]
     partial class Init
     {
         /// <inheritdoc />
@@ -103,9 +103,6 @@ namespace Reservation.Api.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<int>("AccountId")
-                        .HasColumnType("integer");
-
                     b.Property<string>("DeviceName")
                         .IsRequired()
                         .HasMaxLength(1000)
@@ -120,8 +117,6 @@ namespace Reservation.Api.Migrations
                         .HasColumnType("integer");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("AccountId");
 
                     b.HasIndex("UserId");
 
@@ -254,19 +249,11 @@ namespace Reservation.Api.Migrations
 
             modelBuilder.Entity("Reservation.Api.Models.Device", b =>
                 {
-                    b.HasOne("Reservation.Api.Models.Account", "Account")
-                        .WithMany("Devices")
-                        .HasForeignKey("AccountId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.HasOne("Reservation.Api.Models.User", "User")
                         .WithMany("Devices")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.Navigation("Account");
 
                     b.Navigation("User");
                 });
@@ -295,8 +282,6 @@ namespace Reservation.Api.Migrations
 
             modelBuilder.Entity("Reservation.Api.Models.Account", b =>
                 {
-                    b.Navigation("Devices");
-
                     b.Navigation("Reservations");
 
                     b.Navigation("Users");
