@@ -12,7 +12,7 @@ Aplikace běží online na adrese:
 Pro správné spuštění projektu lokálně je potřeba:
 1. Naklonovat repozitář.
 2. Nakonfigurovat soubor `appsettings.json` v projektu `Reservation.Api` podle níže uvedeného příkladu.
-3. Upravit adresu API v souboru Reservation.Web.Client/CustomExtensions/Constants.cs – změňte hodnotu ApiBaseAddress podle toho, kde vám běží API.
+3. Upravit adresu API v souboru `Reservation.Web.Client/CustomExtensions/Constants.cs` – změňte hodnotu `ApiBaseAddress` podle toho, kde vám běží API.
 4. Spustit migrační skripty databáze.
 5. Spustit backend a frontend. (BE je možné spustit v dockeru)
 
