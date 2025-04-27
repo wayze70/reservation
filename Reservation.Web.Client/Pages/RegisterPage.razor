@@ -86,12 +86,14 @@
     {
         if (IsPathTaken)
         {
-            Snackbar.Add("Tento identifikátor je zabrán", Severity.Error);
+            Snackbar.Add("Vyplněný identifikátor je již obsazen", Severity.Error);
+            return;
         }
 
         if (!IsPathValid)
         {
             Snackbar.Add("Identifikátor obsahuje nepovolené znaky", Severity.Error);
+            return;
         }
 
         if (!Utils.IsPasswordLongEnough(RegistrationUser.Password))
@@ -107,7 +109,6 @@
         }
 
         IsSubmitting = true;
-
         RegistrationUser.Email = email;
 
         var response = await AuthService.RegisterAsync(RegistrationUser);
@@ -119,7 +120,7 @@
                 NavigationManager.NavigateTo(Constants.Routes.AccountRoute.Account);
                 break;
             case HttpStatusCode.Conflict:
-                Snackbar.Add("Uživatel s tímto emailem již existuje", Severity.Error);
+                Snackbar.Add("Vyplněný identifikátor je již obsazen", Severity.Error);
                 break;
             case HttpStatusCode.BadRequest:
                 Snackbar.Add("Heslo musí být alespoň 6 znaků dlouhé", Severity.Error);
