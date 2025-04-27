@@ -44,7 +44,7 @@
 
     private string GetIdentifierFromPath()
     {
-        var segments = Uri.Split('/');
+        string[] segments = Uri.Split('/');
         return Uri.StartsWith("rezervace/", StringComparison.OrdinalIgnoreCase) && segments.Length > 1
             ? Constants.Routes.Reservation(segments[1].ToLower())
             : Constants.Routes.Home;

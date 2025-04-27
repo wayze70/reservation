@@ -9,63 +9,58 @@
 <MudNavMenu Class="mud-nav-menu">
     <AuthorizeView Context="authState">
         <Authorized>
-            <MudText Align="Align.Center">
-                @{
-                    string? roleValue = authState.User.FindFirst(ClaimTypes.Role)?.Value;
-                    if (Enum.TryParse<Role>(roleValue, out var role) && Constants.RoleInfo.GetAll().TryGetValue(role, out var roleInfo))
-                    {
-                        @roleInfo.DisplayName
+            @if (_menuOpen)
+            {
+                <MudIconButton Icon="@Icons.Material.Rounded.Menu" OnClick="@ToggleMenu" Edge="Edge.False"
+                               Class="d-block mx-auto" Color="Color.Inherit"/>
+            }
+            else
+            {
+                <MudIconButton Icon="@Icons.Material.Rounded.MenuOpen" OnClick="@ToggleMenu" Edge="Edge.False"
+                               Class="d-block mx-auto" Color="Color.Inherit"/>
+            }
+            <MudCollapse Expanded="@_menuOpen">
+                <MudText Align="Align.Center">
+                    @{
+                        string? roleValue = authState.User.FindFirst(ClaimTypes.Role)?.Value;
+                        if (Enum.TryParse<Role>(roleValue, out var role)
+                            && Constants.RoleInfo.GetAll().TryGetValue(role, out var roleInfo))
+                        {
+                            @roleInfo.DisplayName
+                        }
+                        else
+                        {
+                            @roleValue
+                        }
                     }
-                    else
-                    {
-                        @roleValue
-                    }
-                }
-            </MudText>
+                </MudText>
 
-            <MudNavLink Href="@Constants.Routes.AccountRoute.Account"
-                        Class="me-3"
-                        Icon="@Icons.Material.Filled.AccountCircle"
-                        Match="NavLinkMatch.All">
-                Nastavení účtu
-            </MudNavLink>
-
-            <AuthorizeView Roles="@nameof(Role.Admin)">
-                <Authorized>
-                    <MudNavLink Href="/ucet/zamestnanci"
-                                Class="me-3"
-                                Icon="@Icons.Material.Filled.People">
-                        Zaměstnanci
-                    </MudNavLink>
-                </Authorized>
-            </AuthorizeView>
-
-            <MudNavLink Href="@Constants.Routes.AccountRoute.AccountReservation"
-                        Class="me-3"
-                        Icon="@Icons.Material.Filled.CalendarToday">
-                Kalendář
-            </MudNavLink>
-
-            <MudNavLink OnClick="@Logout"
-                        Class="me-3"
-                        Icon="@Icons.Material.Filled.ExitToApp">
-                Odhlásit se
-            </MudNavLink>
+                <MudNavLink Href="@Constants.Routes.AccountRoute.Account" Icon="@Icons.Material.Filled.AccountCircle"
+                            Match="NavLinkMatch.All">
+                    Nastavení účtu
+                </MudNavLink>
+                <AuthorizeView Roles="@nameof(Role.Admin)">
+                    <Authorized>
+                        <MudNavLink Href="/ucet/zamestnanci" Icon="@Icons.Material.Filled.People">Zaměstnanci
+                        </MudNavLink>
+                    </Authorized>
+                </AuthorizeView>
+                <MudNavLink Href="@Constants.Routes.AccountRoute.AccountReservation"
+                            Icon="@Icons.Material.Filled.CalendarToday">Kalendář
+                </MudNavLink>
+            </MudCollapse>
+            <MudNavLink OnClick="@Logout" Icon="@Icons.Material.Filled.ExitToApp">Odhlásit se</MudNavLink>
         </Authorized>
         <NotAuthorized>
-            <MudNavLink Href="@Constants.Routes.Login"
-                        Icon="@Icons.Material.Filled.Login">
-                Přihlášení
-            </MudNavLink>
-            <MudNavLink Href="@Constants.Routes.Register"
-                        Icon="@Icons.Material.Filled.PersonAdd">
-                Registrace
+            <MudNavLink Href="@Constants.Routes.Login" Icon="@Icons.Material.Filled.Login">Přihlášení</MudNavLink>
+            <MudNavLink Href="@Constants.Routes.Register" Icon="@Icons.Material.Filled.PersonAdd">Registrace
             </MudNavLink>
         </NotAuthorized>
     </AuthorizeView>
 </MudNavMenu>
 
 @code {
+    private bool _menuOpen = true;
 
     protected override async Task OnInitializedAsync()
     {
@@ -82,6 +77,10 @@
         GlobalState.IdentifierChanged += StateHasChanged;
     }
 
+    void ToggleMenu()
+    {
+        _menuOpen = !_menuOpen;
+    }
 
     async Task Logout()
     {
