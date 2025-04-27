@@ -18,6 +18,7 @@ public class DataContext : DbContext
     public DbSet<Customer> Customers { get; set; }
     public DbSet<Device> Devices { get; set; }
     public DbSet<User> Users { get; set; }
+    public DbSet<ReservationReminder> ReservationReminders { get; set; }
 
     public override int SaveChanges()
         => SaveChangesAsync().GetAwaiter().GetResult();

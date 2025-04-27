@@ -108,7 +108,7 @@ namespace Reservation.Api.Services
                 "Zrušení rezervace vlastníkem",
                 "#d9534f",
                 "Rezervace zrušena",
-                $"tímto Vás informujeme, že rezervace <strong>\"{reservationTitle}\"</strong> plánovaná na {reservationDate.ConvertToTimeZone(timeZoneInfo).ToString("f", cultureInfo)} byla zrušena vlastníkem."
+                $"tímto Vás informujeme, že rezervace <strong>\"{reservationTitle}\"</strong> plánovaná na {reservationDate.ConvertToTimeZone(timeZoneInfo).ToString("f", cultureInfo)} ({timeZoneInfo.DisplayName}) byla zrušena vlastníkem."
             );
         }
 
@@ -190,7 +190,7 @@ namespace Reservation.Api.Services
                 lastName,
                 $"Váš účet v organizaci {organizationInHtml} byl smazán",
                 "Smazání účtu zaměstnance",
-                "#d9534f",  // červená barva pro varovná oznámení
+                "#d9534f",
                 "Váš účet byl smazán",
                 $@"tímto Vás informujeme, že Váš zaměstnanecký účet v organizaci {organizationInHtml} byl smazán. 
             Ztratili jste tak přístup do rezervačního systému této organizace.",
@@ -222,17 +222,64 @@ namespace Reservation.Api.Services
                 lastName,
                 "Odstranění z rezervace",
                 "Odstranění z rezervace",
-                "#d9534f",  // červená barva pro varovná oznámení
+                "#d9534f",
                 "Byli jste odstraněni z rezervace",
                 $@"tímto Vás informujeme, že jste byli odstraněni z rezervace <strong>{reservationTitle}</strong> 
-               v organizaci {organizationInHtml}, která byla plánována na {reservationDate.ConvertToTimeZone(timeZoneInfo).ToString("f", cultureInfo)} 
+               v organizaci {organizationInHtml}, která byla plánována na {reservationDate.ConvertToTimeZone(timeZoneInfo).ToString("f", cultureInfo)} ({timeZoneInfo.DisplayName})
                s dobou trvání {duration.ToString(@"h\:mm", cultureInfo)}.",
                 @"<p style=""color: #666; font-size: 0.9em; margin-top: 20px;"">
                 Pokud si myslíte, že došlo k chybě, kontaktujte prosím organizátora rezervace.
             </p>"
             );
         }
-
+        
+        public async Task SendReservationUpdateEmailAsync(
+            string recipientEmail,
+            string firstName,
+            string lastName,
+            string reservationTitle,
+            DateTime reservationDate,
+            TimeSpan duration,
+            TimeZoneInfo timeZoneInfo,
+            CultureInfo cultureInfo)
+        {
+            await SendEmailAsync(
+                recipientEmail,
+                firstName,
+                lastName,
+                "Změna v rezervaci",
+                "Aktualizace rezervace",
+                "#ffc107",
+                "Rezervace byla upravena",
+                $"tímto Vás informujeme, že došlo ke změně v rezervaci <strong>{reservationTitle}</strong>. " +
+                $"Nový termín je {reservationDate.ConvertToTimeZone(timeZoneInfo).ToString("f", cultureInfo)} ({timeZoneInfo.DisplayName}) " +
+                $"s dobou trvání {duration.ToString(@"h\:mm", cultureInfo)}."
+            );
+        }
+        
+        public async Task SendReservationReminderEmailAsync(
+            string recipientEmail,
+            string firstName,
+            string lastName,
+            string reservationTitle,
+            DateTime reservationDate,
+            TimeSpan duration,
+            TimeZoneInfo timeZoneInfo,
+            CultureInfo cultureInfo)
+        {
+            await SendEmailAsync(
+                recipientEmail,
+                firstName,
+                lastName,
+                "Připomenutí události",
+                "Připomenutí události",
+                "#17a2b8",
+                "Připomenutí nadcházející události",
+                $"tímto Vám připomínáme, že zítra v {reservationDate.ConvertToTimeZone(timeZoneInfo).ToString("t", cultureInfo)} ({timeZoneInfo.DisplayName}) " +
+                $"se koná událost <strong>{reservationTitle}</strong> " +
+                $"s dobou trvání {duration.ToString(@"h\:mm", cultureInfo)}."
+            );
+        }
 
         private async Task SendEmailAsync(
             string recipientEmail,

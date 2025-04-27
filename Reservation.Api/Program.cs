@@ -10,6 +10,7 @@ using Reservation.Api.CustomException;
 using Reservation.Api.JWT;
 using Reservation.Api.Models;
 using Reservation.Api.Services;
+using Reservation.Api.Workers;
 
 namespace Reservation.Api;
 
@@ -75,6 +76,7 @@ public class Program
         builder.Services.AddSingleton<JwtTokenHelper>();
         builder.Services.AddSingleton<IEmailService, EmailService>();
         builder.Services.AddHostedService<RefreshTokenCleanupWorker>();
+        builder.Services.AddHostedService<ReservationReminderWorker>();
         builder.Services.AddScoped<IEmployeeService, EmployeeService>();
         builder.Services.AddScoped<IPasswordHasher<User>, PasswordHasher<User>>();
 

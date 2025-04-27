@@ -173,6 +173,30 @@ namespace Reservation.Api.Migrations
                     b.ToTable("Reservations");
                 });
 
+            modelBuilder.Entity("Reservation.Api.Models.ReservationReminder", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("CustomerEmail")
+                        .IsRequired()
+                        .HasMaxLength(320)
+                        .HasColumnType("character varying(320)");
+
+                    b.Property<int>("ReservationId")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime>("SentAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("ReservationReminders");
+                });
+
             modelBuilder.Entity("Reservation.Api.Models.User", b =>
                 {
                     b.Property<int>("Id")

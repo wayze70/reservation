@@ -223,10 +223,14 @@ namespace Reservation.Api.Services
             var reservation = await _dbContext.Reservations
                 .Include(r => r.Customers)
                 .FirstOrDefaultAsync(r => r.Id == reservationId);
-
-
+            
             if (reservation == null)
                 throw new CustomHttpException(HttpStatusCode.NotFound, "Událost nebyla nalezena");
+            
+            bool hasChanged = reservation.Title != request.Title ||
+                              reservation.StartTime != request.Start ||
+                              reservation.EndTime != request.End ||
+                              reservation.Description != request.Description;
 
             reservation.Capacity = request.Capacity;
             reservation.Title = request.Title;
@@ -238,6 +242,25 @@ namespace Reservation.Api.Services
             reservation.CustomTimeZoneId = request.CustomTimeZoneId;
 
             await _dbContext.SaveChangesAsync();
+            
+            if (hasChanged && reservation.Customers.Count != 0)
+            {
+                var timeZoneInfo = TimeZoneInfo.FindSystemTimeZoneById(request.CustomTimeZoneId);
+                foreach (var customer in reservation.Customers)
+                {
+                    await _emailService.SendReservationUpdateEmailAsync(
+                        customer.Email,
+                        customer.FirstName,
+                        customer.LastName,
+                        reservation.Title,
+                        reservation.StartTime,
+                        reservation.EndTime - reservation.StartTime,
+                        timeZoneInfo,
+                        CultureInfo.GetCultureInfo("cs-CZ")
+                    );
+                }
+            }
+
 
             return MapToDto(reservation);
         }

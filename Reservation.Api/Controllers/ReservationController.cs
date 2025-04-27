@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Net;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -70,7 +71,7 @@ public class ReservationController : ControllerBase
         }
 
         return Ok(await _reservationService.RemoveUserFromReservationAsync(request.ReservationId, request.UserEmail,
-            HttpContext.GetUserPreferredCurrentCulture()));
+            CultureInfo.GetCultureInfo("cs-CZ")));
     }
 
     [AllowAnonymous]
@@ -94,7 +95,7 @@ public class ReservationController : ControllerBase
         [FromRoute] int reservationId, [FromBody] ReservationSignUpRequest request)
     {
         return Ok(await _reservationService.SignUpForReservationAsync(reservationId, request,
-            HttpContext.GetUserPreferredCurrentCulture()));
+            CultureInfo.GetCultureInfo("cs-CZ")));
     }
 
     [AllowAnonymous]
@@ -103,6 +104,6 @@ public class ReservationController : ControllerBase
         [FromRoute] int reservationId, [FromBody] string cancellationCode)
     {
         return Ok(await _reservationService.CancelReservationAsync(reservationId, cancellationCode,
-            HttpContext.GetUserPreferredCurrentCulture()));
+            CultureInfo.GetCultureInfo("cs-CZ")));
     }
 }

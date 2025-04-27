@@ -28,6 +28,21 @@ namespace Reservation.Api.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "ReservationReminders",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    ReservationId = table.Column<int>(type: "integer", nullable: false),
+                    CustomerEmail = table.Column<string>(type: "character varying(320)", maxLength: 320, nullable: false),
+                    SentAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_ReservationReminders", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Reservations",
                 columns: table => new
                 {
@@ -164,6 +179,9 @@ namespace Reservation.Api.Migrations
 
             migrationBuilder.DropTable(
                 name: "Devices");
+
+            migrationBuilder.DropTable(
+                name: "ReservationReminders");
 
             migrationBuilder.DropTable(
                 name: "Reservations");

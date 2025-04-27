@@ -12,7 +12,7 @@ using Reservation.Api;
 namespace Reservation.Api.Migrations
 {
     [DbContext(typeof(DataContext))]
-    [Migration("20250427003415_Init")]
+    [Migration("20250427021020_Init")]
     partial class Init
     {
         /// <inheritdoc />
@@ -174,6 +174,30 @@ namespace Reservation.Api.Migrations
                     b.HasIndex("AccountId");
 
                     b.ToTable("Reservations");
+                });
+
+            modelBuilder.Entity("Reservation.Api.Models.ReservationReminder", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("CustomerEmail")
+                        .IsRequired()
+                        .HasMaxLength(320)
+                        .HasColumnType("character varying(320)");
+
+                    b.Property<int>("ReservationId")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime>("SentAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("ReservationReminders");
                 });
 
             modelBuilder.Entity("Reservation.Api.Models.User", b =>
