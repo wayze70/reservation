@@ -2,9 +2,11 @@
 @inject NavigationManager NavigationManager
 @inject ISnackbar Snackbar
 @using System.Net
+@using Microsoft.AspNetCore.Components.Authorization
 @using Reservation.Shared.Common
 @using Reservation.Web.Client.Components
 @inject IAccountService AccountService
+@inject AuthenticationStateProvider AuthStateProvider
 
 @page "/registrace"
 
@@ -81,6 +83,16 @@
     bool IsPathValid { get; set; } = true;
     bool IsPathFetching { get; set; } = false;
     bool IsSubmitting { get; set; } = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if ((await AuthStateProvider.GetAuthenticationStateAsync()).User.Identity?.IsAuthenticated == true)
+        {
+            Snackbar.Add("Jste již přihlášeni. Pokud se chcete přihlásti k jiné účtu, neprve se odhlašte.",
+                Severity.Info);
+            NavigationManager.NavigateTo("/");
+        }
+    }
 
     async Task OnSubmit()
     {
