@@ -21,12 +21,20 @@ public class AccountDescriptionResponse
 {
     public string Organization { get; set; } = string.Empty;
     public string Description { get; set; } = string.Empty;
+    [Required]
+    [EmailAddress]
+    [RegularExpression(Utils.EmailRegexPattern)]
+    public string ContactEmail { get; set; } = string.Empty;
 }
 
 public class UpdateAccountInfoRequest
 {
     public string Organization { get; set; } = string.Empty;
     public string Description { get; set; } = string.Empty;
+    [Required]
+    [EmailAddress]
+    [RegularExpression(Utils.EmailRegexPattern)]
+    public string ContactEmail { get; set; } = string.Empty;
 }
 
 public class AccountInfoResponse
@@ -34,6 +42,10 @@ public class AccountInfoResponse
     public string Organization { get; set; } = string.Empty;
     public string Description { get; set; } = string.Empty;
     public string Identifier { get; set; } = string.Empty;
+    [Required]
+    [EmailAddress]
+    [RegularExpression(Utils.EmailRegexPattern)]
+    public string ContactEmail { get; set; } = string.Empty;
 }
 
 public class UpdatePasswordRequest

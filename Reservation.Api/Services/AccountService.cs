@@ -35,7 +35,8 @@ public class AccountService : IAccountService
             {
                 Organization = a.Organization,
                 Description = a.Description,
-                Identifier = a.Path
+                Identifier = a.Path,
+                ContactEmail = a.ContactEmail
             })
             .ToListAsync();
 
@@ -93,6 +94,7 @@ public class AccountService : IAccountService
         {
             Organization = owner.Organization,
             Description = owner.Description,
+            ContactEmail = owner.ContactEmail,
         };
     }
 
@@ -105,6 +107,7 @@ public class AccountService : IAccountService
             Organization = owner.Organization,
             Description = owner.Description,
             Identifier = owner.Path ?? string.Empty,
+            ContactEmail = owner.ContactEmail
         };
     }
 
@@ -114,12 +117,14 @@ public class AccountService : IAccountService
         
         owner.Organization = request.Organization;
         owner.Description = request.Description;
+        owner.ContactEmail = request.ContactEmail;
         await _dbContext.SaveChangesAsync();
         
         return new AccountInfoResponse()
         {
             Organization = owner.Organization,
             Description = owner.Description,
+            ContactEmail = owner.ContactEmail
         };
     }
 

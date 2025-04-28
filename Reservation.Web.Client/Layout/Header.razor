@@ -6,30 +6,38 @@
 @inject IAccountService AccountService
 
 <header class="bg-dark p-3">
-    <div class="container d-flex justify-content-between text-white">
-        @if (IsReservationRoute)
+
+    <div class="container">
+        @if (GetIdentifier() == GlobalState.Identifier && IsReservationRoute)
         {
-            <h1 class="my-auto">
-                <a class="text-white" href="@GetIdentifierFromPath()">@GlobalState.Title</a>
-            </h1>
             <AuthorizeView Roles="@nameof(Role.Admin)">
                 <Authorized>
-                    <MudButton Href="@Constants.Routes.AccountRoute.Account"
-                               Variant="Variant.Outlined"
-                               Color="Color.Primary"
-                               StartIcon="@Icons.Material.Filled.VisibilityOff">
+                    <MudButton
+                        Href="@Constants.Routes.AccountRoute.Account"
+                        Variant="Variant.Outlined"
+                        Color="Color.Primary"
+                        StartIcon="@Icons.Material.Filled.VisibilityOff">
                         Zpět na správce
                     </MudButton>
                 </Authorized>
             </AuthorizeView>
         }
-        else
-        {
-            <h1 class="my-auto">
-                <a class="text-white" href="@Constants.Routes.Home">@Constants.AppName</a>
-            </h1>
-            <Navigation/>
-        }
+
+        <div class="d-flex justify-content-between text-white">
+            @if (IsReservationRoute)
+            {
+                <h1 class="my-auto">
+                    <a class="text-white" href="@HomeRoute">@GlobalState.Title</a>
+                </h1>
+            }
+            else
+            {
+                <h1 class="my-auto">
+                    <a class="text-white" href="@Constants.Routes.Home">@Constants.AppName</a>
+                </h1>
+                <Navigation/>
+            }
+        </div>
     </div>
 </header>
 
@@ -41,19 +49,28 @@
                                         Uri.StartsWith("zruseni-rezervace", StringComparison.OrdinalIgnoreCase));
 
     private string Path { get; set; } = string.Empty;
+    private string HomeRoute { get; set; } = Constants.Routes.Home;
 
-    private string GetIdentifierFromPath()
+    private string GetIdentifier() => Uri.Split('/')
+        switch
+        {
+            var segments when Uri.StartsWith("rezervace/", StringComparison.OrdinalIgnoreCase)
+                              && segments.Length > 1 => segments[1].ToLower(),
+            _ => string.Empty
+        };
+
+    private string GetHomeRoute()
     {
-        string[] segments = Uri.Split('/');
-        return Uri.StartsWith("rezervace/", StringComparison.OrdinalIgnoreCase) && segments.Length > 1
-            ? Constants.Routes.Reservation(segments[1].ToLower())
-            : Constants.Routes.Home;
+        string identifier = GetIdentifier();
+        return string.IsNullOrEmpty(identifier) ? Constants.Routes.Home : Constants.Routes.Reservation(identifier);
     }
+
 
     protected override void OnInitialized()
     {
         NavigationManager.LocationChanged += OnLocationChanged;
         GlobalState.OnStateChanged += StateHasChanged;
+        HomeRoute = GetHomeRoute();
     }
 
     protected override async Task OnInitializedAsync()
@@ -83,7 +100,7 @@
             Path = string.Empty;
             if (Uri.StartsWith("rezervace/", StringComparison.OrdinalIgnoreCase))
             {
-                var segments = Uri.Split('/');
+                string[] segments = Uri.Split('/');
                 if (segments.Length > 1)
                 {
                     Path = segments[1].ToLower();
@@ -92,6 +109,7 @@
                     {
                         GlobalState.Title = accountInfo.Data.Organization;
                         GlobalState.Description = accountInfo.Data.Description;
+                        GlobalState.ContactEmail = accountInfo.Data.ContactEmail;
                         return;
                     }
                 }
@@ -101,12 +119,14 @@
             {
                 GlobalState.Title = Constants.AppName;
                 GlobalState.Description = string.Empty;
+                GlobalState.ContactEmail = string.Empty;
             }
         }
         catch (Exception)
         {
             GlobalState.Title = Constants.AppName;
             GlobalState.Description = string.Empty;
+            GlobalState.ContactEmail = string.Empty;
         }
     }
 }

@@ -101,7 +101,8 @@ public class AuthService : IAuthService
         {
             var account = new Account
             {
-                Path = identifier
+                Path = identifier,
+                ContactEmail = email
             };
 
             _dbContext.Accounts.Add(account);

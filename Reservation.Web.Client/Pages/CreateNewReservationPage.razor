@@ -22,18 +22,18 @@
             <ValidationSummary/>
             <MudGrid>
                 <MudItem xs="12" sm="6">
-                    <MudTextField Label="Nadpis" @bind-Value="NewReservation.Title"
+                    <MudTextField MaxLength="100" Label="Nadpis" @bind-Value="NewReservation.Title"
                                   Required="true" Variant="Variant.Outlined" FullWidth="true"/>
                 </MudItem>
                 <MudItem xs="12" sm="6">
-                    <MudTextField Label="Popis" @bind-Value="NewReservation.Description"
+                    <MudTextField MaxLength="2000" Label="Popis" @bind-Value="NewReservation.Description"
                                   Variant="Variant.Outlined" FullWidth="true"/>
                 </MudItem>
 
                 <MudItem xs="12" sm="4">
                     <MudNumericField T="int" Label="Max. kapacita"
                                      @bind-Value="NewReservation.Capacity"
-                                     Min="0" Required="true"
+                                     Min="0" Max="100000000" Required="true"
                                      Variant="Variant.Outlined" FullWidth="true"/>
                 </MudItem>
                 <MudItem xs="12">
@@ -103,7 +103,7 @@
                 <MudItem xs="6" sm="3">
                     <MudNumericField T="int" Label="Dny"
                                      @bind-Value="CancellationOffsetDays"
-                                     Min="0" Variant="Variant.Outlined" FullWidth="true"
+                                     Min="0" Max="365" Variant="Variant.Outlined" FullWidth="true"
                                      Adornment="Adornment.Start"
                                      AdornmentIcon="@Icons.Material.Filled.DateRange"/>
                 </MudItem>

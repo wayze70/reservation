@@ -18,9 +18,10 @@ namespace Reservation.Api.Migrations
                 {
                     Id = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    Organization = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
+                    Organization = table.Column<string>(type: "character varying(250)", maxLength: 250, nullable: false),
                     Description = table.Column<string>(type: "character varying(1000)", maxLength: 1000, nullable: false),
-                    Path = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false)
+                    Path = table.Column<string>(type: "character varying(150)", maxLength: 150, nullable: false),
+                    ContactEmail = table.Column<string>(type: "character varying(320)", maxLength: 320, nullable: false)
                 },
                 constraints: table =>
                 {
@@ -75,10 +76,10 @@ namespace Reservation.Api.Migrations
                 {
                     Id = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    FirstName = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
-                    LastName = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
+                    FirstName = table.Column<string>(type: "character varying(250)", maxLength: 250, nullable: false),
+                    LastName = table.Column<string>(type: "character varying(250)", maxLength: 250, nullable: false),
                     Email = table.Column<string>(type: "character varying(320)", maxLength: 320, nullable: false),
-                    PasswordHash = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
+                    PasswordHash = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: false),
                     Role = table.Column<int>(type: "integer", nullable: false),
                     AccountId = table.Column<int>(type: "integer", nullable: false)
                 },
@@ -99,10 +100,10 @@ namespace Reservation.Api.Migrations
                 {
                     Id = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    FirstName = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
-                    LastName = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
+                    FirstName = table.Column<string>(type: "character varying(250)", maxLength: 250, nullable: false),
+                    LastName = table.Column<string>(type: "character varying(250)", maxLength: 250, nullable: false),
                     Email = table.Column<string>(type: "character varying(320)", maxLength: 320, nullable: false),
-                    Note = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: true),
+                    Note = table.Column<string>(type: "character varying(1000)", maxLength: 1000, nullable: true),
                     CancellationCode = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
                     ReservationId = table.Column<int>(type: "integer", nullable: false)
                 },

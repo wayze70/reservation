@@ -56,7 +56,7 @@ public class AccountController : ControllerBase
 
     [HttpPut("account-info")]
     [Authorize(Roles = nameof(Role.Admin))]
-    public async Task<ActionResult<AccountInfoResponse>> UpdatePath([FromBody] UpdateAccountInfoRequest request)
+    public async Task<ActionResult<AccountInfoResponse>> UpdateAccountInfo([FromBody] UpdateAccountInfoRequest request)
     {
         return Ok(await _accountService.UpdateAccountInfoAsync(request, HttpContext.GetAccountIdFromBearer()));
     }

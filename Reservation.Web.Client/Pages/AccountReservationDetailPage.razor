@@ -36,7 +36,8 @@ else
                                   Variant="Variant.Outlined"
                                   FullWidth="true"
                                   Adornment="Adornment.Start"
-                                  AdornmentIcon="@Icons.Material.Filled.Title"/>
+                                  AdornmentIcon="@Icons.Material.Filled.Title"
+                                  MaxLength="100"/>
                 </MudItem>
                 <MudItem xs="12" sm="6">
                     <MudTextField T="string"
@@ -45,12 +46,14 @@ else
                                   Variant="Variant.Outlined"
                                   FullWidth="true"
                                   Adornment="Adornment.Start"
-                                  AdornmentIcon="@Icons.Material.Filled.Description"/>
+                                  AdornmentIcon="@Icons.Material.Filled.Description"
+                                  MaxLength="2000"/>
                 </MudItem>
                 <MudItem xs="12" sm="6">
                     <MudNumericField T="int"
                                      Label="Maximální kapacita"
                                      Min="0"
+                                     Max="100000000"
                                      @bind-Value="ReservationDetail.Capacity"
                                      Variant="Variant.Outlined"
                                      FullWidth="true"
@@ -94,6 +97,7 @@ else
                                          Label="Dny"
                                          @bind-Value="CancellationOffsetDays"
                                          Min="0"
+                                         Max="365"
                                          Variant="Variant.Outlined"
                                          FullWidth="true"
                                          Adornment="Adornment.Start"

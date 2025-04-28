@@ -42,10 +42,10 @@ else
       @if (_editingEmployeeId == @context.Id)
       {
         <MudTd DataLabel="Jméno">
-          <MudTextField T="string" Label="Jméno" @bind-Value="EditedEmployee.FirstName" Required="true"/>
+          <MudTextField MaxLength="250" T="string" Label="Jméno" @bind-Value="EditedEmployee.FirstName" Required="true"/>
         </MudTd>
         <MudTd DataLabel="Příjmení">
-          <MudTextField T="string" Label="Příjmení" @bind-Value="EditedEmployee.LastName" Required="true"/>
+          <MudTextField MaxLength="250" T="string" Label="Příjmení" @bind-Value="EditedEmployee.LastName" Required="true"/>
         </MudTd>
         <MudTd DataLabel="Email">
           <EmailInput Variant="Variant.Text" Adornment="Adornment.None" @bind-Value="EditedEmployee.Email"/>

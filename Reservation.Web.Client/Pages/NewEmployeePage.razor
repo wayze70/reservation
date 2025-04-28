@@ -34,7 +34,8 @@
                         Required="true"
                         Variant="Variant.Outlined"
                         FullWidth="true"
-                        Adornment="Adornment.Start"/>
+                        Adornment="Adornment.Start"
+                        MaxLength="250"/>
         </MudItem>
         <MudItem xs="12" sm="6">
           <MudTextField T="string"
@@ -43,7 +44,8 @@
                         Required="true"
                         Variant="Variant.Outlined"
                         FullWidth="true"
-                        Adornment="Adornment.Start"/>
+                        Adornment="Adornment.Start"
+                        MaxLength="250"/>
         </MudItem>
         <MudItem xs="12" sm="6">
           <EmailInput @bind-Value="NewEmployee.Email"
@@ -63,7 +65,8 @@
                         Variant="Variant.Outlined"
                         FullWidth="true"
                         Adornment="Adornment.Start"
-                        AdornmentIcon="@Icons.Material.Filled.Lock"/>
+                        AdornmentIcon="@Icons.Material.Filled.Lock"
+                        MaxLength="100"/>
           <MudText Typo="Typo.caption" Color="Color.Secondary">
             Po přihlášení lze heslo změnit
           </MudText>

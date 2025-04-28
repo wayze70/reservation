@@ -13,8 +13,8 @@
         <MudPaper Class="pa-6" Elevation="4" Style="overflow-y: hidden;">
             <MudStack Spacing="2">
                 <MudStack Spacing="1">
-                    <MudText Typo="Typo.subtitle1">@Description</MudText>
-
+                    <MudText Typo="Typo.subtitle1">@GlobalState.Description</MudText>
+                    <MudText Typo="Typo.subtitle2">Kontakní email: @GlobalState.ContactEmail</MudText>
                 </MudStack>
                 <MudDatePicker @ref="_picker"
                                PickerVariant="PickerVariant.Static"
@@ -102,7 +102,6 @@
 
     private MudDatePicker _picker = null!;
     List<ReservationResponse>? Reservations { get; set; }
-    string Description { get; set; } = string.Empty;
 
     protected override async Task OnInitializedAsync()
     {
@@ -111,7 +110,8 @@
         if (accountInfo is { IsSuccess: true, Data: not null })
         {
             GlobalState.Title = accountInfo.Data.Organization;
-            Description = accountInfo.Data.Description;
+            GlobalState.Description = accountInfo.Data.Description;
+            GlobalState.ContactEmail = accountInfo.Data.ContactEmail;
         }
 
         var response = await ReservationService.GetActiveReservationsAsync(Path);

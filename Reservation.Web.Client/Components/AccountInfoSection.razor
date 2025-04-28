@@ -5,14 +5,15 @@
 
 @attribute [Authorize(Roles = nameof(Role.Admin))]
 
-<MudExpansionPanel Text="Informace o účtu"
-                   Expanded="@(!IsFetching && (string.IsNullOrWhiteSpace(AccountInfo.Organization) || string.IsNullOrWhiteSpace(AccountInfo.Description)))">
+<MudExpansionPanel Text="Informace o účtu" @bind-Expanded="IsPanelExpanded">
     <MudText>
         Zde zadejte informace o účtu. Tyto informace budou zobrazeny na stránce pro návštěvníky.
     </MudText>
     <EditForm Model="@AccountInfo" OnValidSubmit="OnAccountInfoValidSubmit">
-        <MudTextField MaxLength="50" T="string" Label="Organizace" @bind-Value="AccountInfo.Organization"/>
+        <MudTextField MaxLength="250" T="string" Label="Organizace" @bind-Value="AccountInfo.Organization"/>
         <MudTextField MaxLength="1000" AutoGrow="true" T="string" Label="Popis" @bind-Value="AccountInfo.Description"/>
+        <MudTextField MaxLength="320" AutoGrow="true" T="string" Label="Kontaktní email pro zákazníky"
+                      @bind-Value="AccountInfo.ContactEmail" Required="true"/>
         <MudButton ButtonType="ButtonType.Submit" Color="Color.Primary" Variant="Variant.Filled" Class="mt-4">
             Uložit informace o účtu
         </MudButton>
@@ -21,20 +22,24 @@
 
 @code {
     AccountInfoResponse AccountInfo { get; set; } = new();
-    bool IsFetching { get; set; } = true;
+
+    bool IsPanelExpanded { get; set; } = false;
+    private bool _isFetching = true;
 
     protected override async Task OnInitializedAsync()
     {
         await LoadAccountInfo();
+        IsPanelExpanded = !_isFetching &&(string.IsNullOrWhiteSpace(AccountInfo.Organization)
+                                         || string.IsNullOrWhiteSpace(AccountInfo.Description));
     }
 
     private async Task OnAccountInfoValidSubmit()
     {
-        IsFetching = true;
         var updateRequest = new UpdateAccountInfoRequest
         {
             Organization = AccountInfo.Organization,
             Description = AccountInfo.Description,
+            ContactEmail = AccountInfo.ContactEmail
         };
 
         var result = await AccountService.UpdateAccountInfo(updateRequest);
@@ -52,8 +57,7 @@
 
     private async Task LoadAccountInfo()
     {
-        IsFetching = true;
-
+        _isFetching = true;
         var accountInfoResult = await AccountService.GetAccountInfo();
         if (accountInfoResult is { IsSuccess: true, Data: not null })
         {
@@ -64,6 +68,6 @@
             Snackbar.Add("Nepodařilo se načíst údaje o účtu.", Severity.Error);
         }
 
-        IsFetching = false;
+        _isFetching = false;
     }
 }

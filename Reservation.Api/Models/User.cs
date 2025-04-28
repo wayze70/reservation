@@ -10,11 +10,11 @@ namespace Reservation.Api.Models
         public int Id { get; private set; }
 
         [Required]
-        [StringLength(50)]
+        [StringLength(250)]
         public string FirstName { get; set; } = string.Empty;
         
         [Required]
-        [StringLength(50)]
+        [StringLength(250)]
         public string LastName { get; set; } = string.Empty;
         
         [Required]
@@ -23,7 +23,7 @@ namespace Reservation.Api.Models
         public string Email { get; set; } = string.Empty;
         
         [Required]
-        [StringLength(100)]
+        [StringLength(500)]
         public string PasswordHash { get; set; } = string.Empty;
         
         [Required]

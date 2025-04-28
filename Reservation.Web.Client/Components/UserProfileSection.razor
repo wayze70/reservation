@@ -5,10 +5,10 @@
     <EditForm Model="@Employee" OnValidSubmit="OnValidSubmit">
         <MudGrid>
             <MudItem xs="12" sm="6">
-                <MudTextField T="string" Label="Jméno" @bind-Value="Employee.FirstName" Required="true"/>
+                <MudTextField MaxLength="250" T="string" Label="Jméno" @bind-Value="Employee.FirstName" Required="true"/>
             </MudItem>
             <MudItem xs="12" sm="6">
-                <MudTextField T="string" Label="Příjmení" @bind-Value="Employee.LastName" Required="true"/>
+                <MudTextField MaxLength="250" T="string" Label="Příjmení" @bind-Value="Employee.LastName" Required="true"/>
             </MudItem>
             <MudItem xs="12" sm="12">
                 <EmailInput Variant="Variant.Text" Adornment="Adornment.None" @bind-Value="Employee.Email"/>

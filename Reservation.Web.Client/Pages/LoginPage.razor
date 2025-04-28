@@ -79,9 +79,9 @@
             <DataAnnotationsValidator/>
             <ValidationSummary/>
 
-            <MudTextField T="string" Label="Email" Value="emailModel.Email" Disabled="true"/>
-            <MudTextField T="string" Label="Identifikátor" Value="currentIdentifier" Disabled="true" Class="mt-2"/>
-            <MudTextField T="string" Label="Heslo" InputType="InputType.Password" @bind-Value="loginModel.Password"
+            <MudTextField MaxLength="320" T="string" Label="Email" Value="emailModel.Email" Disabled="true"/>
+            <MudTextField MaxLength="150" T="string" Label="Identifikátor" Value="currentIdentifier" Disabled="true" Class="mt-2"/>
+            <MudTextField MaxLength="100" T="string" Label="Heslo" InputType="InputType.Password" @bind-Value="loginModel.Password"
                           Required="true" Class="mt-2"/>
 
             <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary" FullWidth="true"

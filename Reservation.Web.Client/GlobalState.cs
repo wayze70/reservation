@@ -11,6 +11,7 @@ public class GlobalState
     private DateTime? _selectedDateAdmin = DateTime.Today;
     private string _title = string.Empty;
     private string _description = string.Empty;
+    private string _contactEmail = string.Empty;
 
     public TimeZoneInfo CurrentTimeZone
     {
@@ -72,6 +73,16 @@ public class GlobalState
                 _identifier = value;
                 IdentifierChanged?.Invoke();
             }
+        }
+    }
+    
+    public string ContactEmail
+    {
+        get => _contactEmail;
+        set
+        {
+            _contactEmail = value;
+            NotifyStateChanged();
         }
     }
 

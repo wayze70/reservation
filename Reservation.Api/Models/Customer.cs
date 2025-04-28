@@ -9,11 +9,11 @@ public class Customer
     public int Id { get; set; }
 
     [Required]
-    [StringLength(50)]
+    [StringLength(250)]
     public string FirstName { get; set; } = string.Empty;
     
     [Required]
-    [StringLength(50)]
+    [StringLength(250)]
     public string LastName { get; set; } = string.Empty;
     
     [Required]
@@ -21,7 +21,7 @@ public class Customer
     [StringLength(320)]
     public string Email { get; set; } = string.Empty;
     
-    [StringLength(500)]
+    [StringLength(1000)]
     public string? Note { get; set; }
     
     [Required]
