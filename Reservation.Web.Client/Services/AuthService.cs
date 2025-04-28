@@ -119,7 +119,7 @@ namespace Reservation.Web.Client.Services
 
                 if (response.IsSuccess)
                 {
-                    _snackbar.Add("Úspěšně jste se odhlásili ze všech zařízení", Severity.Success);
+                    _snackbar.Add("Úspěšně jste se odhlásili ze všech zařízení. Odhlášení se projeví do 10 minut na všech zařízeních.", Severity.Success);
                 }
                 else
                 {

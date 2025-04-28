@@ -13,7 +13,8 @@
         <MudPaper Class="pa-6" Elevation="4" Style="overflow-y: hidden;">
             <MudStack Spacing="2">
                 <MudStack Spacing="1">
-                    <MudText Typo="Typo.subtitle1">@GlobalState.Description</MudText>
+                    <MudText Typo="Typo.subtitle1"
+                             Style="white-space: pre-line;">@GlobalState.Description</MudText>
                     <MudText Typo="Typo.subtitle2">Kontakní email: @GlobalState.ContactEmail</MudText>
                 </MudStack>
                 <MudDatePicker @ref="_picker"
