@@ -60,11 +60,10 @@
                         continue;
                     }
 
-                    @if (GlobalState.SelectedDate.HasValue &&
-                         GlobalState.SelectedDate.Value.Date != reservation.Start.ToLocalTime().Date)
-                    {
+                    var startLocal = reservation.Start.ToLocalTime();
+                    if (GlobalState.SelectedDate.HasValue &&
+                        startLocal.Date != GlobalState.SelectedDate.Value.Date)
                         continue;
-                    }
 
                     <MudItem xs="12" sm="12" md="6" lg="4">
                         <MudCard Elevation="2">
@@ -73,7 +72,7 @@
                                 <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="1" Class="me-1">
                                     <MudIcon Icon="@Icons.Material.Filled.Schedule"/>
                                     <MudText>
-                                        @reservation.Start.ToLocalTime().ToShortTimeString() – @reservation.End.ToLocalTime().ToShortTimeString()
+                                        @startLocal.ToShortTimeString() – @reservation.End.ToLocalTime().ToShortTimeString()
                                     </MudText>
                                 </MudStack>
                                 <MudText>
@@ -118,12 +117,15 @@
         var response = await ReservationService.GetActiveReservationsAsync(Path);
         if (response.IsSuccess)
         {
-            // Zde necháme data v UTC pro porovnávání
             Reservations = (response.Data ?? [])
-                .OrderBy(r => r.Start)
+                .OrderBy(r => r.Start.ToLocalTime())
                 .ToList();
-            // Pro GlobalState použijeme lokální čas
-            GlobalState.SelectedDate = Reservations.FirstOrDefault()?.Start.ToLocalTime().Date;
+
+            GlobalState.SelectedDate = Reservations
+                .FirstOrDefault(r => r.Start > DateTime.UtcNow)
+                ?.Start
+                .ToLocalTime()
+                .Date;
         }
         else
         {
@@ -143,9 +145,10 @@
     private string GetAdditionalDateClasses(DateTime date)
     {
         if (Reservations != null && Reservations.Any(r =>
-                r.Start.ToLocalTime().Date == date.Date &&
-                r.IsAvailable &&
-                r.Start >= DateTime.UtcNow)) // Porovnání s UTC časem
+                r.Start.ToLocalTime().Date == date.Date
+                && r.IsAvailable
+                && r.Start > DateTime.UtcNow
+            ))
         {
             return "reservation-highlight";
         }
@@ -153,10 +156,14 @@
         return "reservation-empty";
     }
 
-
     private void Nearest()
     {
-        GlobalState.SelectedDate = Reservations?.FirstOrDefault()?.Start.ToLocalTime().Date;
+        var next = Reservations?
+            .Where(r => r.Start > DateTime.UtcNow)
+            .OrderBy(r => r.Start)
+            .FirstOrDefault();
+        GlobalState.SelectedDate = next?.Start.ToLocalTime().Date;
+        if (GlobalState.SelectedDate != null) _picker.GoToDate(GlobalState.SelectedDate.Value);
     }
 
     private bool DisableDateWithoutRecords(DateTime date)
@@ -164,9 +171,11 @@
         if (Reservations == null)
             return true;
 
-        return Reservations.All(r =>
-            r.Start.ToLocalTime().Date != date.Date || // Není událost v tento den
-            r.Start <= DateTime.UtcNow); // Nebo již proběhla (kontrola v UTC)
+        bool hasFutureOnDay = Reservations.Any(r =>
+            r.Start.ToLocalTime().Date == date.Date
+            && r.IsAvailable
+            && r.Start > DateTime.UtcNow
+        );
+        return !hasFutureOnDay;
     }
-
 }

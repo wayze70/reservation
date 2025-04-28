@@ -57,8 +57,9 @@
                 <MudGrid>
                     @foreach (var reservation in Reservations)
                     {
-                        var startDateTime = reservation.Start.ToLocalTime();
-                        if (GlobalState.SelectedDateAdmin.HasValue && GlobalState.SelectedDateAdmin.Value.Date != startDateTime.Date)
+                        var startLocal = reservation.Start.ToLocalTime();
+                        if (GlobalState.SelectedDateAdmin.HasValue
+                            && GlobalState.SelectedDateAdmin.Value.Date != startLocal.Date)
                             continue;
 
                         <MudItem xs="12" sm="12" md="6" lg="4">
@@ -68,7 +69,7 @@
                                     <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="1" Class="me-1">
                                         <MudIcon Icon="@Icons.Material.Filled.Schedule"/>
                                         <MudText>
-                                            @startDateTime.ToShortTimeString() – @reservation.End.ToLocalTime().ToShortTimeString()
+                                            @startLocal.ToShortTimeString() – @reservation.End.ToLocalTime().ToShortTimeString()
                                         </MudText>
                                     </MudStack>
                                     <MudText>
@@ -129,12 +130,12 @@
 
     private string GetAdditionalDateClasses(DateTime date)
     {
-        if (Reservations != null && Reservations.Any(r => r.Start.Date.ToLocalTime().Date == date.Date))
-        {
-            return "reservation-highlight";
-        }
-
-        return "reservation-empty";
+        return Reservations != null
+               && Reservations.Any(r => r.Start
+                   .ToLocalTime()
+                   .Date == date.Date)
+            ? "reservation-highlight"
+            : "reservation-empty";
     }
 
     private Task TodayAsync()
