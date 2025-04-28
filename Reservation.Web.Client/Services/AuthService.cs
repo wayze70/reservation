@@ -105,7 +105,12 @@ namespace Reservation.Web.Client.Services
                 if (string.IsNullOrWhiteSpace(refreshToken))
                 {
                     _snackbar.Add("Něco se nepovedlo, zkuste se znovu přihlásti a opakujte akci", Severity.Error);
-                    _navigationManager.NavigateTo(Constants.Routes.Login, true);
+                    if (_authenticationStateProvider is CustomAuthenticationStateProvider authStateProvider)
+                    {
+                        await authStateProvider.MarkUserAsLoggedOut();
+                    }
+
+                    _navigationManager.NavigateTo(Constants.Routes.Login);
                     return;
                 }
 
@@ -128,7 +133,7 @@ namespace Reservation.Web.Client.Services
                     await authStateProvider.MarkUserAsLoggedOut();
                 }
 
-                _navigationManager.NavigateTo(Constants.Routes.Login, true);
+                _navigationManager.NavigateTo(Constants.Routes.Login);
             }
         }
     }

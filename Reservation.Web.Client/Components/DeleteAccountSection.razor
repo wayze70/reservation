@@ -1,6 +1,9 @@
+@using Microsoft.AspNetCore.Components.Authorization
 @inject ISnackbar Snackbar
 @inject IAccountService AccountService
 @inject NavigationManager NavigationManager
+@inject AuthenticationStateProvider AuthenticationStateProvider
+
 
 <MudExpansionPanel Text="Zrušení účtu" Class="mt-5">
     <EditForm Model="@DeleteRequest" OnValidSubmit="OnDeleteAccountValidSubmit">
@@ -24,8 +27,15 @@
         if (result.IsSuccess)
         {
             Snackbar.Add("Účet byl úspěšně smazán.", Severity.Success);
-            NavigationManager.NavigateTo("/");
+            
+            if (AuthenticationStateProvider is CustomAuthenticationStateProvider authStateProvider)
+            {
+                await authStateProvider.MarkUserAsLoggedOut();
+            }
+            
+            NavigationManager.NavigateTo(Constants.Routes.Login);
         }
+
         else
         {
             Snackbar.Add("Nepodařilo se smazat účet. Zkontrolujte své údaje.", Severity.Error);

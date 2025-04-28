@@ -76,7 +76,7 @@ namespace Reservation.Web.Client.CustomExtensions
                                 await authStateProvider.MarkUserAsLoggedOut();
                             }
 
-                            _navigationManager.NavigateTo(Constants.Routes.Login, true);
+                            _navigationManager.NavigateTo(Constants.Routes.Login);
                         }
                     }
                 }
