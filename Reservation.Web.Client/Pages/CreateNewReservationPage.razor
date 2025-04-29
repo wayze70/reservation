@@ -54,6 +54,13 @@
                             Vyberte alespoň jedno datum.
                         </MudText>
                     }
+                    else
+                    {
+                        <MudButton Class="mt-2" Variant="Variant.Outlined" Color="Color.Error"
+                                   OnClick="ResetSelectedDates">
+                            Vymazat vybrané dny
+                        </MudButton>
+                    }
                 </MudItem>
                 <MudItem xs="12" sm="6">
                     <MudText Typo="Typo.subtitle2" Class="mb-1">
@@ -131,10 +138,11 @@
                 </MudItem>
                 <MudDivider/>
                 <MudItem xs="12" sm="6" Class="d-flex align-center">
-                    <MudSwitch Class="me-1" Label="@(NewReservation.IsAvailable ? "Dostupná" : "Nedostupné")" Color="Color.Primary"
+                    <MudSwitch Class="me-1" Label="@(NewReservation.IsAvailable ? "Dostupná" : "Nedostupné")"
+                               Color="Color.Primary"
                                @bind-Value="NewReservation.IsAvailable"/>
                     <MudTooltip Text="Bude okamžitě po vytvoření dostupná pro veřejnost"
-                                 ShowOnClick="true">
+                                ShowOnClick="true">
                         <MudIcon Icon="@Icons.Material.Filled.Info" Color="Color.Primary" Size="Size.Small"/>
                     </MudTooltip>
                 </MudItem>
@@ -287,4 +295,5 @@
     {
         SelectedDates.Clear();
     }
+
 }
