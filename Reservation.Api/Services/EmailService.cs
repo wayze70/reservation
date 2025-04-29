@@ -46,7 +46,7 @@ namespace Reservation.Api.Services
                 "Zrušení rezervace",
                 "#d9534f",
                 "Rezervace byla zrušena",
-                $"tímto Vás informujeme, že rezervace <strong>\"{reservationTitle}\"</strong> plánovaná na {reservationDate.ConvertToTimeZone(timeZoneInfo).ToString("f", cultureInfo)} ({timeZoneInfo.DisplayName}) byla zrušena."
+                $"tímto Vás informujeme, že rezervace <strong>\"{reservationTitle}\"</strong> plánovaná na {reservationDate.ConvertToTimeZone(timeZoneInfo).ToString("f", cultureInfo)} [{timeZoneInfo.DisplayName}] byla zrušena."
             );
         }
 
@@ -87,8 +87,8 @@ namespace Reservation.Api.Services
                 "Potvrzení rezervace",
                 "#28a745",
                 "Rezervace úspěšná",
-                $"Vaše rezervace <strong>{reservationTitle}</strong> na datum {reservationDate.ConvertToTimeZone(timeZoneInfo).ToString("f", cultureInfo)} ({timeZoneInfo.DisplayName})" +
-                $"s dobou trvání {duration.ToString(@"h\:mm", cultureInfo)} byla úspěšně provedena.",
+                $"Vaše rezervace <strong>{reservationTitle}</strong> na datum {reservationDate.ConvertToTimeZone(timeZoneInfo).ToString("f", cultureInfo)} [{timeZoneInfo.DisplayName}]" +
+                $" s dobou trvání {duration.ToString(@"h\:mm", cultureInfo)} byla úspěšně provedena.",
                 additionalContent
             );
         }
@@ -120,7 +120,7 @@ namespace Reservation.Api.Services
                 "Zrušení rezervace vlastníkem",
                 "#d9534f",
                 "Rezervace zrušena",
-                $"tímto Vás informujeme, že rezervace <strong>\"{reservationTitle}\"</strong> plánovaná na {reservationDate.ConvertToTimeZone(timeZoneInfo).ToString("f", cultureInfo)} ({timeZoneInfo.DisplayName}) byla zrušena vlastníkem."
+                $"tímto Vás informujeme, že rezervace <strong>\"{reservationTitle}\"</strong> plánovaná na {reservationDate.ConvertToTimeZone(timeZoneInfo).ToString("f", cultureInfo)} [{timeZoneInfo.DisplayName}] byla zrušena vlastníkem."
             );
         }
 
@@ -240,8 +240,7 @@ namespace Reservation.Api.Services
                 "#d9534f",
                 "Byli jste odstraněni z rezervace",
                 $@"tímto Vás informujeme, že jste byli odstraněni z rezervace <strong>{reservationTitle}</strong> 
-               v organizaci {organizationInHtml}, která byla plánována na {reservationDate.ConvertToTimeZone(timeZoneInfo).ToString("f", cultureInfo)} ({timeZoneInfo.DisplayName})
-               s dobou trvání {duration.ToString(@"h\:mm", cultureInfo)}.",
+               v organizaci {organizationInHtml}, která byla plánována na {reservationDate.ConvertToTimeZone(timeZoneInfo).ToString("f", cultureInfo)} [{timeZoneInfo.DisplayName}] s dobou trvání {duration.ToString(@"h\:mm", cultureInfo)}.",
                 @"<p style=""color: #666; font-size: 0.9em; margin-top: 20px;"">
                 Pokud si myslíte, že došlo k chybě, kontaktujte prosím organizátora rezervace.
             </p>"
