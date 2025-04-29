@@ -15,7 +15,7 @@
                 <MudStack Spacing="1">
                     <MudText Typo="Typo.subtitle1"
                              Style="white-space: pre-line;">@GlobalState.Description</MudText>
-                    <MudText Typo="Typo.subtitle2">Kontakní email: @GlobalState.ContactEmail</MudText>
+                    <MudText Typo="Typo.subtitle2">Kontaktní email: @GlobalState.ContactEmail</MudText>
                 </MudStack>
                 <MudDatePicker @ref="_picker"
                                PickerVariant="PickerVariant.Static"
@@ -45,7 +45,7 @@
             <MudText Typo="Typo.subtitle1" Align="Align.Center" Class="mt-2">Nebyly nalezeny žádné události.</MudText>
         }
         else if (!Reservations.Any(r =>
-                         !GlobalState.SelectedDate.HasValue || r.Start.ToLocalTime().Date == GlobalState.SelectedDate.Value.Date))
+                         !GlobalState.SelectedDate.HasValue || r.Start.Date == GlobalState.SelectedDate.Value.Date))
         {
             <MudText Typo="Typo.subtitle1" Align="Align.Center" Class="mt-2">Žádné události pro vybrané datum.
             </MudText>
@@ -55,14 +55,9 @@
             <MudGrid>
                 @foreach (var reservation in Reservations)
                 {
-                    if (!reservation.IsAvailable || reservation.CurrentCapacity >= reservation.Capacity)
-                    {
-                        continue;
-                    }
 
-                    var startLocal = reservation.Start.ToLocalTime();
                     if (GlobalState.SelectedDate.HasValue &&
-                        startLocal.Date != GlobalState.SelectedDate.Value.Date)
+                        reservation.Start.Date != GlobalState.SelectedDate.Value.Date)
                         continue;
 
                     <MudItem xs="12" sm="12" md="6" lg="4">
@@ -72,7 +67,7 @@
                                 <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="1" Class="me-1">
                                     <MudIcon Icon="@Icons.Material.Filled.Schedule"/>
                                     <MudText>
-                                        @startLocal.ToShortTimeString() – @reservation.End.ToLocalTime().ToShortTimeString()
+                                        @reservation.Start.ToShortTimeString() – @reservation.End.ToShortTimeString()
                                     </MudText>
                                 </MudStack>
                                 <MudText>
@@ -115,17 +110,20 @@
         }
 
         var response = await ReservationService.GetActiveReservationsAsync(Path);
+
         if (response.IsSuccess)
         {
-            Reservations = (response.Data ?? [])
-                .OrderBy(r => r.Start.ToLocalTime())
+            Reservations = (response.Data ?? []).Select(r =>
+                {
+                    r.Start = r.Start.ToLocalTime();
+                    r.End = r.End.ToLocalTime();
+                    return r;
+                })
+                .OrderBy(r => r.Start)
                 .ToList();
 
             GlobalState.SelectedDate = Reservations
-                .FirstOrDefault(r => r.Start > DateTime.UtcNow)
-                ?.Start
-                .ToLocalTime()
-                .Date;
+                .FirstOrDefault(r => r.Start > DateTime.Now)?.Start.Date;
         }
         else
         {
@@ -145,10 +143,7 @@
     private string GetAdditionalDateClasses(DateTime date)
     {
         if (Reservations != null && Reservations.Any(r =>
-                r.Start.ToLocalTime().Date == date.Date
-                && r.IsAvailable
-                && r.Start > DateTime.UtcNow
-                && r.CurrentCapacity < r.Capacity
+                r.Start.Date == date.Date
             ))
         {
             return "reservation-highlight";
@@ -159,11 +154,8 @@
 
     private void Nearest()
     {
-        var next = Reservations?
-            .Where(r => r.Start > DateTime.UtcNow)
-            .OrderBy(r => r.Start)
-            .FirstOrDefault();
-        GlobalState.SelectedDate = next?.Start.ToLocalTime().Date;
+        var next = Reservations?.FirstOrDefault();
+        GlobalState.SelectedDate = next?.Start.Date;
         if (GlobalState.SelectedDate != null) _picker.GoToDate(GlobalState.SelectedDate.Value);
     }
 
@@ -172,12 +164,8 @@
         if (Reservations == null)
             return true;
 
-        bool hasFutureOnDay = Reservations.Any(r =>
-            r.Start.ToLocalTime().Date == date.Date
-            && r.IsAvailable
-            && r.Start > DateTime.UtcNow
-        );
-        return !hasFutureOnDay;
+        return !(Reservations.Any(r =>
+            r.Start.Date == date.Date
+        ));
     }
-
 }

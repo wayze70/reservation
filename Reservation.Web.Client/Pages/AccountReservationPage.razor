@@ -47,7 +47,7 @@
                 </MudText>
             }
             else if (!Reservations.Any(r =>
-                             !GlobalState.SelectedDateAdmin.HasValue || r.Start.ToLocalTime().Date == GlobalState.SelectedDateAdmin.Value.Date))
+                             !GlobalState.SelectedDateAdmin.HasValue || r.Start.Date == GlobalState.SelectedDateAdmin.Value.Date))
             {
                 <MudText Typo="Typo.subtitle1" Align="Align.Center" Class="mt-2">Žádné události pro vybrané datum.
                 </MudText>
@@ -57,9 +57,8 @@
                 <MudGrid>
                     @foreach (var reservation in Reservations)
                     {
-                        var startLocal = reservation.Start.ToLocalTime();
                         if (GlobalState.SelectedDateAdmin.HasValue
-                            && GlobalState.SelectedDateAdmin.Value.Date != startLocal.Date)
+                            && GlobalState.SelectedDateAdmin.Value.Date != reservation.Start.Date)
                             continue;
 
                         <MudItem xs="12" sm="12" md="6" lg="4">
@@ -69,7 +68,7 @@
                                     <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="1" Class="me-1">
                                         <MudIcon Icon="@Icons.Material.Filled.Schedule"/>
                                         <MudText>
-                                            @startLocal.ToShortTimeString() – @reservation.End.ToLocalTime().ToShortTimeString()
+                                            @reservation.Start.ToShortTimeString() – @reservation.End.ToShortTimeString()
                                         </MudText>
                                     </MudStack>
                                     <MudText>
@@ -111,7 +110,13 @@
         if (response.IsSuccess)
         {
             Reservations = (response.Data ?? [])
-                .OrderBy(r => r.Start.ToLocalTime())
+                .Select(r =>
+                {
+                    r.Start = r.Start.ToLocalTime();
+                    r.End = r.End.ToLocalTime();
+                    return r;
+                })
+                .OrderBy(r => r.Start)
                 .ToList();
         }
         else
@@ -131,9 +136,7 @@
     private string GetAdditionalDateClasses(DateTime date)
     {
         return Reservations != null
-               && Reservations.Any(r => r.Start
-                   .ToLocalTime()
-                   .Date == date.Date)
+               && Reservations.Any(r => r.Start.Date == date.Date)
             ? "reservation-highlight"
             : "reservation-empty";
     }
