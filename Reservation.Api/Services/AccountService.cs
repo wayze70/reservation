@@ -110,6 +110,21 @@ public class AccountService : IAccountService
             ContactEmail = owner.ContactEmail
         };
     }
+    
+    public async Task<PathResponse> GetAccountIdentifierByReservationId(int reservationId)
+    {
+        var reservation = await _dbContext.Reservations
+            .Include(r => r.Account)
+            .FirstOrDefaultAsync(r => r.Id == reservationId);
+        
+        if (reservation == null)
+            throw new CustomHttpException(HttpStatusCode.NotFound, "Rezervace nenalezena");
+
+        return new PathResponse 
+        { 
+            Path = reservation.Account.Path
+        };
+    }
 
     public async Task<AccountInfoResponse> UpdateAccountInfoAsync(UpdateAccountInfoRequest request, int accountId)
     {

@@ -73,6 +73,13 @@ public class AccountController : ControllerBase
     {
         return Ok(await _accountService.GetAccountDescriptionAsync(path));
     }
+    
+    [AllowAnonymous]
+    [HttpGet("get-account-path/{id:int}")]
+    public async Task<ActionResult<ReservationResponse>> GetAccountIdentifierByReservationId([FromRoute] int id)
+    {
+        return Ok(await _accountService.GetAccountIdentifierByReservationId(id));
+    }
 
     [HttpPost("delete")]
     [Authorize(Roles = nameof(Role.Admin))]

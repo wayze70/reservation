@@ -16,7 +16,7 @@ namespace Reservation.Api.Services
         public EmailService(IConfiguration configuration)
         {
             _configuration = configuration;
-            _senderEmail = configuration["EmailSettings:SenderEmail"] 
+            _senderEmail = configuration["EmailSettings:SenderEmail"]
                            ?? throw new InvalidOperationException("Chybí konfigurace EmailSettings:SenderEmail");
         }
 
@@ -34,8 +34,9 @@ namespace Reservation.Api.Services
             );
         }
 
-        public async Task SendReservationCancellationByUserEmailAsync(string recipientEmail, string firstName, string lastName,
-            string reservationTitle, DateTime reservationDate, CultureInfo cultureInfo)
+        public async Task SendReservationCancellationByUserEmailAsync(string recipientEmail, string firstName,
+            string lastName,
+            string reservationTitle, DateTime reservationDate, CultureInfo cultureInfo, TimeZoneInfo timeZoneInfo)
         {
             await SendEmailAsync(
                 recipientEmail,
@@ -45,7 +46,7 @@ namespace Reservation.Api.Services
                 "Zrušení rezervace",
                 "#d9534f",
                 "Rezervace byla zrušena",
-                $"tímto Vás informujeme, že rezervace <strong>\"{reservationTitle}\"</strong> plánovaná na {reservationDate.ToString("f", cultureInfo)} byla zrušena."
+                $"tímto Vás informujeme, že rezervace <strong>\"{reservationTitle}\"</strong> plánovaná na {reservationDate.ConvertToTimeZone(timeZoneInfo).ToString("f", cultureInfo)} ({timeZoneInfo.DisplayName}) byla zrušena."
             );
         }
 
@@ -58,14 +59,25 @@ namespace Reservation.Api.Services
             TimeSpan duration,
             int reservationId,
             string unsubscribeLink,
-            CultureInfo cultureInfo)
+            CultureInfo cultureInfo,
+            TimeZoneInfo timeZoneInfo)
         {
-            string additionalContent = $@"<p>Pokud se chcete od této události odhlásit, klikněte na následující odkaz:</p>
-            <p style=""text-align: center;"">
-                <a href=""https://www.rezervario.cz/zruseni-rezervace/{reservationId}/{unsubscribeLink}"" 
-                   style=""display: inline-block; padding: 10px 20px; color: #fff; background-color: #d9534f; 
-                   text-decoration: none; border-radius: 4px;"">Odhlásit rezervaci</a>
-            </p>";
+            string additionalContent = $@"
+        <p style=""text-align: center;"">
+            <a href=""https://www.rezervario.cz/presmerovani/rezervace/{reservationId}"" 
+               style=""display: inline-block; padding: 10px 20px; color: #fff; background-color: #28a745; 
+               text-decoration: none; border-radius: 4px; margin-bottom: 15px;"">
+               Zobrazit podrobnosti rezervace
+            </a>
+        </p>
+        <p>Pokud se chcete od této události odhlásit, klikněte na následující odkaz:</p>
+        <p style=""text-align: center;"">
+            <a href=""https://www.rezervario.cz/zruseni-rezervace/{reservationId}/{unsubscribeLink}"" 
+               style=""display: inline-block; padding: 10px 20px; color: #fff; background-color: #d9534f; 
+               text-decoration: none; border-radius: 4px;"">
+               Odhlásit rezervaci
+            </a>
+        </p>";
 
             await SendEmailAsync(
                 recipientEmail,
@@ -75,7 +87,7 @@ namespace Reservation.Api.Services
                 "Potvrzení rezervace",
                 "#28a745",
                 "Rezervace úspěšná",
-                $"Vaše rezervace <strong>{reservationTitle}</strong> na datum {reservationDate.ToString("f", cultureInfo)} " +
+                $"Vaše rezervace <strong>{reservationTitle}</strong> na datum {reservationDate.ConvertToTimeZone(timeZoneInfo).ToString("f", cultureInfo)} ({timeZoneInfo.DisplayName})" +
                 $"s dobou trvání {duration.ToString(@"h\:mm", cultureInfo)} byla úspěšně provedena.",
                 additionalContent
             );
@@ -112,7 +124,8 @@ namespace Reservation.Api.Services
             );
         }
 
-        public async Task SendDeleteAccountEmailAsync(string recipientEmail, string firstName, string lastName, string identifier)
+        public async Task SendDeleteAccountEmailAsync(string recipientEmail, string firstName, string lastName,
+            string identifier)
         {
             await SendEmailAsync(
                 recipientEmail,
@@ -126,18 +139,21 @@ namespace Reservation.Api.Services
                 "Pokud jste tuto akci neprovedli, prosím kontaktujte náš tým."
             );
         }
-        
+
         public async Task SendNewEmployeeWelcomeEmailAsync(
-            string recipientEmail, 
-            string firstName, 
-            string lastName, 
+            string recipientEmail,
+            string firstName,
+            string lastName,
             string password,
             string identifier,
             string organizationName,
             Role role)
         {
-            string organizationInHtml = !string.IsNullOrEmpty(organizationName) ? organizationName : "rezervačního systému";
-            string identifierInHtml = !string.IsNullOrEmpty(organizationName) ? organizationName : "s identifikátorem " + $"\"{identifier}\"";
+            string organizationInHtml =
+                !string.IsNullOrEmpty(organizationName) ? organizationName : "rezervačního systému";
+            string identifierInHtml = !string.IsNullOrEmpty(organizationName)
+                ? organizationName
+                : "s identifikátorem " + $"\"{identifier}\"";
             string roleName = role.ToString();
             string additionalContent = $@"
         <div style=""background-color: #f8f9fa; padding: 15px; border-radius: 4px; margin: 15px 0;"">
@@ -172,15 +188,15 @@ namespace Reservation.Api.Services
                 additionalContent
             );
         }
-        
+
         public async Task SendEmployeeDeletionEmailAsync(
-            string recipientEmail, 
-            string firstName, 
-            string lastName, 
+            string recipientEmail,
+            string firstName,
+            string lastName,
             string organizationName,
             string identifier)
         {
-            string organizationInHtml = string.IsNullOrEmpty(organizationName) 
+            string organizationInHtml = string.IsNullOrEmpty(organizationName)
                 ? "s identifikátorem " + $"\"{identifier}\""
                 : organizationName;
 
@@ -199,7 +215,7 @@ namespace Reservation.Api.Services
         </p>"
             );
         }
-        
+
         public async Task SendCustomerRemovedFromReservationEmailAsync(
             string recipientEmail,
             string firstName,
@@ -212,8 +228,7 @@ namespace Reservation.Api.Services
             string organization,
             string identifier)
         {
-            
-            string organizationInHtml = string.IsNullOrEmpty(organization) 
+            string organizationInHtml = string.IsNullOrEmpty(organization)
                 ? "s identifikátorem " + $"\"{identifier}\""
                 : organization;
             await SendEmailAsync(
@@ -232,31 +247,43 @@ namespace Reservation.Api.Services
             </p>"
             );
         }
-        
-        public async Task SendReservationUpdateEmailAsync(
-            string recipientEmail,
-            string firstName,
-            string lastName,
-            string reservationTitle,
-            DateTime reservationDate,
-            TimeSpan duration,
-            TimeZoneInfo timeZoneInfo,
-            CultureInfo cultureInfo)
-        {
-            await SendEmailAsync(
-                recipientEmail,
-                firstName,
-                lastName,
-                "Změna v rezervaci",
-                "Aktualizace rezervace",
-                "#ffc107",
-                "Rezervace byla upravena",
-                $"tímto Vás informujeme, že došlo ke změně v rezervaci <strong>{reservationTitle}</strong>. " +
-                $"Nový termín je {reservationDate.ConvertToTimeZone(timeZoneInfo).ToString("f", cultureInfo)} ({timeZoneInfo.DisplayName}) " +
-                $"s dobou trvání {duration.ToString(@"h\:mm", cultureInfo)}."
-            );
-        }
-        
+
+  public async Task SendReservationUpdateEmailAsync(
+    string recipientEmail,
+    string firstName,
+    string lastName,
+    string reservationTitle,
+    DateTime reservationDate,
+    TimeSpan duration,
+    int reservationId,
+    TimeZoneInfo timeZoneInfo,
+    CultureInfo cultureInfo)
+{
+    string additionalContent = $@"
+        <p style=""text-align: center;"">
+            <a href=""https://www.rezervario.cz/presmerovani/rezervace/{reservationId}"" 
+               style=""display: inline-block; padding: 10px 20px; color: #fff; background-color: #ffc107; 
+               text-decoration: none; border-radius: 4px;"">
+               Zobrazit podrobnosti rezervace
+            </a>
+        </p>";
+
+    await SendEmailAsync(
+        recipientEmail,
+        firstName,
+        lastName,
+        "Změna v rezervaci",
+        "Aktualizace rezervace",
+        "#ffc107",
+        "Rezervace byla upravena",
+        $"tímto Vás informujeme, že došlo ke změně v rezervaci <strong>{reservationTitle}</strong>. " +
+        $"Nový termín je {reservationDate.ConvertToTimeZone(timeZoneInfo).ToString("f", cultureInfo)} ({timeZoneInfo.DisplayName}) " +
+        $"s dobou trvání {duration.ToString(@"h\:mm", cultureInfo)}.",
+        additionalContent
+    );
+}
+
+
         public async Task SendReservationReminderEmailAsync(
             string recipientEmail,
             string firstName,
@@ -264,9 +291,19 @@ namespace Reservation.Api.Services
             string reservationTitle,
             DateTime reservationDate,
             TimeSpan duration,
+            int reservationId,
             TimeZoneInfo timeZoneInfo,
             CultureInfo cultureInfo)
         {
+            string additionalContent = $@"
+        <p style=""text-align: center;"">
+            <a href=""https://www.rezervario.cz/presmerovani/rezervace/{reservationId}"" 
+               style=""display: inline-block; padding: 10px 20px; color: #fff; background-color: #17a2b8; 
+               text-decoration: none; border-radius: 4px;"">
+               Zobrazit podrobnosti rezervace
+            </a>
+        </p>";
+
             await SendEmailAsync(
                 recipientEmail,
                 firstName,
@@ -277,9 +314,11 @@ namespace Reservation.Api.Services
                 "Připomenutí nadcházející události",
                 $"tímto Vám připomínáme, že zítra v {reservationDate.ConvertToTimeZone(timeZoneInfo).ToString("t", cultureInfo)} ({timeZoneInfo.DisplayName}) " +
                 $"se koná událost <strong>{reservationTitle}</strong> " +
-                $"s dobou trvání {duration.ToString(@"h\:mm", cultureInfo)}."
+                $"s dobou trvání {duration.ToString(@"h\:mm", cultureInfo)}.",
+                additionalContent
             );
         }
+
 
         private async Task SendEmailAsync(
             string recipientEmail,
@@ -343,8 +382,8 @@ namespace Reservation.Api.Services
         {
             var client = new SmtpClient();
             await client.ConnectAsync("smtp.websupport.cz", 465, SecureSocketOptions.SslOnConnect);
-            string smtpPassword = _configuration["EmailSettings:SmtpPassword"] 
-                ?? throw new InvalidOperationException("Chybí proměnná prostředí SmtpPassword");
+            string smtpPassword = _configuration["EmailSettings:SmtpPassword"]
+                                  ?? throw new InvalidOperationException("Chybí proměnná prostředí SmtpPassword");
             await client.AuthenticateAsync(_senderEmail, smtpPassword);
             return client;
         }

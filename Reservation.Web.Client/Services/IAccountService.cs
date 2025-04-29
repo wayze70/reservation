@@ -14,4 +14,5 @@ public interface IAccountService
     public Task<ApiResponse<bool>> UpdatePassword(UpdatePasswordRequest request);
     public Task<ApiResponse<AccountDescriptionResponse>> GetAccountDescription(string path);
     public Task<ApiResponse<bool>> DeleteAccount(DeleteAccountRequest request);
+    public Task<ApiResponse<PathResponse>> GetAccountIdentifierByReservationId(int reservationId);
 }

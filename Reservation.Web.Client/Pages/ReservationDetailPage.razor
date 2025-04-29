@@ -120,7 +120,7 @@ else
         <MudCardActions Class="justify-end" Style="gap: 7px;">
             <MudButton Variant="Variant.Outlined" Color="Color.Secondary" OnClick="Back">Zpět</MudButton>
             <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="SignUp"
-                       Disabled="!ReservationDetail.IsAvailable">
+                       Disabled="@(!ReservationDetail.IsAvailable || ReservationDetail.CurrentCapacity >= ReservationDetail.Capacity)">
                 Přihlásit se
             </MudButton>
         </MudCardActions>

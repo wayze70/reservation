@@ -32,7 +32,7 @@ public class ReservationService : IReservationService
     {
         return await _httpClientService.GetAsync<ReservationResponse>($"/reservation/public/{path}/{reservationId}");
     }
-
+    
     public async Task<ApiResponse<ReservationSignUpResponse>> SignInToReservation(int reservationId, ReservationSignUpRequest request)
     {
         return await _httpClientService.PostAsync<ReservationSignUpRequest, ReservationSignUpResponse>

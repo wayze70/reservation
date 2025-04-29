@@ -73,6 +73,7 @@ public class ReservationReminderWorker : BackgroundService
                         reservation.Title,
                         reservation.StartTime,
                         reservation.EndTime - reservation.StartTime,
+                        reservation.Id,
                         timeZoneInfo,
                         CultureInfo.GetCultureInfo("cs-CZ")
                     );

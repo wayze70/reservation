@@ -5,15 +5,15 @@ namespace Reservation.Web.Client.Services;
 
 public interface IReservationService
 {
-    public Task<ApiResponse<List<ReservationResponse>>> CreateAsync(List<ReservationCreateRequest> listRequest);
-    public Task<ApiResponse<List<ReservationResponse>>> GetActiveReservationsAsync(string path);
-    public Task<ApiResponse<List<ReservationResponse>>> GetReservationsAsync();
-    public Task<ApiResponse<ReservationResponse>> GetReservationAsync(string path, int reservationId);
-    public Task<ApiResponse<ReservationSignUpResponse>> SignInToReservation(int reservationId, 
+    Task<ApiResponse<List<ReservationResponse>>> CreateAsync(List<ReservationCreateRequest> listRequest);
+    Task<ApiResponse<List<ReservationResponse>>> GetActiveReservationsAsync(string path);
+    Task<ApiResponse<List<ReservationResponse>>> GetReservationsAsync();
+    Task<ApiResponse<ReservationResponse>> GetReservationAsync(string path, int reservationId);
+    Task<ApiResponse<ReservationSignUpResponse>> SignInToReservation(int reservationId, 
         ReservationSignUpRequest request);
-    public Task<ApiResponse<ReservationResponseWithCustomers>> GetReservationWithUserAsync(int reservationId);
-    public Task<ApiResponse<ReservationResponse>> UpdateReservationAsync(ReservationCreateRequest request, int reservationId);
-    public Task<ApiResponse<bool>> DeleteReservationAsync(int reservationId);
-    public Task<ApiResponse<bool>> RemoveUserFromReservationAsync(RemoveCustomerFromReservationRequest request);
-    public Task<ApiResponse<ReservationResponse>> CancelReservationAsync(int reservationId, string cancellationCode);
+    Task<ApiResponse<ReservationResponseWithCustomers>> GetReservationWithUserAsync(int reservationId);
+    Task<ApiResponse<ReservationResponse>> UpdateReservationAsync(ReservationCreateRequest request, int reservationId);
+    Task<ApiResponse<bool>> DeleteReservationAsync(int reservationId);
+    Task<ApiResponse<bool>> RemoveUserFromReservationAsync(RemoveCustomerFromReservationRequest request);
+    Task<ApiResponse<ReservationResponse>> CancelReservationAsync(int reservationId, string cancellationCode);
 }

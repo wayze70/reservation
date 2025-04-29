@@ -8,11 +8,11 @@ public interface IEmailService
     Task SendRegistrationSuccessEmailAsync(string email, string firstName, string lastName);
 
     Task SendReservationCancellationByUserEmailAsync(string recipientEmail, string firstName, string lastName,
-        string reservationTitle, DateTime reservationDate, CultureInfo cultureInfo);
+        string reservationTitle, DateTime reservationDate, CultureInfo cultureInfo, TimeZoneInfo timeZoneInfo);
 
     Task SendReservationConfirmationEmailWithUnsubscribeLinkAsync(string recipientEmail, string firstName,
         string lastName, string reservationTitle, DateTime reservationDate, TimeSpan duration, int reservationId, string
-            unsubscribeLink, CultureInfo cultureInfo);
+            unsubscribeLink, CultureInfo cultureInfo, TimeZoneInfo timeZoneInfo);
 
     Task SendReservationCancellationByOwnerDeletingAccountEmailAsync(string recipientEmail, string firstName,
         string lastName, string reservationTitle, string organization);
@@ -33,10 +33,10 @@ public interface IEmailService
         CultureInfo cultureInfo, string organization, string identifier);
 
     Task SendReservationUpdateEmailAsync(string recipientEmail, string firstName, string lastName,
-        string reservationTitle, DateTime reservationDate, TimeSpan duration, TimeZoneInfo timeZoneInfo,
+        string reservationTitle, DateTime reservationDate, TimeSpan duration, int reservatioId, TimeZoneInfo timeZoneInfo,
         CultureInfo cultureInfo);
 
     Task SendReservationReminderEmailAsync(string recipientEmail, string firstName, string lastName,
-        string reservationTitle, DateTime reservationDate, TimeSpan duration, TimeZoneInfo timeZoneInfo,
+        string reservationTitle, DateTime reservationDate, TimeSpan duration, int reservationId, TimeZoneInfo timeZoneInfo,
         CultureInfo cultureInfo);
 }

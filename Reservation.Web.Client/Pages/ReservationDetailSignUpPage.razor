@@ -96,7 +96,7 @@
             Snackbar.Add("Úspěšně jste se rezervovali k události", Severity.Success);
             NavigationManager.NavigateTo(Constants.Routes.ReservationDetail(Path, ReservationId));
         }
-        else if (response.StatusCode == HttpStatusCode.BadRequest)
+        else if (response.StatusCode == HttpStatusCode.Locked)
         {
             Snackbar.Add("Omlouváme se, ale událost je již plná", Severity.Warning);
         }

@@ -1,0 +1,22 @@
+@page "/presmerovani/rezervace/{Id:int}"
+@using Reservation.Web.Client.Components
+
+@inject NavigationManager Navigation
+@inject IAccountService AccountService
+
+<Loading/>
+
+@code {
+    [Parameter]
+    public int Id { get; set; }
+    
+    protected override async Task OnInitializedAsync()
+    {
+        var result = await AccountService.GetAccountIdentifierByReservationId(Id);
+        if (result.IsSuccess && result.Data != null)
+        {
+            Navigation.NavigateTo($"/rezervace/{result.Data.Path}/{Id}");
+            return;
+        }
+    }
+}

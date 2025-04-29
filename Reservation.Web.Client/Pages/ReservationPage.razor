@@ -148,6 +148,7 @@
                 r.Start.ToLocalTime().Date == date.Date
                 && r.IsAvailable
                 && r.Start > DateTime.UtcNow
+                && r.CurrentCapacity < r.Capacity
             ))
         {
             return "reservation-highlight";
@@ -178,4 +179,5 @@
         );
         return !hasFutureOnDay;
     }
+
 }

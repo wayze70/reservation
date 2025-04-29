@@ -88,21 +88,22 @@ namespace Reservation.Api.Services
                           ?? throw new CustomHttpException(HttpStatusCode.NotFound, "Cesta nebyla nalezena");
 
             var records = await _dbContext.Reservations
-                .Where(r => (r.AccountId == account.Id && r.IsAvailable && r.StartTime > DateTime.UtcNow))
+                .Where(r => (r.AccountId == account.Id && r.IsAvailable && r.StartTime > DateTime.UtcNow &&
+                             r.Capacity > r.Customers.Count))
                 .Include(r => r.Customers)
                 .ToListAsync();
 
             return records.Count == 0 ? [] : records.Select(MapToDto).ToList();
         }
 
-        public async Task<ReservationResponse> GetReservationByPathAndIdAsync(string path, int accountId)
+        public async Task<ReservationResponse> GetReservationByPathAndIdAsync(string path, int reservationId)
         {
             var owner = await _dbContext.Accounts.FirstOrDefaultAsync(o => o.Path == path)
                         ?? throw new CustomHttpException(HttpStatusCode.NotFound, "Cesta nebyla nalezena");
 
             var reservation = await _dbContext.Reservations
                 .Include(r => r.Customers)
-                .FirstOrDefaultAsync(r => r.Id == accountId && r.AccountId == owner.Id);
+                .FirstOrDefaultAsync(r => r.Id == reservationId && r.AccountId == owner.Id);
 
             if (reservation == null)
             {
@@ -135,56 +136,51 @@ namespace Reservation.Api.Services
         {
             await using var transaction = await _dbContext.Database.BeginTransactionAsync();
 
-            try
+            var reservation = await _dbContext.Reservations
+                .Include(r => r.Customers)
+                .FirstOrDefaultAsync(r => r.Id == reservationId);
+
+            if (reservation == null)
+                throw new CustomHttpException(HttpStatusCode.NotFound, "Událost nebyla nalezena");
+
+            if (!reservation.IsAvailable)
+                throw new CustomHttpException(HttpStatusCode.Locked, "Událost není dostupná");
+
+            if (reservation.Customers.Count >= reservation.Capacity)
+                throw new CustomHttpException(HttpStatusCode.Conflict, "Kapacita události byla naplněna");
+
+            if (reservation.Customers.Any(u => u.Email.Equals(request.Email, StringComparison.OrdinalIgnoreCase)))
+                throw new CustomHttpException(HttpStatusCode.Conflict,
+                    "Uživatel je již přihlášen na tuto událost");
+
+            var newUser = new Customer
             {
-                var reservation = await _dbContext.Reservations
-                    .Include(r => r.Customers)
-                    .FirstOrDefaultAsync(r => r.Id == reservationId);
+                FirstName = request.FirstName,
+                LastName = request.LastName,
+                Email = request.Email,
+                CancellationCode = Guid.NewGuid().ToString(),
+                ReservationId = reservationId,
+                Note = request.Note,
+            };
 
-                if (reservation == null)
-                    throw new CustomHttpException(HttpStatusCode.NotFound, "Událost nebyla nalezena");
+            reservation.Customers.Add(newUser);
+            await _dbContext.SaveChangesAsync();
+            await transaction.CommitAsync();
 
-                if (reservation.Customers.Count >= reservation.Capacity || !reservation.IsAvailable)
-                    throw new CustomHttpException(HttpStatusCode.Locked, "K události se již není možné přihlásit");
+            await _emailService.SendReservationConfirmationEmailWithUnsubscribeLinkAsync(
+                newUser.Email,
+                newUser.FirstName,
+                newUser.LastName,
+                reservation.Title,
+                reservation.StartTime,
+                reservation.EndTime - reservation.StartTime,
+                reservation.Id,
+                newUser.CancellationCode,
+                cultureInfo,
+                TimeZoneInfo.FindSystemTimeZoneById(reservation.CustomTimeZoneId)
+            );
 
-                if (reservation.Customers.Any(u => u.Email.Equals(request.Email, StringComparison.OrdinalIgnoreCase)))
-                    throw new CustomHttpException(HttpStatusCode.Conflict,
-                        "Uživatel je již přihlášen na tuto událost");
-
-                var newUser = new Customer
-                {
-                    FirstName = request.FirstName,
-                    LastName = request.LastName,
-                    Email = request.Email,
-                    CancellationCode = Guid.NewGuid().ToString(),
-                    ReservationId = reservationId,
-                    Note = request.Note,
-                };
-
-                reservation.Customers.Add(newUser);
-                await _dbContext.SaveChangesAsync();
-                await transaction.CommitAsync();
-
-                await _emailService.SendReservationConfirmationEmailWithUnsubscribeLinkAsync(
-                    newUser.Email,
-                    newUser.FirstName,
-                    newUser.LastName,
-                    reservation.Title,
-                    reservation.StartTime,
-                    reservation.EndTime - reservation.StartTime,
-                    reservation.Id,
-                    newUser.CancellationCode,
-                    cultureInfo
-                );
-
-                return MapToDto(reservation);
-            }
-            catch (Exception)
-            {
-                await transaction.RollbackAsync();
-                throw new CustomHttpException(HttpStatusCode.InternalServerError,
-                    "Chyba při přihlašování k události. Zkuste to prosím znovu.");
-            }
+            return MapToDto(reservation);
         }
 
         public async Task<ReservationResponse> CancelReservationAsync(int reservationId, string cancellationCode,
@@ -212,7 +208,8 @@ namespace Reservation.Api.Services
             await _dbContext.SaveChangesAsync();
 
             await _emailService.SendReservationCancellationByUserEmailAsync(user.Email, user.FirstName, user.LastName,
-                reservation.Title, reservation.StartTime, cultureInfo);
+                reservation.Title, reservation.StartTime, cultureInfo,
+                TimeZoneInfo.FindSystemTimeZoneById(reservation.CustomTimeZoneId));
 
             return MapToDto(reservation);
         }
@@ -223,14 +220,16 @@ namespace Reservation.Api.Services
             var reservation = await _dbContext.Reservations
                 .Include(r => r.Customers)
                 .FirstOrDefaultAsync(r => r.Id == reservationId);
-            
+
             if (reservation == null)
                 throw new CustomHttpException(HttpStatusCode.NotFound, "Událost nebyla nalezena");
-            
+
             bool hasChanged = reservation.Title != request.Title ||
                               reservation.StartTime != request.Start ||
                               reservation.EndTime != request.End ||
-                              reservation.Description != request.Description;
+                              reservation.Description != request.Description ||
+                              reservation.CustomTimeZoneId != request.CustomTimeZoneId ||
+                              reservation.CancellationOffset != request.CancellationOffset;
 
             reservation.Capacity = request.Capacity;
             reservation.Title = request.Title;
@@ -242,7 +241,7 @@ namespace Reservation.Api.Services
             reservation.CustomTimeZoneId = request.CustomTimeZoneId;
 
             await _dbContext.SaveChangesAsync();
-            
+
             if (hasChanged && reservation.Customers.Count != 0)
             {
                 var timeZoneInfo = TimeZoneInfo.FindSystemTimeZoneById(request.CustomTimeZoneId);
@@ -255,6 +254,7 @@ namespace Reservation.Api.Services
                         reservation.Title,
                         reservation.StartTime,
                         reservation.EndTime - reservation.StartTime,
+                        reservation.Id,
                         timeZoneInfo,
                         CultureInfo.GetCultureInfo("cs-CZ")
                     );

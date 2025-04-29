@@ -17,6 +17,12 @@ public class PathRequest
     public string Path { get; set; } = string.Empty;
 }
 
+public class PathResponse
+{
+    public string Path { get; set; } = string.Empty;
+}
+        
+
 public class AccountDescriptionResponse
 {
     public string Organization { get; set; } = string.Empty;
