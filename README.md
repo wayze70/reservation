@@ -8,7 +8,7 @@ Aplikace běží online na adrese:
 # DEMO Účty
 
 Pro snadnější vyzkoušení aplikace jsem připravil sadu demo účtů.  
-Pro lepší představu si můžeme představit, že vytvořený účet patří podnikateli, který vlastní více společností zaměřených na různé služby:
+Pro lepší představu si můžeme představit, že vytvořený účet patří podnikateli (např. Josefu Novákovi), který vlastní více společností zaměřených na různé služby:
 
 - **Kurzy programování**  
   Zákazníci se mohou rezervovat na adrese:  
@@ -17,6 +17,10 @@ Pro lepší představu si můžeme představit, že vytvořený účet patří p
 - **Skupinové silové tréninky v posilovně**  
   Tréninky jsou dostupné veřejnosti na adrese:  
   [https://www.rezervario.cz/rezervace/skupinove-cviceni](https://www.rezervario.cz/rezervace/skupinove-cviceni)
+
+- **Rezervace sporotní haly + turnaje**  
+  Možnost rezervace sportovní haly jsou dostupné veřejnosti na adrese:  
+  [https://www.rezervario.cz/rezervace/sportovni-hala](https://www.rezervario.cz/rezervace/sportovni-hala)
 
 ## Přihlášení do aplikace
 
