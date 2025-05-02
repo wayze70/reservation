@@ -77,9 +77,7 @@
                      @bind-Value="NewEmployee.Role"
                      Required="true"
                      Variant="Variant.Outlined"
-                     FullWidth="true"
-                     Adornment="Adornment.Start"
-                     AdornmentIcon="@Icons.Material.Filled.Work">
+                     FullWidth="true">
             @foreach (var role in Constants.RoleInfo.GetAll())
             {
               <MudSelectItem Value="@role.Key">
