@@ -1,6 +1,8 @@
 @page "/ucet/udalost/{ReservationId:int}"
 @using Microsoft.AspNetCore.Authorization
 @using Reservation.Shared.Common
+@using Microsoft.AspNetCore.Components.Authorization
+@using Reservation.Shared.Authorization
 @inject IReservationService ReservationService
 @inject NavigationManager NavigationManager
 @inject ISnackbar Snackbar
@@ -37,7 +39,8 @@ else
                                   FullWidth="true"
                                   Adornment="Adornment.Start"
                                   AdornmentIcon="@Icons.Material.Filled.Title"
-                                  MaxLength="100"/>
+                                  MaxLength="100"
+                                  Disabled="@(!canEdit)"/>
                 </MudItem>
                 <MudItem xs="12" sm="6">
                     <MudTextField T="string"
@@ -47,7 +50,8 @@ else
                                   FullWidth="true"
                                   Adornment="Adornment.Start"
                                   AdornmentIcon="@Icons.Material.Filled.Description"
-                                  MaxLength="2000"/>
+                                  MaxLength="2000"
+                                  Disabled="@(!canEdit)"/>
                 </MudItem>
                 <MudItem xs="12" sm="6">
                     <MudNumericField T="int"
@@ -58,7 +62,8 @@ else
                                      Variant="Variant.Outlined"
                                      FullWidth="true"
                                      Adornment="Adornment.Start"
-                                     AdornmentIcon="@Icons.Material.Filled.People"/>
+                                     AdornmentIcon="@Icons.Material.Filled.People"
+                                     Disabled="@(!canEdit)"/>
                 </MudItem>
                 <MudItem xs="12" sm="6">
                     <MudDatePicker Label="Datum začátku"
@@ -66,7 +71,8 @@ else
                                    Required="true"
                                    Variant="Variant.Outlined"
                                    Adornment="Adornment.Start"
-                                   AdornmentIcon="@Icons.Material.Filled.CalendarMonth"/>
+                                   AdornmentIcon="@Icons.Material.Filled.CalendarMonth"
+                                   Disabled="@(!canEdit)"/>
                 </MudItem>
                 <MudItem xs="12" sm="6">
                     <MudTimePicker Label="Začátek"
@@ -74,7 +80,8 @@ else
                                    Required="true"
                                    Variant="Variant.Outlined"
                                    Adornment="Adornment.Start"
-                                   AdornmentIcon="@Icons.Material.Filled.Schedule"/>
+                                   AdornmentIcon="@Icons.Material.Filled.Schedule"
+                                   Disabled="@(!canEdit)"/>
                 </MudItem>
                 <MudItem xs="12" sm="6">
                     <MudTimePicker Label="Konec"
@@ -82,7 +89,8 @@ else
                                    Required="true"
                                    Variant="Variant.Outlined"
                                    Adornment="Adornment.Start"
-                                   AdornmentIcon="@Icons.Material.Filled.Schedule"/>
+                                   AdornmentIcon="@Icons.Material.Filled.Schedule"
+                                   Disabled="@(!canEdit)"/>
                 </MudItem>
 
                 <MudItem xs="12" sm="6">
@@ -101,7 +109,8 @@ else
                                          Variant="Variant.Outlined"
                                          FullWidth="true"
                                          Adornment="Adornment.Start"
-                                         AdornmentIcon="@Icons.Material.Filled.DateRange"/>
+                                         AdornmentIcon="@Icons.Material.Filled.DateRange"
+                                         Disabled="@(!canEdit)"/>
                         <MudItem xs="6" sm="3">
                             <MudNumericField T="int"
                                              Label="Hodiny"
@@ -111,7 +120,8 @@ else
                                              Variant="Variant.Outlined"
                                              FullWidth="true"
                                              Adornment="Adornment.End"
-                                             AdornmentText="h"/>
+                                             AdornmentText="h"
+                                             Disabled="@(!canEdit)"/>
                         </MudItem>
                         <MudItem xs="6" sm="3">
                             <MudNumericField T="int"
@@ -122,7 +132,8 @@ else
                                              Variant="Variant.Outlined"
                                              FullWidth="true"
                                              Adornment="Adornment.End"
-                                             AdornmentText="m"/>
+                                             AdornmentText="m"
+                                             Disabled="@(!canEdit)"/>
                         </MudItem>
                     </MudStack>
                 </MudItem>
@@ -135,7 +146,8 @@ else
                                Variant="Variant.Outlined"
                                FullWidth="true"
                                Adornment="Adornment.Start"
-                               AdornmentIcon="@Icons.Material.Filled.Public">
+                               AdornmentIcon="@Icons.Material.Filled.Public"
+                               Disabled="@(!canEdit)">
                         @foreach (var timezone in Constants.TimeZones)
                         {
                             <MudSelectItem Value="@timezone.Id">
@@ -149,18 +161,20 @@ else
                     <MudItem xs="12" sm="6" Class="d-flex align-center">
                         <MudSwitch Label="@(ReservationDetail.IsAvailable ? "Dostupná" : "Nedostupná")"
                                    Color="Color.Primary"
-                                   @bind-Value="ReservationDetail.IsAvailable"/>
+                                   @bind-Value="ReservationDetail.IsAvailable"
+                                   Disabled="@(!canEdit)"/>
                     </MudItem>
                 </MudItem>
             </MudGrid>
-
-            <MudButton ButtonType="ButtonType.Submit"
-                       Variant="Variant.Filled"
-                       Color="Color.Primary"
-                       Class="mt-4"
-                       FullWidth="true">
-                Uložit změny
-            </MudButton>
+            <AuthorizeView Roles="@($"{nameof(Role.Admin)}, {nameof(Role.Reservationist)}")" Context="authState">
+                <MudButton ButtonType="ButtonType.Submit"
+                           Variant="Variant.Filled"
+                           Color="Color.Primary"
+                           Class="mt-4"
+                           FullWidth="true">
+                    Uložit změny
+                </MudButton>
+            </AuthorizeView>
         </EditForm>
     </MudPaper>
 
@@ -181,19 +195,24 @@ else
                     <MudTh>Příjmení</MudTh>
                     <MudTh>Email</MudTh>
                     <MudTh>Poznámka</MudTh>
-                    <MudTh></MudTh>
+                    <AuthorizeView Roles="@($"{nameof(Role.Admin)}, {nameof(Role.Reservationist)}")">
+                        <MudTh></MudTh>
+                    </AuthorizeView>
                 </HeaderContent>
                 <RowTemplate>
                     <MudTd DataLabel="Jméno">@context.FirstName</MudTd>
                     <MudTd DataLabel="Příjmení">@context.LastName</MudTd>
                     <MudTd DataLabel="Email">@context.Email</MudTd>
                     <MudTd DataLabel="Poznámka">@context.Note</MudTd>
-                    <MudTd>
-                        <MudButton Variant="Variant.Outlined" Color="Color.Error" Size="Size.Small"
-                                   OnClick="@(() => RemoveUser(@context))">
-                            Odhlásit uživatele
-                        </MudButton>
-                    </MudTd>
+                    <AuthorizeView Roles="@($"{nameof(Role.Admin)}, {nameof(Role.Reservationist)}")"
+                                   Context="authState">
+                        <MudTd>
+                            <MudButton Variant="Variant.Outlined" Color="Color.Error" Size="Size.Small"
+                                       OnClick="@(() => RemoveUser(context))">
+                                Odhlásit uživatele
+                            </MudButton>
+                        </MudTd>
+                    </AuthorizeView>
                 </RowTemplate>
             </MudTable>
         }
@@ -201,9 +220,13 @@ else
 }
 
 @code {
-
     [Parameter]
     public int ReservationId { get; set; }
+    
+    [CascadingParameter]
+    private Task<AuthenticationState> AuthenticationStateTask { get; set; }
+
+    private bool canEdit;
 
     DateTime? Date { get; set; }
     DateTime? DateEnd { get; set; }
@@ -217,6 +240,11 @@ else
 
     protected override async Task OnInitializedAsync()
     {
+        var authState = await AuthenticationStateTask;
+        var user = authState.User;
+        canEdit = user.IsInRole(nameof(Role.Admin))
+                  || user.IsInRole(nameof(Role.Reservationist));
+        
         var response = await ReservationService.GetReservationWithUserAsync(ReservationId);
         if (response is { IsSuccess: true, Data: not null })
         {
@@ -244,13 +272,13 @@ else
             Snackbar.Add("Událost nebyla nalezena.", Severity.Error);
             return;
         }
-        
-        if (!Date.HasValue || !StartTime.HasValue || !EndTime.HasValue )
+
+        if (!Date.HasValue || !StartTime.HasValue || !EndTime.HasValue)
         {
             Snackbar.Add("Při odesilání došlo k chybě. Zkontrolujte datum.", Severity.Error);
             return;
         }
-        
+
         var customTimeZone = TimeZoneInfo.FindSystemTimeZoneById(ReservationDetail.CustomTimeZoneId);
 
         var startLocal = Date.Value.Date.Add(StartTime.Value);
@@ -310,7 +338,7 @@ else
             Snackbar.Add("Událost nebyla nalezena.", Severity.Error);
             return;
         }
-        
+
         bool? result = await DialogService.ShowMessageBox(
             "Potvrzení smazání",
             $"Opravdu chcete smazat pracovníka {customer.FirstName} {customer.LastName}?",

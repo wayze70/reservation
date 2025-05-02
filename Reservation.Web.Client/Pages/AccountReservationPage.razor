@@ -1,5 +1,7 @@
 @page "/ucet/udalost"
 @using Microsoft.AspNetCore.Authorization
+@using Reservation.Shared.Authorization
+@using Microsoft.AspNetCore.Components.Authorization
 @inject IReservationService ReservationService
 @inject NavigationManager NavigationManager
 @inject ISnackbar Snackbar
@@ -18,13 +20,15 @@
                                AdditionalDateClassesFunc="GetAdditionalDateClasses"
                                Label="Vyberte datum"
                                Style="overflow-y: hidden;"/>
-                <MudButton Variant="Variant.Filled"
-                           Color="Color.Primary"
-                           FullWidth="true"
-                           StartIcon="@Icons.Material.Filled.Add"
-                           OnClick="@(() => NavigationManager.NavigateTo(Constants.Routes.AccountRoute.ReservationNew))">
-                    Nová událost
-                </MudButton>
+                <AuthorizeView Roles="@($"{nameof(Role.Admin)}, {nameof(Role.Reservationist)}")">
+                    <MudButton Variant="Variant.Filled"
+                               Color="Color.Primary"
+                               FullWidth="true"
+                               StartIcon="@Icons.Material.Filled.Add"
+                               OnClick="@(() => NavigationManager.NavigateTo(Constants.Routes.AccountRoute.ReservationNew))">
+                        Nová událost
+                    </MudButton>
+                </AuthorizeView>
                 <MudButton Variant="Variant.Outlined"
                            Color="Color.Primary"
                            FullWidth="true"
@@ -145,4 +149,5 @@
     {
         return _picker.GoToDate(DateTime.Today);
     }
+
 }
