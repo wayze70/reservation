@@ -140,7 +140,7 @@ public class AuthService : IAuthService
         if (_jwtTokenHelper.ValidateToken(refreshToken) is null)
             throw new CustomHttpException(HttpStatusCode.BadRequest, "Nevalidní token");
 
-        int ownerId = GetOwnerId(refreshToken);
+        int ownerId = GetUserId(refreshToken);
         
         var owner = await _dbContext.Users
             .Include(o => o.Account)
@@ -164,7 +164,7 @@ public class AuthService : IAuthService
         if (_jwtTokenHelper.ValidateTokenOrigin(refreshToken) is null)
             throw new CustomHttpException(HttpStatusCode.BadRequest, "Nevalidní token");
 
-        int ownerId = GetOwnerId(refreshToken);
+        int ownerId = GetUserId(refreshToken);
 
         var device = await _dbContext.Devices
             .Include(d => d.User)
@@ -198,7 +198,7 @@ public class AuthService : IAuthService
         if (_jwtTokenHelper.ValidateTokenOrigin(refreshToken) is null)
             throw new CustomHttpException(HttpStatusCode.BadRequest, "Nevalidní token");
 
-        int ownerId = GetOwnerId(refreshToken);
+        int ownerId = GetUserId(refreshToken);
 
         var user = await _dbContext.Users
             .Include(u => u.Devices)
@@ -215,7 +215,7 @@ public class AuthService : IAuthService
         return true;
     }
 
-    private static int GetOwnerId(string refreshToken)
+    private static int GetUserId(string refreshToken)
     {
         return int.Parse(JwtTokenHelper
             .GetClaimValue(JwtTokenHelper.GetClaims(refreshToken), ReservationClaimNames.Sub) ?? throw new

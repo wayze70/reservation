@@ -15,13 +15,13 @@
     </AuthorizeView>
     <UserProfileSection/>
     <PasswordSection/>
+    <MudButton ButtonType="ButtonType.Button"
+               OnClick="@(async () => await AuthService.LogoutAllDevicesAsync())"
+               Color="Color.Warning" Variant="Variant.Filled"
+               Class="mt-4">
+        Odhlásit se ze všech zařízení
+    </MudButton>
     <AuthorizeView Roles="@nameof(Role.Admin)">
-        <MudButton ButtonType="ButtonType.Button"
-                   OnClick="@(async () => await AuthService.LogoutAllDevicesAsync())"
-                   Color="Color.Warning" Variant="Variant.Filled"
-                   Class="mt-4">
-            Odhlásit se ze všech zařízení
-        </MudButton>
         <DeleteAccountSection/>
     </AuthorizeView>
 </MudExpansionPanels>

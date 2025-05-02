@@ -67,7 +67,7 @@ public class AuthController : ControllerBase
     }
 
     [HttpPost("logout-all")]
-    [Authorize(Roles = nameof(Role.Admin))]
+    [Authorize]
     public async Task<ActionResult<bool>> LogoutAllDevices([FromBody] LogoutRequest request)
     {
         if (string.IsNullOrWhiteSpace(request.RefreshToken))
