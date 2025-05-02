@@ -5,7 +5,8 @@
 @page "/ucet/nova-udalost"
 @using System.Globalization
 @using Microsoft.AspNetCore.Authorization
-@attribute [Authorize]
+@using Reservation.Shared.Authorization
+@attribute [Authorize(Roles = $"{nameof(Role.Admin)}, {nameof(Role.Reservationist)}")]
 
 <MudCard Class="mx-auto mt-12" Style="max-width:800px;" Elevation="4">
     <MudButton Class="m-2" Style="width: fit-content" Variant="Variant.Outlined" Color="Color.Primary" OnClick="Back"
